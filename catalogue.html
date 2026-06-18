@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StarElec — Catalogue</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 500;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--blanc); border-radius: var(--radius-lg);
+      width: 90%; max-width: 500px; max-height: 90vh;
+      overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--blanc); z-index: 10;
+    }
+    .modal-title { font-size: 15px; font-weight: 600; }
+    .modal-body  { padding: 20px; }
+    .modal-footer {
+      display: flex; justify-content: flex-end; gap: 8px;
+      padding: 14px 20px; border-top: 1px solid var(--border);
+      position: sticky; bottom: 0; background: var(--blanc);
+    }
+    .categorie-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px;
+      background: var(--gris-clair);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px; font-weight: 700;
+      color: var(--texte-sec);
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .categorie-header i { color: var(--rouge); font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
+      <div><span>StarElec</span><span class="logo-sub">Devis & Factures</span></div>
+    </a>
+    <div class="nav-section">Principal</div>
+    <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+    <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
+    <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
+    <div class="nav-section">Gestion</div>
+    <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
+    <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
+    <a href="catalogue.html" class="nav-item active"><i class="ti ti-list-check"></i> Catalogue</a>
+    <div class="nav-section">Compte</div>
+    <a href="reglages.html" class="nav-item"><i class="ti ti-settings"></i> Réglages</a>
+    <div class="sidebar-bottom">
+      <a href="reglages.html" class="sidebar-user">
+        <div class="avatar">FF</div>
+        <div>
+          <div class="sidebar-user-name">Florian Fernandes</div>
+          <div class="sidebar-user-role">StarElec — Orléans</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title">Catalogue des prestations</h1>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-secondary" onclick="resetCatalogue()">
+          <i class="ti ti-refresh"></i> Réinitialiser
+        </button>
+        <button class="btn btn-primary" onclick="ouvrirModal()">
+          <i class="ti ti-plus"></i> Ajouter une prestation
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Recherche -->
+      <div class="search-bar" style="margin-bottom:16px">
+        <div class="search-input-wrap">
+          <i class="ti ti-search"></i>
+          <input type="text" class="search-input" id="search-cat"
+            placeholder="Rechercher une prestation..." oninput="renderCatalogue()" />
+        </div>
+        <div class="table-filters" id="cat-filters">
+          <!-- Générés dynamiquement -->
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-card-label">Total prestations</div>
+          <div class="stat-card-value" id="stat-total">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Prix moyen HT</div>
+          <div class="stat-card-value rouge" id="stat-moy">0 €</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Plus cher</div>
+          <div class="stat-card-value" id="stat-max">0 €</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Moins cher</div>
+          <div class="stat-card-value" id="stat-min">0 €</div>
+        </div>
+      </div>
+
+      <!-- Liste catalogue -->
+      <div id="catalogue-container">
+        <!-- Généré dynamiquement -->
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal prestation -->
+<div class="modal-overlay" id="modal-cat">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Nouvelle prestation</span>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModal()">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="m-id" />
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Désignation <span class="required">*</span></label>
+        <input type="text" class="form-control" id="m-designation"
+          placeholder="Ex : Prise de courant" />
+      </div>
+      <div class="form-row cols-2" style="margin-bottom:12px">
+        <div class="form-group">
+          <label>Catégorie</label>
+          <input type="text" class="form-control" id="m-categorie"
+            placeholder="Ex : Appareillage" list="cats-list" />
+          <datalist id="cats-list"></datalist>
+        </div>
+        <div class="form-group">
+          <label>Unité</label>
+          <select class="form-control" id="m-unite">
+            <option value="u">Unité (u)</option>
+            <option value="h">Heure (h)</option>
+            <option value="m">Mètre (m)</option>
+            <option value="m²">m²</option>
+            <option value="forfait">Forfait</option>
+            <option value="lot">Lot</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Prix unitaire HT (€) <span class="required">*</span></label>
+        <input type="number" class="form-control" id="m-pu"
+          placeholder="0.00" min="0" step="0.01" />
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" id="m-description" rows="3"
+          placeholder="Détails inclus dans ce forfait..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="sauvegarderPrestation()">
+        <i class="ti ti-device-floppy"></i> Sauvegarder
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script src="app.js"></script>
+<script>
+let catFilter = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderCatalogue();
+});
+
+function renderCatalogue() {
+  const q       = document.getElementById('search-cat').value.toLowerCase();
+  const cat     = DB.getCatalogue();
+  const categories = [...new Set(cat.map(p => p.categorie||'Autre'))];
+
+  // Filtres catégories
+  const filtersEl = document.getElementById('cat-filters');
+  filtersEl.innerHTML = `<span class="filter-pill ${!catFilter?'active':''}" onclick="filtrerCat('',this)">Tous</span>` +
+    categories.map(c => `<span class="filter-pill ${catFilter===c?'active':''}" onclick="filtrerCat('${c}',this)">${c}</span>`).join('');
+
+  // Datalist catégories pour le modal
+  document.getElementById('cats-list').innerHTML = categories.map(c=>`<option value="${c}">`).join('');
+
+  // Filtrer
+  let list = cat;
+  if (catFilter) list = list.filter(p => (p.categorie||'Autre') === catFilter);
+  if (q) list = list.filter(p =>
+    p.designation.toLowerCase().includes(q) ||
+    (p.description||'').toLowerCase().includes(q) ||
+    (p.categorie||'').toLowerCase().includes(q)
+  );
+
+  // Stats
+  const prix = cat.map(p=>p.pu||0);
+  document.getElementById('stat-total').textContent = cat.length;
+  document.getElementById('stat-moy').textContent   = cat.length ? fmt(prix.reduce((a,b)=>a+b,0)/prix.length) : '0 €';
+  document.getElementById('stat-max').textContent   = cat.length ? fmt(Math.max(...prix)) : '0 €';
+  document.getElementById('stat-min').textContent   = cat.length ? fmt(Math.min(...prix)) : '0 €';
+
+  // Grouper par catégorie
+  const container = document.getElementById('catalogue-container');
+
+  if (!list.length) {
+    container.innerHTML = `<div class="empty-state">
+      <i class="ti ti-list-off"></i>
+      <h3>Aucune prestation trouvée</h3>
+      <p>Modifiez votre recherche ou ajoutez une nouvelle prestation</p>
+      <button class="btn btn-primary" onclick="ouvrirModal()"><i class="ti ti-plus"></i> Ajouter</button>
+    </div>`;
+    return;
+  }
+
+  // Grouper
+  const grouped = {};
+  list.forEach(p => {
+    const cat = p.categorie || 'Autre';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(p);
+  });
+
+  const icones = {
+    'Appareillage': 'ti-plug',
+    'Éclairage':    'ti-bulb',
+    'Alimentation': 'ti-bolt',
+    'Chauffage':    'ti-flame',
+    'Réseau':       'ti-network',
+    "Main d'œuvre": 'ti-clock',
+    'Autre':        'ti-tag',
+  };
+
+  container.innerHTML = Object.entries(grouped).map(([cat, prestations]) => `
+    <div class="catalogue-list" style="margin-bottom:16px">
+      <div class="categorie-header">
+        <i class="ti ${icones[cat]||'ti-tag'}"></i>
+        ${cat}
+        <span style="margin-left:auto;font-size:10px;color:var(--texte-sec)">${prestations.length} prestation(s)</span>
+      </div>
+      ${prestations.map(p => `
+        <div class="cat-item">
+          <div class="cat-icon">
+            <i class="ti ${icones[cat]||'ti-tag'}"></i>
+          </div>
+          <div class="cat-info">
+            <div class="cat-name">${p.designation}</div>
+            ${p.description ? `<div class="cat-desc">${p.description}</div>` : ''}
+          </div>
+          <div style="text-align:right;margin-right:12px">
+            <div class="cat-prix">${fmt(p.pu)}</div>
+            <div style="font-size:10px;color:var(--texte-sec)">par ${p.unite||'u'}</div>
+          </div>
+          <div class="cat-actions">
+            <button class="btn btn-ghost btn-icon btn-sm" onclick="editerPrestation('${p.id}')" title="Modifier">
+              <i class="ti ti-edit"></i>
+            </button>
+            <button class="btn btn-ghost btn-icon btn-sm" onclick="dupliquerPrestation('${p.id}')" title="Dupliquer">
+              <i class="ti ti-copy"></i>
+            </button>
+            <button class="btn btn-ghost btn-icon btn-sm" style="color:#c0392b" onclick="supprimerPrestation('${p.id}')" title="Supprimer">
+              <i class="ti ti-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function filtrerCat(cat, el) {
+  catFilter = cat;
+  renderCatalogue();
+}
+
+// ── MODAL ──
+function ouvrirModal(id = null) {
+  resetModal();
+  if (id) {
+    const p = DB.getCatalogue().find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('modal-title').textContent = 'Modifier la prestation';
+    document.getElementById('m-id').value          = p.id;
+    document.getElementById('m-designation').value = p.designation;
+    document.getElementById('m-categorie').value   = p.categorie||'';
+    document.getElementById('m-unite').value       = p.unite||'u';
+    document.getElementById('m-pu').value          = p.pu||'';
+    document.getElementById('m-description').value = p.description||'';
+  }
+  document.getElementById('modal-cat').classList.add('open');
+  setTimeout(() => document.getElementById('m-designation').focus(), 100);
+}
+
+function editerPrestation(id)    { ouvrirModal(id); }
+
+function fermerModal() {
+  document.getElementById('modal-cat').classList.remove('open');
+  resetModal();
+}
+
+function resetModal() {
+  ['m-id','m-designation','m-categorie','m-pu','m-description'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('m-unite').value   = 'u';
+  document.getElementById('modal-title').textContent = 'Nouvelle prestation';
+}
+
+function sauvegarderPrestation() {
+  const id          = document.getElementById('m-id').value;
+  const designation = document.getElementById('m-designation').value.trim();
+  const pu          = parseFloat(document.getElementById('m-pu').value);
+
+  if (!designation) { toast('Veuillez saisir une désignation', 'error'); return; }
+  if (isNaN(pu) || pu < 0) { toast('Veuillez saisir un prix valide', 'error'); return; }
+
+  const data = {
+    designation,
+    categorie:   document.getElementById('m-categorie').value.trim() || 'Autre',
+    unite:       document.getElementById('m-unite').value,
+    pu,
+    description: document.getElementById('m-description').value.trim(),
+  };
+
+  if (id) {
+    DB.updatePrestation(id, data);
+    toast('Prestation mise à jour !', 'success');
+  } else {
+    DB.addPrestation(data);
+    toast('Prestation ajoutée !', 'success');
+  }
+
+  fermerModal();
+  renderCatalogue();
+}
+
+function supprimerPrestation(id) {
+  const p = DB.getCatalogue().find(x => x.id === id);
+  if (!confirm(`Supprimer "${p?.designation}" ?`)) return;
+  DB.deletePrestation(id);
+  renderCatalogue();
+  toast('Prestation supprimée', 'info');
+}
+
+function dupliquerPrestation(id) {
+  const p = DB.getCatalogue().find(x => x.id === id);
+  if (!p) return;
+  DB.addPrestation({ ...p, id: undefined, designation: p.designation + ' (copie)' });
+  renderCatalogue();
+  toast('Prestation dupliquée', 'success');
+}
+
+function resetCatalogue() {
+  if (!confirm('Réinitialiser le catalogue avec les prestations par défaut ? Vos modifications seront perdues.')) return;
+  localStorage.removeItem('se_catalogue');
+  renderCatalogue();
+  toast('Catalogue réinitialisé', 'info');
+}
+</script>
+
+</body>
+</html>
