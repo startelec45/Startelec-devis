@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StarElec — Factures</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
+      <div><span>StarElec</span><span class="logo-sub">Devis & Factures</span></div>
+    </a>
+    <div class="nav-section">Principal</div>
+    <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+    <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
+    <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
+    <div class="nav-section">Gestion</div>
+    <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
+    <a href="factures.html" class="nav-item active"><i class="ti ti-receipt"></i> Factures</a>
+    <a href="catalogue.html" class="nav-item"><i class="ti ti-list-check"></i> Catalogue</a>
+    <div class="nav-section">Compte</div>
+    <a href="reglages.html" class="nav-item"><i class="ti ti-settings"></i> Réglages</a>
+    <div class="sidebar-bottom">
+      <a href="reglages.html" class="sidebar-user">
+        <div class="avatar">FF</div>
+        <div>
+          <div class="sidebar-user-name">Florian Fernandes</div>
+          <div class="sidebar-user-role">StarElec — Orléans</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title">Factures</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="search-input-wrap">
+          <i class="ti ti-search"></i>
+          <input type="text" class="search-input" id="search-fact"
+            placeholder="Rechercher..." oninput="renderFactures()" />
+        </div>
+        <!-- Bouton principal avec dropdown -->
+        <div class="dropdown">
+          <button class="btn btn-primary" onclick="toggleDropdown(this)">
+            <i class="ti ti-plus"></i> Nouvelle facture <i class="ti ti-chevron-down"></i>
+          </button>
+          <div class="dropdown-menu right">
+            <div class="dropdown-item" onclick="nouvelleFacture('Facture')">
+              <i class="ti ti-receipt"></i> Facture complète
+            </div>
+            <div class="dropdown-item" onclick="nouvelleFacture('Facture d\'acompte')">
+              <i class="ti ti-receipt-2"></i> Facture d'acompte
+            </div>
+            <div class="dropdown-item" onclick="nouvelleFacture('Avoir')">
+              <i class="ti ti-receipt-refund"></i> Avoir
+            </div>
+            <div class="dropdown-separator"></div>
+            <div class="dropdown-item" style="color:var(--texte-sec);font-size:12px;cursor:default">
+              <i class="ti ti-info-circle"></i> Depuis un devis accepté :
+            </div>
+            <div class="dropdown-item" onclick="window.location.href='index.html'">
+              <i class="ti ti-arrow-right"></i> Aller sur le devis → Facturer
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card accent">
+          <div class="stat-card-label">Total factures</div>
+          <div class="stat-card-value" id="stat-total">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">À encaisser</div>
+          <div class="stat-card-value orange" id="stat-attente">0</div>
+          <div class="stat-card-sub" id="stat-attente-ca"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Payées</div>
+          <div class="stat-card-value vert" id="stat-paye">0</div>
+          <div class="stat-card-sub" id="stat-paye-ca"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">CA facturé HT</div>
+          <div class="stat-card-value rouge" id="stat-ca">0 €</div>
+        </div>
+      </div>
+
+      <!-- Filtres -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="table-filters">
+          <span class="filter-pill active" data-filter="" onclick="filtrer(this)">Tous</span>
+          <span class="filter-pill" data-filter="Créé" onclick="filtrer(this)">Créé</span>
+          <span class="filter-pill" data-filter="Envoyé" onclick="filtrer(this)">Envoyé</span>
+          <span class="filter-pill" data-filter="Payé" onclick="filtrer(this)">Payé</span>
+          <span class="filter-pill" data-filter="Payé en partie" onclick="filtrer(this)">Partiel</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <select class="form-control" id="filtre-type" onchange="renderFactures()" style="font-size:12px;padding:5px 8px">
+            <option value="">Tous les types</option>
+            <option value="Facture">Facture</option>
+            <option value="Facture d'acompte">Acompte</option>
+            <option value="Avoir">Avoir</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tableau -->
+      <div class="table-container">
+        <table class="data-table" id="fact-table">
+          <thead>
+            <tr>
+              <th style="width:30px"><input type="checkbox" /></th>
+              <th style="width:120px">N° FACTURE</th>
+              <th style="width:90px">TYPE</th>
+              <th style="width:100px">DEVIS LIÉ</th>
+              <th style="width:140px">CLIENT</th>
+              <th>OBJET</th>
+              <th style="width:100px">DATE</th>
+              <th style="width:100px">ÉCHÉANCE</th>
+              <th style="width:100px">MONTANT HT</th>
+              <th style="width:100px">ÉTAT</th>
+              <th style="width:40px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-fact">
+          </tbody>
+        </table>
+        <div class="table-footer">
+          <span style="font-size:12px;color:var(--texte-sec)">
+            Nombre : <strong id="count-shown">0</strong>
+          </span>
+          <div class="table-footer-totals">
+            <div class="t-item"><span>Total HT : </span><strong id="footer-ht">0,00 €</strong></div>
+            <div class="t-item"><span>Payé : </span><strong class="vert" id="footer-paye">0,00 €</strong></div>
+            <div class="t-item"><span>Reste : </span><strong class="rouge" id="footer-reste">0,00 €</strong></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal création facture directe -->
+<div class="modal-overlay" id="modal-facture" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--blanc);border-radius:var(--radius-lg);width:90%;max-width:700px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2)">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--blanc);z-index:10">
+      <span style="font-size:15px;font-weight:600" id="modal-fact-title">Nouvelle facture</span>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModal()"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div style="padding:20px">
+
+      <!-- En-tête -->
+      <div class="form-row cols-4" style="margin-bottom:16px">
+        <div class="form-group">
+          <label>Type</label>
+          <select class="form-control" id="mf-type" onchange="updateNumero()">
+            <option value="Facture">Facture</option>
+            <option value="Facture d'acompte">Facture d'acompte</option>
+            <option value="Avoir">Avoir</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>N°</label>
+          <input type="text" class="form-control" id="mf-numero" readonly />
+        </div>
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" class="form-control" id="mf-date" />
+        </div>
+        <div class="form-group">
+          <label>Échéance</label>
+          <input type="date" class="form-control" id="mf-echeance" />
+        </div>
+      </div>
+
+      <!-- Devis lié (optionnel) -->
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Devis lié <span style="color:var(--texte-sec);font-weight:400">(optionnel)</span></label>
+        <select class="form-control" id="mf-devis-lie" onchange="remplirDepuisDevis()">
+          <option value="">— Aucun (facture directe) —</option>
+        </select>
+      </div>
+
+      <!-- Client -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="form-section">
+          <div class="form-section-header"><i class="ti ti-user"></i> Client</div>
+          <div class="form-section-body">
+            <div class="form-group" style="margin-bottom:10px">
+              <label>Nom / Société <span class="required">*</span></label>
+              <input type="text" class="form-control" id="mf-client" placeholder="Nom du client" />
+            </div>
+            <div class="form-group" style="margin-bottom:10px">
+              <label>Adresse</label>
+              <textarea class="form-control" id="mf-adresse" rows="2" placeholder="Adresse complète"></textarea>
+            </div>
+            <div class="form-row cols-2">
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" id="mf-email" placeholder="email@client.fr" />
+              </div>
+              <div class="form-group">
+                <label>Tél</label>
+                <input type="tel" class="form-control" id="mf-tel" placeholder="06..." />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-header"><i class="ti ti-file-description"></i> Détails</div>
+          <div class="form-section-body">
+            <div class="form-group" style="margin-bottom:10px">
+              <label>Objet</label>
+              <input type="text" class="form-control" id="mf-objet"
+                placeholder="Travaux d'installation électrique..." />
+            </div>
+            <div class="form-row cols-2">
+              <div class="form-group">
+                <label>Mode règlement</label>
+                <select class="form-control" id="mf-mode">
+                  <option value="Virement bancaire">Virement bancaire</option>
+                  <option value="Chèque">Chèque</option>
+                  <option value="Espèces">Espèces</option>
+                  <option value="CB">Carte bancaire</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Acompte (%)</label>
+                <input type="number" class="form-control" id="mf-acompte" value="0" min="0" max="100" />
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+              <label>Notes</label>
+              <textarea class="form-control" id="mf-notes" rows="2" placeholder="Notes internes..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lignes -->
+      <div class="lignes-section" style="margin-bottom:16px">
+        <div class="lignes-header">
+          <span><i class="ti ti-list-check"></i> Prestations</span>
+        </div>
+        <table class="lignes-table">
+          <thead>
+            <tr>
+              <th style="width:30px">#</th>
+              <th>Désignation</th>
+              <th style="width:70px">Qté</th>
+              <th style="width:80px">Unité</th>
+              <th style="width:100px">PU HT</th>
+              <th style="width:100px">Total HT</th>
+              <th style="width:36px"></th>
+            </tr>
+          </thead>
+          <tbody id="mf-lignes-body"></tbody>
+        </table>
+        <div class="lignes-footer">
+          <button class="btn btn-secondary btn-sm" onclick="ajouterLigneFact()">
+            <i class="ti ti-plus"></i> Ajouter une ligne
+          </button>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div style="display:flex;justify-content:flex-end">
+        <div class="totaux-box" style="min-width:280px">
+          <div class="totaux-row">
+            <label>Total HT</label>
+            <span class="val" id="mf-tot-ht">0,00 €</span>
+          </div>
+          <div class="totaux-row total-final">
+            <label>TOTAL À PAYER</label>
+            <span class="val" id="mf-tot-final">0,00 €</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer modal -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--blanc)">
+      <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" onclick="sauvegarderFacture(false)">
+          <i class="ti ti-device-floppy"></i> Sauvegarder
+        </button>
+        <button class="btn btn-primary" onclick="sauvegarderFacture(true)">
+          <i class="ti ti-download"></i> Sauvegarder & PDF
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+<div id="overlay" style="display:none;position:fixed;inset:0;z-index:199;" onclick="closeAllDropdowns()"></div>
+
+<script src="app.js"></script>
+<script>
+let filterStatut = '';
+let lignesFact   = [];
+let editFactId   = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderFactures();
+});
+
+// ══ RENDER ══
+function renderFactures() {
+  const q        = document.getElementById('search-fact').value.toLowerCase();
+  const typeF    = document.getElementById('filtre-type').value;
+  let   list     = DB.getFactures();
+
+  if (filterStatut) list = list.filter(f => f.statut === filterStatut);
+  if (typeF)        list = list.filter(f => f.type === typeF || f.titre?.includes(typeF));
+  if (q)            list = list.filter(f =>
+    (f.numero||'').toLowerCase().includes(q) ||
+    (f.client||'').toLowerCase().includes(q) ||
+    (f.objet||'').toLowerCase().includes(q)
+  );
+
+  // Stats
+  const all     = DB.getFactures();
+  const attente = all.filter(f => f.statut === 'Créé' || f.statut === 'Envoyé');
+  const payes   = all.filter(f => f.statut === 'Payé');
+  const caTotal = all.reduce((s,f) => s + (f.montant_ht||f.montant||0), 0);
+
+  document.getElementById('stat-total').textContent     = all.length;
+  document.getElementById('stat-attente').textContent   = attente.length;
+  document.getElementById('stat-attente-ca').textContent= fmt(attente.reduce((s,f)=>s+(f.montant_ht||f.montant||0),0));
+  document.getElementById('stat-paye').textContent      = payes.length;
+  document.getElementById('stat-paye-ca').textContent   = fmt(payes.reduce((s,f)=>s+(f.montant_ht||f.montant||0),0));
+  document.getElementById('stat-ca').textContent        = fmt(caTotal);
+
+  document.getElementById('count-shown').textContent = list.length;
+  const totalFiltré = list.reduce((s,f)=>s+(f.montant_ht||f.montant||0),0);
+  const totalPayé   = list.filter(f=>f.statut==='Payé').reduce((s,f)=>s+(f.montant_ht||f.montant||0),0);
+  document.getElementById('footer-ht').textContent    = fmt(totalFiltré);
+  document.getElementById('footer-paye').textContent  = fmt(totalPayé);
+  document.getElementById('footer-reste').textContent = fmt(totalFiltré - totalPayé);
+
+  const tbody = document.getElementById('tbody-fact');
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="11">
+      <div class="empty-state">
+        <i class="ti ti-receipt-off"></i>
+        <h3>Aucune facture</h3>
+        <p>Créez une facture directement ou depuis un devis accepté</p>
+        <button class="btn btn-primary" onclick="nouvelleFacture('Facture')">
+          <i class="ti ti-plus"></i> Nouvelle facture
+        </button>
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(f => {
+    const montant    = f.montant_ht || f.montant || 0;
+    const badgeClass = getBadgeClass(f.statut);
+    const typeLabel  = f.type || (f.titre?.includes('acompte') ? "Acompte" : "Facture");
+
+    return `<tr onclick="voirFacture('${f.id}')" style="cursor:pointer">
+      <td onclick="event.stopPropagation()"><input type="checkbox" /></td>
+      <td><span class="td-num">${f.numero||'—'}</span></td>
+      <td>
+        <span class="badge ${typeLabel==='Avoir'?'badge-annule':typeLabel.includes('acompte')?'badge-acompte':'badge-cree'}"
+          style="font-size:10px">${typeLabel}</span>
+      </td>
+      <td>
+        ${f.devis_numero
+          ? `<a href="voir.html?id=${f.devis_id}" onclick="event.stopPropagation()"
+              style="color:var(--rouge);font-weight:500;text-decoration:none">${f.devis_numero}</a>`
+          : '<span style="color:var(--texte-sec)">—</span>'}
+      </td>
+      <td class="td-client">${f.client||'—'}</td>
+      <td class="td-produit" title="${f.objet||''}">${(f.objet||f.titre||'').substring(0,45)}${(f.objet||'').length>45?'...':''}</td>
+      <td class="td-sec">${fmtDate(f.date||f.created_at)}</td>
+      <td class="td-sec">${f.date_echeance ? fmtDate(f.date_echeance) : '—'}</td>
+      <td class="td-montant">${fmt(montant)}</td>
+      <td onclick="event.stopPropagation()">
+        <select class="badge badge-select ${badgeClass}"
+          onchange="changerStatutFact('${f.id}', this.value, this)">
+          ${['Créé','Envoyé','Payé','Payé en partie','Annulé'].map(s =>
+            `<option value="${s}"${s===f.statut?' selected':''}>${s}</option>`
+          ).join('')}
+        </select>
+      </td>
+      <td onclick="event.stopPropagation()">
+        <div class="dropdown">
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="toggleDropdown(this)">
+            <i class="ti ti-settings"></i>
+          </button>
+          <div class="dropdown-menu right">
+            <div class="dropdown-item" onclick="voirFacture('${f.id}')"><i class="ti ti-eye"></i> Afficher</div>
+            <div class="dropdown-item" onclick="editerFacture('${f.id}')"><i class="ti ti-edit"></i> Modifier</div>
+            <div class="dropdown-item" onclick="genererPDF('${f.id}')"><i class="ti ti-download"></i> Télécharger PDF</div>
+            <div class="dropdown-item" onclick="envoyerFacture('${f.id}')"><i class="ti ti-mail"></i> Envoyer</div>
+            <div class="dropdown-separator"></div>
+            <div class="dropdown-item danger" onclick="supprimerFacture('${f.id}')"><i class="ti ti-trash"></i> Supprimer</div>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filtrer(el) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  filterStatut = el.dataset.filter;
+  renderFactures();
+}
+
+function changerStatutFact(id, statut, sel) {
+  const factures = DB.getFactures();
+  const idx      = factures.findIndex(f => f.id === id);
+  if (idx > -1) {
+    factures[idx].statut = statut;
+    DB.saveFactures(factures);
+  }
+  sel.className = `badge badge-select ${getBadgeClass(statut)}`;
+  renderFactures();
+  toast(`Statut : ${statut}`, 'success');
+}
+
+// ══ MODAL NOUVELLE FACTURE ══
+function nouvelleFacture(type = 'Facture') {
+  editFactId  = null;
+  lignesFact  = [];
+  resetModal();
+
+  document.getElementById('modal-fact-title').textContent = `Nouvelle ${type}`;
+  document.getElementById('mf-type').value  = type;
+  document.getElementById('mf-date').value  = new Date().toISOString().split('T')[0];
+  document.getElementById('mf-echeance').value = addDays(new Date(), 30);
+  updateNumero();
+
+  // Remplir la liste des devis
+  const devisSelect = document.getElementById('mf-devis-lie');
+  devisSelect.innerHTML = '<option value="">— Aucun (facture directe) —</option>' +
+    DB.getDevis().filter(d => d.statut === 'Accepté' || d.statut === 'Créé').map(d =>
+      `<option value="${d.id}">${d.numero} — ${d.client} — ${fmt(d.montant_ht)}</option>`
+    ).join('');
+
+  ajouterLigneFact();
+  document.getElementById('modal-facture').style.display = 'flex';
+  closeAllDropdowns();
+}
+
+function editerFacture(id) {
+  const f = DB.getFactures().find(x => x.id === id);
+  if (!f) return;
+  editFactId = id;
+  resetModal();
+
+  document.getElementById('modal-fact-title').textContent = `Modifier ${f.numero}`;
+  document.getElementById('mf-type').value    = f.type || 'Facture';
+  document.getElementById('mf-numero').value  = f.numero || '';
+  document.getElementById('mf-date').value    = f.date?.split('T')[0] || '';
+  document.getElementById('mf-echeance').value= f.date_echeance || '';
+  document.getElementById('mf-client').value  = f.client || '';
+  document.getElementById('mf-adresse').value = f.client_adresse || '';
+  document.getElementById('mf-email').value   = f.client_email || '';
+  document.getElementById('mf-tel').value     = f.client_tel || '';
+  document.getElementById('mf-objet').value   = f.objet || f.titre || '';
+  document.getElementById('mf-mode').value    = f.mode_reglement || 'Virement bancaire';
+  document.getElementById('mf-notes').value   = f.notes || '';
+
+  // Devis liés
+  const devisSelect = document.getElementById('mf-devis-lie');
+  devisSelect.innerHTML = '<option value="">— Aucun —</option>' +
+    DB.getDevis().map(d =>
+      `<option value="${d.id}"${d.id===f.devis_id?' selected':''}>${d.numero} — ${d.client}</option>`
+    ).join('');
+
+  lignesFact = (f.lignes || []).map(l => ({...l, id: l.id || genId()}));
+  if (!lignesFact.length) ajouterLigneFact();
+  else renderLignesFact();
+  recalculerFact();
+
+  document.getElementById('modal-facture').style.display = 'flex';
+}
+
+function fermerModal() {
+  document.getElementById('modal-facture').style.display = 'none';
+  resetModal();
+}
+
+function resetModal() {
+  lignesFact = [];
+  document.getElementById('mf-lignes-body').innerHTML = '';
+  ['mf-client','mf-adresse','mf-email','mf-tel','mf-objet','mf-notes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('mf-acompte').value = 0;
+}
+
+function updateNumero() {
+  const type = document.getElementById('mf-type').value;
+  const t    = type === "Facture d'acompte" ? 'acompte' : type === 'Avoir' ? 'avoir' : 'facture';
+  if (!editFactId) {
+    document.getElementById('mf-numero').value = DB.getNextNumero(t === 'avoir' ? 'facture' : t);
+  }
+}
+
+function remplirDepuisDevis() {
+  const devisId = document.getElementById('mf-devis-lie').value;
+  if (!devisId) return;
+  const d = DB.getDevisById(devisId);
+  if (!d) return;
+
+  document.getElementById('mf-client').value  = d.client || '';
+  document.getElementById('mf-adresse').value = d.client_adresse || '';
+  document.getElementById('mf-email').value   = d.client_email || '';
+  document.getElementById('mf-tel').value     = d.client_tel || '';
+  document.getElementById('mf-objet').value   = d.objet || '';
+  document.getElementById('mf-mode').value    = d.mode_reglement || 'Virement bancaire';
+
+  const type = document.getElementById('mf-type').value;
+  if (type === "Facture d'acompte") {
+    const acompte_pct = d.acompte_pct || 30;
+    const montant     = Math.round(d.montant_ht * acompte_pct / 100 * 100) / 100;
+    lignesFact = [{
+      id: genId(), designation: `Acompte ${acompte_pct}% — ${d.objet||d.numero}`,
+      description: `Acompte sur devis ${d.numero}`,
+      qte: 1, pu: montant, unite: 'forfait', total: montant
+    }];
+  } else {
+    lignesFact = (d.lignes||[]).map(l => ({...l, id: l.id||genId()}));
+  }
+
+  if (!lignesFact.length) ajouterLigneFact();
+  else renderLignesFact();
+  recalculerFact();
+  toast('Formulaire rempli depuis le devis ' + d.numero, 'success');
+}
+
+// ── Lignes facture ──
+function ajouterLigneFact(data = {}) {
+  lignesFact.push({
+    id:          genId(),
+    designation: data.designation || '',
+    description: data.description || '',
+    qte:         data.qte || 1,
+    pu:          data.pu || 0,
+    unite:       data.unite || 'u',
+    total:       (data.qte||1) * (data.pu||0),
+  });
+  renderLignesFact();
+}
+
+function renderLignesFact() {
+  const tbody = document.getElementById('mf-lignes-body');
+  tbody.innerHTML = lignesFact.map((l, i) => `
+    <tr>
+      <td style="color:var(--texte-sec);text-align:center;font-size:12px">${i+1}</td>
+      <td>
+        <div class="autocomplete-wrap">
+          <input type="text" class="ligne-input" placeholder="Désignation..."
+            value="${escHtml(l.designation)}"
+            oninput="updateLF('${l.id}','designation',this.value)" />
+        </div>
+        <textarea class="ligne-desc" placeholder="Description..."
+          oninput="updateLF('${l.id}','description',this.value)">${escHtml(l.description||'')}</textarea>
+      </td>
+      <td><input type="number" class="ligne-input" value="${l.qte}" min="0" step="0.5"
+        oninput="updateLFCalc('${l.id}','qte',this.value)" /></td>
+      <td>
+        <select class="ligne-input" onchange="updateLF('${l.id}','unite',this.value)">
+          ${['u','h','m','m²','forfait','lot'].map(u=>`<option value="${u}"${u===l.unite?' selected':''}>${u}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="number" class="ligne-input" value="${l.pu||''}" min="0" step="0.01" placeholder="0,00"
+        oninput="updateLFCalc('${l.id}','pu',this.value)" /></td>
+      <td><span style="font-weight:600;display:block;padding:8px 4px" id="totlf-${l.id}">${fmt(l.total||0)}</span></td>
+      <td>
+        <button class="btn-del-ligne" onclick="supprimerLF('${l.id}')"><i class="ti ti-x"></i></button>
+      </td>
+    </tr>
+  `).join('');
+
+  // Autocomplete
+  lignesFact.forEach(l => {
+    const row = tbody.querySelector(`input[oninput*="${l.id}"]`)?.closest('tr');
+    if (!row) return;
+    const input = row.querySelector('.autocomplete-wrap input');
+    if (input) {
+      setupAutocomplete(input, p => {
+        updateLF(l.id, 'designation', p.designation);
+        updateLF(l.id, 'description', p.description||'');
+        updateLF(l.id, 'unite', p.unite||'u');
+        updateLFCalc(l.id, 'pu', p.pu);
+        input.value = p.designation;
+        renderLignesFact();
+      });
+    }
+  });
+}
+
+function updateLF(id, key, val) {
+  const l = lignesFact.find(x=>x.id===id);
+  if (l) l[key] = val;
+}
+
+function updateLFCalc(id, key, val) {
+  const l = lignesFact.find(x=>x.id===id);
+  if (!l) return;
+  l[key]  = parseFloat(val)||0;
+  l.total = Math.round((l.qte||0)*(l.pu||0)*100)/100;
+  const el = document.getElementById(`totlf-${id}`);
+  if (el) el.textContent = fmt(l.total);
+  recalculerFact();
+}
+
+function supprimerLF(id) {
+  lignesFact = lignesFact.filter(l=>l.id!==id);
+  renderLignesFact();
+  recalculerFact();
+}
+
+function recalculerFact() {
+  const total = lignesFact.reduce((s,l)=>s+(l.total||0),0);
+  document.getElementById('mf-tot-ht').textContent    = fmt(total);
+  document.getElementById('mf-tot-final').textContent = fmt(total);
+}
+
+// ── Sauvegarder facture ──
+function sauvegarderFacture(genPDF = false) {
+  const client = document.getElementById('mf-client').value.trim();
+  if (!client) { toast('Veuillez saisir le nom du client', 'error'); return; }
+  if (!lignesFact.filter(l=>l.designation).length) {
+    toast('Ajoutez au moins une ligne', 'error'); return;
+  }
+
+  const total  = lignesFact.reduce((s,l)=>s+(l.total||0),0);
+  const devisId = document.getElementById('mf-devis-lie').value || null;
+  const devis   = devisId ? DB.getDevisById(devisId) : null;
+
+  const data = {
+    type:           document.getElementById('mf-type').value,
+    numero:         document.getElementById('mf-numero').value,
+    date:           document.getElementById('mf-date').value,
+    date_echeance:  document.getElementById('mf-echeance').value,
+    devis_id:       devisId,
+    devis_numero:   devis?.numero || null,
+    client,
+    client_adresse: document.getElementById('mf-adresse').value,
+    client_email:   document.getElementById('mf-email').value,
+    client_tel:     document.getElementById('mf-tel').value,
+    objet:          document.getElementById('mf-objet').value,
+    mode_reglement: document.getElementById('mf-mode').value,
+    notes:          document.getElementById('mf-notes').value,
+    lignes:         lignesFact,
+    montant_ht:     total,
+    montant:        total,
+    statut:         'Créé',
+  };
+
+  if (editFactId) {
+    const factures = DB.getFactures();
+    const idx = factures.findIndex(f=>f.id===editFactId);
+    if (idx>-1) { factures[idx] = {...factures[idx], ...data}; DB.saveFactures(factures); }
+    toast('Facture mise à jour !', 'success');
+  } else {
+    const f = DB.addFacture(data);
+    if (genPDF) genererPDF(f.id);
+    toast('Facture créée !', 'success');
+  }
+
+  fermerModal();
+  renderFactures();
+}
+
+// ── Actions ──
+function voirFacture(id) {
+  // Pour l'instant affiche dans une alerte — à connecter à voir.html
+  const f = DB.getFactures().find(x=>x.id===id);
+  if (f) toast(`${f.numero} — ${f.client} — ${fmt(f.montant_ht||0)}`, 'info');
+}
+
+function supprimerFacture(id) {
+  const f = DB.getFactures().find(x=>x.id===id);
+  if (!confirm(`Supprimer la facture ${f?.numero} ?`)) return;
+  const list = DB.getFactures().filter(x=>x.id!==id);
+  DB.saveFactures(list);
+  renderFactures();
+  toast('Facture supprimée', 'info');
+  closeAllDropdowns();
+}
+
+function envoyerFacture(id) {
+  const f = DB.getFactures().find(x=>x.id===id);
+  if (!f) return;
+  const email = f.client_email || '';
+  if (!email) { toast('Aucun email client renseigné', 'error'); return; }
+  const sujet = encodeURIComponent(`Facture ${f.numero} — StarElec`);
+  window.location.href = `mailto:${email}?subject=${sujet}`;
+  closeAllDropdowns();
+}
+
+function getBadgeClass(s) {
+  const m = {'Créé':'badge-cree','Envoyé':'badge-envoye','Accepté':'badge-accepte',
+             'Rejeté':'badge-rejete','Payé':'badge-paye','Payé en partie':'badge-partiel','Annulé':'badge-annule'};
+  return m[s]||'badge-cree';
+}
+
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+
+</body>
+</html>
