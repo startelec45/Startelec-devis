@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StarElec Devis — Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
+      <div>
+        <span>StarElec</span>
+        <span class="logo-sub">Devis & Factures</span>
+      </div>
+    </a>
+
+    <div class="nav-section">Principal</div>
+    <a href="index.html" class="nav-item active">
+      <i class="ti ti-layout-dashboard"></i> Dashboard
+    </a>
+    <a href="devis.html" class="nav-item">
+      <i class="ti ti-plus"></i> Nouveau devis
+    </a>
+    <a href="clients.html" class="nav-item">
+      <i class="ti ti-users"></i> Clients
+    </a>
+
+    <div class="nav-section">Gestion</div>
+    <a href="liste.html" class="nav-item">
+      <i class="ti ti-file-text"></i> Tous les devis
+      <span class="nav-badge" id="badge-total">0</span>
+    </a>
+    <a href="factures.html" class="nav-item">
+      <i class="ti ti-receipt"></i> Factures
+    </a>
+    <a href="catalogue.html" class="nav-item">
+      <i class="ti ti-list-check"></i> Catalogue
+    </a>
+
+    <div class="nav-section">Compte</div>
+    <a href="reglages.html" class="nav-item">
+      <i class="ti ti-settings"></i> Réglages
+    </a>
+
+    <div class="sidebar-bottom">
+      <a href="reglages.html" class="sidebar-user">
+        <div class="avatar">FF</div>
+        <div>
+          <div class="sidebar-user-name">Florian Fernandes</div>
+          <div class="sidebar-user-role">StarElec — Orléans</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="search-input-wrap">
+          <i class="ti ti-search"></i>
+          <input type="text" class="search-input" placeholder="Rechercher un devis, client..." id="global-search" />
+        </div>
+        <a href="devis.html" class="btn btn-primary">
+          <i class="ti ti-plus"></i> Nouveau devis
+        </a>
+      </div>
+    </div>
+
+    <!-- Contenu -->
+    <div class="page-content">
+
+      <!-- Stats -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card accent">
+          <div class="stat-card-label">Devis ce mois</div>
+          <div class="stat-card-value" id="stat-mois">—</div>
+          <div class="stat-card-sub" id="stat-mois-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">En attente / Envoyés</div>
+          <div class="stat-card-value orange" id="stat-attente">—</div>
+          <div class="stat-card-sub" id="stat-attente-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Acceptés</div>
+          <div class="stat-card-value vert" id="stat-accepte">—</div>
+          <div class="stat-card-sub" id="stat-accepte-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">CA total HT</div>
+          <div class="stat-card-value rouge" id="stat-ca">—</div>
+          <div class="stat-card-sub" id="stat-ca-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Reste à facturer</div>
+          <div class="stat-card-value" id="stat-reste">—</div>
+          <div class="stat-card-sub">Devis acceptés non facturés</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Déjà facturé</div>
+          <div class="stat-card-value vert" id="stat-facture">—</div>
+          <div class="stat-card-sub">Acomptes + soldes encaissés</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Refusés / Annulés</div>
+          <div class="stat-card-value" id="stat-refuse" style="color:#A32D2D">—</div>
+          <div class="stat-card-sub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Total devis</div>
+          <div class="stat-card-value" id="stat-total">—</div>
+          <div class="stat-card-sub">Tous les documents</div>
+        </div>
+      </div>
+
+      <!-- Tableau -->
+      <div class="table-container">
+        <div class="table-header">
+          <span class="table-title">Revenus / Tous</span>
+          <div class="table-filters" id="filters">
+            <span class="filter-pill active" data-filter="">Tous</span>
+            <span class="filter-pill" data-filter="Créé">Créé</span>
+            <span class="filter-pill" data-filter="Envoyé">Envoyé</span>
+            <span class="filter-pill" data-filter="Accepté">Accepté</span>
+            <span class="filter-pill" data-filter="Rejeté">Rejeté</span>
+            <span class="filter-pill" data-filter="Payé">Payé</span>
+          </div>
+        </div>
+
+        <table class="data-table" id="devis-table">
+          <thead>
+            <tr>
+              <th style="width:30px"><input type="checkbox" id="check-all" /></th>
+              <th style="width:110px; cursor:pointer" onclick="sortBy('numero')">N° <i class="ti ti-arrows-sort" style="font-size:11px"></i></th>
+              <th style="width:110px; cursor:pointer" onclick="sortBy('montant_ht')">TOTAL HT <i class="ti ti-arrows-sort" style="font-size:11px"></i></th>
+              <th style="width:110px; cursor:pointer" onclick="sortBy('montant_ttc')">TOTAL TTC <i class="ti ti-arrows-sort" style="font-size:11px"></i></th>
+              <th style="width:140px; cursor:pointer" onclick="sortBy('client')">CLIENT <i class="ti ti-arrows-sort" style="font-size:11px"></i></th>
+              <th style="width:110px; cursor:pointer" onclick="sortBy('date')">DATE CRÉATION <i class="ti ti-arrows-sort" style="font-size:11px"></i></th>
+              <th style="width:110px">DATE PAIEMENT</th>
+              <th>PRODUIT</th>
+              <th style="width:120px">ÉTAT</th>
+              <th style="width:180px">FACTURÉ</th>
+              <th style="width:40px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-devis">
+            <tr><td colspan="11" class="empty-state"><i class="ti ti-file-off"></i><h3>Aucun devis</h3><p>Créez votre premier devis pour commencer</p><a href="devis.html" class="btn btn-primary"><i class="ti ti-plus"></i> Nouveau devis</a></td></tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer">
+          <span style="font-size:12px; color:var(--texte-sec)">Nombre : <strong id="count-shown">0</strong></span>
+          <div class="table-footer-totals">
+            <div class="t-item"><span>Total HT : </span><strong id="footer-ht">0,00 €</strong></div>
+            <div class="t-item"><span>Total TTC : </span><strong id="footer-ttc">0,00 €</strong></div>
+            <div class="t-item"><span>Total à facturer : </span><strong class="rouge" id="footer-reste">0,00 €</strong></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- Toast -->
+<div class="toast-container" id="toasts"></div>
+
+<!-- Dropdown overlay -->
+<div id="overlay" style="display:none;position:fixed;inset:0;z-index:199;" onclick="closeAllDropdowns()"></div>
+
+<script src="app.js"></script>
+<script>
+// ── INIT DASHBOARD ──
+document.addEventListener('DOMContentLoaded', () => {
+  renderDashboard();
+  setupFilters();
+  setupSearch();
+});
+
+let currentFilter = '';
+let currentSort   = { key: 'date', dir: -1 };
+
+function renderDashboard() {
+  const devis = DB.getDevis();
+
+  // Badge sidebar
+  document.getElementById('badge-total').textContent = devis.length;
+
+  // Stats
+  const now   = new Date();
+  const mois  = now.getMonth();
+  const annee = now.getFullYear();
+
+  const ceMois    = devis.filter(d => { const dt = new Date(d.date); return dt.getMonth()===mois && dt.getFullYear()===annee; });
+  const attente   = devis.filter(d => d.statut==='Créé' || d.statut==='Envoyé');
+  const acceptes  = devis.filter(d => d.statut==='Accepté');
+  const refuses   = devis.filter(d => d.statut==='Rejeté' || d.statut==='Annulé');
+  const totalCA   = devis.reduce((s,d)=>s+d.montant_ht, 0);
+  const dejaFact  = devis.reduce((s,d)=>s+(d.deja_facture||0), 0);
+  const reste     = acceptes.reduce((s,d)=>s+(d.montant_ht-(d.deja_facture||0)), 0);
+
+  document.getElementById('stat-mois').textContent     = ceMois.length;
+  document.getElementById('stat-mois-sub').textContent = fmt(ceMois.reduce((s,d)=>s+d.montant_ht,0)) + ' HT';
+  document.getElementById('stat-attente').textContent  = attente.length;
+  document.getElementById('stat-attente-sub').textContent = fmt(attente.reduce((s,d)=>s+d.montant_ht,0)) + ' HT';
+  document.getElementById('stat-accepte').textContent  = acceptes.length;
+  document.getElementById('stat-accepte-sub').textContent = fmt(acceptes.reduce((s,d)=>s+d.montant_ht,0)) + ' HT';
+  document.getElementById('stat-ca').textContent       = fmt(totalCA);
+  document.getElementById('stat-ca-sub').textContent   = devis.length + ' devis au total';
+  document.getElementById('stat-reste').textContent    = fmt(reste);
+  document.getElementById('stat-facture').textContent  = fmt(dejaFact);
+  document.getElementById('stat-refuse').textContent   = refuses.length;
+  document.getElementById('stat-total').textContent    = devis.length;
+
+  renderTable(devis);
+}
+
+function renderTable(devis) {
+  // Filtre
+  let list = currentFilter ? devis.filter(d=>d.statut===currentFilter) : [...devis];
+
+  // Tri
+  list.sort((a,b) => {
+    let va = a[currentSort.key] ?? '';
+    let vb = b[currentSort.key] ?? '';
+    if (typeof va === 'number') return (va - vb) * currentSort.dir;
+    return String(va).localeCompare(String(vb)) * currentSort.dir;
+  });
+
+  // Search
+  const q = document.getElementById('global-search').value.toLowerCase();
+  if (q) list = list.filter(d =>
+    d.numero.toLowerCase().includes(q) ||
+    d.client.toLowerCase().includes(q) ||
+    (d.objet||'').toLowerCase().includes(q)
+  );
+
+  document.getElementById('count-shown').textContent = list.length;
+  document.getElementById('footer-ht').textContent   = fmt(list.reduce((s,d)=>s+d.montant_ht,0));
+  document.getElementById('footer-ttc').textContent  = fmt(list.reduce((s,d)=>s+d.montant_ht,0)); // TVA 0
+  document.getElementById('footer-reste').textContent= fmt(list.filter(d=>d.statut==='Accepté').reduce((s,d)=>s+(d.montant_ht-(d.deja_facture||0)),0));
+
+  const tbody = document.getElementById('tbody-devis');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+      <i class="ti ti-file-off"></i>
+      <h3>Aucun devis trouvé</h3>
+      <p>Modifiez vos filtres ou créez un nouveau devis</p>
+      <a href="devis.html" class="btn btn-primary"><i class="ti ti-plus"></i> Nouveau devis</a>
+    </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(d => {
+    const reste   = d.montant_ht - (d.deja_facture||0);
+    const badgeClass = getBadgeClass(d.statut);
+    const produitApercu = (d.lignes||[]).map(l=>l.designation).join(', ').substring(0,40) + ((d.lignes||[]).length > 1 ? '...' : '');
+
+    return `<tr onclick="voirDevis('${d.id}')" style="cursor:pointer">
+      <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check" data-id="${d.id}" /></td>
+      <td><span class="td-num">${d.numero}</span> <small class="td-sec" style="display:block;font-size:10px">${d.type||'Devis'}</small></td>
+      <td class="td-montant">${fmt(d.montant_ht)}</td>
+      <td class="td-montant">${fmt(d.montant_ht)}</td>
+      <td class="td-client">${d.client}</td>
+      <td class="td-sec">${fmtDate(d.date)}</td>
+      <td class="td-sec">${d.date_paiement ? fmtDate(d.date_paiement) : '—'}</td>
+      <td class="td-produit" title="${(d.lignes||[]).map(l=>l.designation).join(', ')}">${produitApercu||'—'}</td>
+      <td onclick="event.stopPropagation()">
+        <select class="badge badge-select ${badgeClass}" onchange="changerStatut('${d.id}', this.value, this)">
+          ${['Créé','Envoyé','Accepté','Rejeté','Payé','Payé en partie','Annulé'].map(s=>`<option value="${s}"${s===d.statut?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <div class="facturation-info">
+          <div class="reste">Reste à facturer : <strong>${fmt(reste)}</strong></div>
+          <div class="deja">Déjà facturé : <strong>${fmt(d.deja_facture||0)}</strong></div>
+        </div>
+      </td>
+      <td onclick="event.stopPropagation()">
+        <div class="dropdown row-actions">
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="toggleDropdown(this)">
+            <i class="ti ti-settings"></i>
+          </button>
+          <div class="dropdown-menu right">
+            <a class="dropdown-item" href="voir.html?id=${d.id}"><i class="ti ti-eye"></i> Afficher</a>
+            <a class="dropdown-item" href="devis.html?id=${d.id}"><i class="ti ti-edit"></i> Modifier</a>
+            <div class="dropdown-item" onclick="telechargerPDF('${d.id}')"><i class="ti ti-download"></i> Télécharger en PDF</div>
+            <div class="dropdown-item" onclick="envoyerMail('${d.id}')"><i class="ti ti-mail"></i> Envoyer</div>
+            <div class="dropdown-separator"></div>
+            <div class="dropdown-item" onclick="creerSimilaire('${d.id}')"><i class="ti ti-copy"></i> Créer un document similaire</div>
+            <div class="dropdown-separator"></div>
+            <div class="dropdown-item danger" onclick="supprimerDevis('${d.id}')"><i class="ti ti-trash"></i> Supprimer</div>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function setupFilters() {
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+      pill.classList.add('active');
+      currentFilter = pill.dataset.filter;
+      renderTable(DB.getDevis());
+    });
+  });
+}
+
+function setupSearch() {
+  document.getElementById('global-search').addEventListener('input', () => renderTable(DB.getDevis()));
+}
+
+function sortBy(key) {
+  if (currentSort.key === key) currentSort.dir *= -1;
+  else { currentSort.key = key; currentSort.dir = -1; }
+  renderTable(DB.getDevis());
+}
+
+function changerStatut(id, statut, selectEl) {
+  DB.updateStatut(id, statut);
+  // Update badge class
+  selectEl.className = `badge badge-select ${getBadgeClass(statut)}`;
+  renderDashboard();
+  toast(`Statut mis à jour : ${statut}`, 'success');
+}
+
+function supprimerDevis(id) {
+  const d = DB.getDevis().find(x=>x.id===id);
+  if (!confirm(`Supprimer le devis ${d?.numero} ?\nCette action est irréversible.`)) return;
+  DB.deleteDevis(id);
+  renderDashboard();
+  toast('Devis supprimé', 'info');
+  closeAllDropdowns();
+}
+
+function creerSimilaire(id) {
+  window.location.href = `devis.html?clone=${id}`;
+}
+
+function telechargerPDF(id) {
+  toast('Génération du PDF...', 'info');
+  // Redirige vers la page voir qui déclenche le téléchargement
+  window.open(`voir.html?id=${id}&action=pdf`, '_blank');
+  closeAllDropdowns();
+}
+
+function envoyerMail(id) {
+  window.location.href = `voir.html?id=${id}&action=envoyer`;
+  closeAllDropdowns();
+}
+
+function voirDevis(id) {
+  window.location.href = `voir.html?id=${id}`;
+}
+
+// Checkbox all
+document.getElementById('check-all').addEventListener('change', function() {
+  document.querySelectorAll('.row-check').forEach(c => c.checked = this.checked);
+});
+
+function getBadgeClass(statut) {
+  const map = {
+    'Créé':'badge-cree','Envoyé':'badge-envoye','Accepté':'badge-accepte',
+    'Rejeté':'badge-rejete','Payé':'badge-paye','Payé en partie':'badge-partiel','Annulé':'badge-annule'
+  };
+  return map[statut] || 'badge-cree';
+}
+</script>
+
+</body>
+</html>
