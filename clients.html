@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StarElec — Clients</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--blanc);
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--blanc);
+      z-index: 10;
+    }
+    .modal-title { font-size: 15px; font-weight: 600; }
+    .modal-body  { padding: 20px; }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      position: sticky;
+      bottom: 0;
+      background: var(--blanc);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
+      <div><span>StarElec</span><span class="logo-sub">Devis & Factures</span></div>
+    </a>
+    <div class="nav-section">Principal</div>
+    <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+    <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
+    <a href="clients.html" class="nav-item active"><i class="ti ti-users"></i> Clients</a>
+    <div class="nav-section">Gestion</div>
+    <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
+    <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
+    <a href="catalogue.html" class="nav-item"><i class="ti ti-list-check"></i> Catalogue</a>
+    <div class="nav-section">Compte</div>
+    <a href="reglages.html" class="nav-item"><i class="ti ti-settings"></i> Réglages</a>
+    <div class="sidebar-bottom">
+      <a href="reglages.html" class="sidebar-user">
+        <div class="avatar">FF</div>
+        <div>
+          <div class="sidebar-user-name">Florian Fernandes</div>
+          <div class="sidebar-user-role">StarElec — Orléans</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title">Clients</h1>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" onclick="ouvrirModal()">
+          <i class="ti ti-plus"></i> Nouveau client
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Recherche -->
+      <div class="search-bar" style="margin-bottom:20px">
+        <div class="search-input-wrap">
+          <i class="ti ti-search"></i>
+          <input type="text" class="search-input" id="search-client"
+            placeholder="Rechercher un client..." oninput="renderClients()" />
+        </div>
+        <div class="table-filters">
+          <span class="filter-pill active" data-type="" onclick="filtrerType(this)">Tous</span>
+          <span class="filter-pill" data-type="Particulier" onclick="filtrerType(this)">Particuliers</span>
+          <span class="filter-pill" data-type="Professionnel" onclick="filtrerType(this)">Professionnels</span>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-card-label">Total clients</div>
+          <div class="stat-card-value" id="stat-total">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Particuliers</div>
+          <div class="stat-card-value" id="stat-part">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Professionnels</div>
+          <div class="stat-card-value" id="stat-pro">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">CA total HT</div>
+          <div class="stat-card-value rouge" id="stat-ca">0 €</div>
+        </div>
+      </div>
+
+      <!-- Grille clients -->
+      <div class="clients-grid" id="clients-grid">
+        <!-- Généré dynamiquement -->
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal nouveau / édition client -->
+<div class="modal-overlay" id="modal-client">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Nouveau client</span>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModal()">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="m-client-id" />
+
+      <div class="radio-group" style="margin-bottom:16px">
+        <label><input type="radio" name="m-type" value="Particulier" id="m-part" checked onchange="toggleModalType()" /> Particulier</label>
+        <label><input type="radio" name="m-type" value="Professionnel" id="m-pro" onchange="toggleModalType()" /> Professionnel</label>
+      </div>
+
+      <div id="m-zone-part">
+        <div class="form-row cols-3" style="margin-bottom:12px">
+          <div class="form-group">
+            <label>Civilité</label>
+            <select class="form-control" id="m-civilite">
+              <option value="">—</option>
+              <option value="M.">M.</option>
+              <option value="Mme">Mme</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Prénom</label>
+            <input type="text" class="form-control" id="m-prenom" placeholder="Prénom" />
+          </div>
+          <div class="form-group">
+            <label>Nom <span class="required">*</span></label>
+            <input type="text" class="form-control" id="m-nom" placeholder="Nom de famille" />
+          </div>
+        </div>
+      </div>
+
+      <div id="m-zone-pro" style="display:none">
+        <div class="form-row cols-2" style="margin-bottom:12px">
+          <div class="form-group">
+            <label>Société <span class="required">*</span></label>
+            <input type="text" class="form-control" id="m-societe" placeholder="Nom de la société" />
+          </div>
+          <div class="form-group">
+            <label>Contact</label>
+            <input type="text" class="form-control" id="m-contact" placeholder="Nom du contact" />
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label>SIRET</label>
+          <input type="text" class="form-control" id="m-siret" placeholder="SIRET" />
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Adresse</label>
+        <textarea class="form-control" id="m-adresse" rows="2" placeholder="N° et nom de rue"></textarea>
+      </div>
+      <div class="form-row cols-2" style="margin-bottom:12px">
+        <div class="form-group">
+          <label>Code postal</label>
+          <input type="text" class="form-control" id="m-cp" placeholder="45000" />
+        </div>
+        <div class="form-group">
+          <label>Ville</label>
+          <input type="text" class="form-control" id="m-ville" placeholder="Orléans" />
+        </div>
+      </div>
+      <div class="form-row cols-2">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" class="form-control" id="m-email" placeholder="email@client.fr" />
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" class="form-control" id="m-tel" placeholder="06..." />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="sauvegarderClient()">
+        <i class="ti ti-device-floppy"></i> Sauvegarder
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script src="app.js"></script>
+<script>
+let typeFilter = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderClients();
+});
+
+function renderClients() {
+  const q    = document.getElementById('search-client').value.toLowerCase();
+  let list   = DB.getClients();
+  const devis = DB.getDevis();
+
+  if (typeFilter) list = list.filter(c => c.type === typeFilter);
+  if (q) list = list.filter(c =>
+    (c.nom||'').toLowerCase().includes(q) ||
+    (c.societe||'').toLowerCase().includes(q) ||
+    (c.ville||'').toLowerCase().includes(q) ||
+    (c.email||'').toLowerCase().includes(q)
+  );
+
+  // Stats
+  const all = DB.getClients();
+  document.getElementById('stat-total').textContent = all.length;
+  document.getElementById('stat-part').textContent  = all.filter(c=>c.type!=='Professionnel').length;
+  document.getElementById('stat-pro').textContent   = all.filter(c=>c.type==='Professionnel').length;
+
+  const caTotal = devis.reduce((s,d) => s + (d.montant_ht||0), 0);
+  document.getElementById('stat-ca').textContent = fmt(caTotal);
+
+  const grid = document.getElementById('clients-grid');
+
+  if (!list.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1">
+      <div class="empty-state">
+        <i class="ti ti-users"></i>
+        <h3>Aucun client</h3>
+        <p>Les clients sont créés automatiquement lors de la sauvegarde d'un devis</p>
+        <button class="btn btn-primary" onclick="ouvrirModal()"><i class="ti ti-plus"></i> Nouveau client</button>
+      </div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(c => {
+    const clientDevis = devis.filter(d => d.client === c.nom || d.client_id === c.id);
+    const caClient    = clientDevis.reduce((s,d) => s + (d.montant_ht||0), 0);
+    const init        = initiales(c.societe || c.nom || '?');
+    const affichage   = c.type === 'Professionnel' ? c.societe : c.nom;
+
+    return `
+    <div class="client-card">
+      <div class="client-card-header">
+        <div class="client-avatar">${init}</div>
+        <div>
+          <div class="client-name">${affichage||'—'}</div>
+          <div class="client-type">${c.type||'Particulier'}</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:4px">
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="editerClient('${c.id}')" title="Modifier">
+            <i class="ti ti-edit"></i>
+          </button>
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="nouveauDevisClient('${c.id}')" title="Nouveau devis">
+            <i class="ti ti-file-plus"></i>
+          </button>
+          <button class="btn btn-ghost btn-icon btn-sm" style="color:#c0392b" onclick="supprimerClient('${c.id}')" title="Supprimer">
+            <i class="ti ti-trash"></i>
+          </button>
+        </div>
+      </div>
+      <div class="client-meta">
+        ${c.adresse ? `<i class="ti ti-map-pin" style="font-size:11px"></i> ${c.adresse}${c.cp||c.ville ? ', '+[c.cp,c.ville].filter(Boolean).join(' ') : ''}<br/>` : ''}
+        ${c.email   ? `<i class="ti ti-mail" style="font-size:11px"></i> ${c.email}<br/>` : ''}
+        ${c.tel     ? `<i class="ti ti-phone" style="font-size:11px"></i> ${c.tel}` : ''}
+      </div>
+      <div class="client-stats">
+        <div class="client-stat-item">
+          <strong>${clientDevis.length}</strong>
+          devis
+        </div>
+        <div class="client-stat-item">
+          <strong>${fmt(caClient)}</strong>
+          CA total HT
+        </div>
+        ${clientDevis.length ? `
+        <div class="client-stat-item" style="margin-left:auto">
+          <a href="index.html" class="btn btn-ghost btn-sm" style="font-size:11px">
+            <i class="ti ti-eye"></i> Voir devis
+          </a>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('') + `
+    <div class="client-card" style="border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:120px;color:var(--texte-sec)" onclick="ouvrirModal()">
+      <div style="text-align:center">
+        <i class="ti ti-plus" style="font-size:24px;display:block;margin-bottom:6px"></i>
+        Nouveau client
+      </div>
+    </div>`;
+}
+
+function filtrerType(el) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  typeFilter = el.dataset.type;
+  renderClients();
+}
+
+// ── MODAL ──
+function ouvrirModal(clientId = null) {
+  resetModal();
+  if (clientId) {
+    const c = DB.getClientById(clientId);
+    if (!c) return;
+    document.getElementById('modal-title').textContent = 'Modifier le client';
+    document.getElementById('m-client-id').value       = c.id;
+    if (c.type === 'Professionnel') {
+      document.getElementById('m-pro').checked = true;
+      toggleModalType();
+      document.getElementById('m-societe').value = c.societe||c.nom||'';
+      document.getElementById('m-contact').value = c.contact||'';
+      document.getElementById('m-siret').value   = c.siret||'';
+    } else {
+      document.getElementById('m-civilite').value = c.civilite||'';
+      document.getElementById('m-prenom').value   = c.prenom||'';
+      document.getElementById('m-nom').value      = c.nom_famille||c.nom||'';
+    }
+    document.getElementById('m-adresse').value = c.adresse||'';
+    document.getElementById('m-cp').value      = c.cp||'';
+    document.getElementById('m-ville').value   = c.ville||'';
+    document.getElementById('m-email').value   = c.email||'';
+    document.getElementById('m-tel').value     = c.tel||'';
+  } else {
+    document.getElementById('modal-title').textContent = 'Nouveau client';
+  }
+  document.getElementById('modal-client').classList.add('open');
+}
+
+function editerClient(id) { ouvrirModal(id); }
+
+function fermerModal() {
+  document.getElementById('modal-client').classList.remove('open');
+  resetModal();
+}
+
+function resetModal() {
+  document.getElementById('m-client-id').value = '';
+  document.getElementById('m-part').checked    = true;
+  toggleModalType();
+  ['m-civilite','m-prenom','m-nom','m-societe','m-contact','m-siret',
+   'm-adresse','m-cp','m-ville','m-email','m-tel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+function toggleModalType() {
+  const isPro = document.getElementById('m-pro').checked;
+  document.getElementById('m-zone-part').style.display = isPro ? 'none'  : 'block';
+  document.getElementById('m-zone-pro').style.display  = isPro ? 'block' : 'none';
+}
+
+function sauvegarderClient() {
+  const isPro   = document.getElementById('m-pro').checked;
+  const id      = document.getElementById('m-client-id').value;
+  const prenom  = document.getElementById('m-prenom').value.trim();
+  const nom     = document.getElementById('m-nom').value.trim();
+  const societe = document.getElementById('m-societe').value.trim();
+  const civ     = document.getElementById('m-civilite').value;
+
+  if (!isPro && !nom)     { toast('Veuillez saisir le nom du client', 'error'); return; }
+  if (isPro  && !societe) { toast('Veuillez saisir le nom de la société', 'error'); return; }
+
+  const nomAffiche = isPro ? societe : `${civ} ${prenom} ${nom}`.trim();
+
+  const data = {
+    type:        isPro ? 'Professionnel' : 'Particulier',
+    nom:         nomAffiche,
+    civilite:    civ,
+    prenom,
+    nom_famille: nom,
+    societe,
+    contact:     document.getElementById('m-contact').value.trim(),
+    siret:       document.getElementById('m-siret').value.trim(),
+    adresse:     document.getElementById('m-adresse').value.trim(),
+    cp:          document.getElementById('m-cp').value.trim(),
+    ville:       document.getElementById('m-ville').value.trim(),
+    email:       document.getElementById('m-email').value.trim(),
+    tel:         document.getElementById('m-tel').value.trim(),
+  };
+
+  if (id) {
+    DB.updateClient(id, data);
+    toast('Client mis à jour !', 'success');
+  } else {
+    DB.addClient(data);
+    toast('Client créé !', 'success');
+  }
+
+  fermerModal();
+  renderClients();
+}
+
+function supprimerClient(id) {
+  const c = DB.getClientById(id);
+  if (!confirm(`Supprimer le client "${c?.nom}" ?`)) return;
+  DB.deleteClient(id);
+  renderClients();
+  toast('Client supprimé', 'info');
+}
+
+function nouveauDevisClient(id) {
+  const c = DB.getClientById(id);
+  if (!c) return;
+  // Pré-remplir via URL (géré dans devis.html si besoin)
+  // Pour l'instant on crée un devis vide et on redirige
+  window.location.href = `devis.html`;
+}
+</script>
+
+</body>
+</html>
