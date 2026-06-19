@@ -97,7 +97,7 @@
       <!-- ══ ZONE IA ══ -->
       <div class="ia-zone" id="ia-zone">
         <div class="ia-header">
-          <span class="ia-badge"><i class="ti ti-sparkles"></i> IA Claude</span>
+          <span class="ia-badge"><i class="ti ti-sparkles"></i> IA StarElec</span>
           <div>
             <div class="ia-title">Crée ton devis en dictant</div>
             <div class="ia-sub">Ex : "Devis pour M. Dupont, 10 prises, 3 va-et-vient, 2 boutons poussoir"</div>
@@ -107,6 +107,9 @@
           <input type="text" class="ia-input" id="ia-prompt"
             placeholder="Décris ton chantier... client, prestations, quantités"
             onkeydown="if(event.key==='Enter') envoyerIA()" />
+          <button class="btn btn-ghost btn-icon" id="ia-mic-btn" onclick="toggleDictation()" title="Dicter à la voix" style="color:var(--texte-sec); margin-right:8px;">
+            <i class="ti ti-microphone"></i>
+          </button>
           <button class="ia-btn-send" onclick="envoyerIA()" id="ia-btn">
             <i class="ti ti-send"></i> Générer
           </button>
@@ -1052,7 +1055,7 @@ async function envoyerIA() {
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Génération...';
   resp.className = 'ia-response visible';
-  resp.innerHTML = '<span class="ia-loading"><i class="ti ti-dots"></i> Claude analyse ta demande...</span>';
+  resp.innerHTML = '<span class="ia-loading"><i class="ti ti-dots"></i> IA StarElec analyse ta demande...</span>';
 
   try {
     const result = await appelIA(prompt);
@@ -1129,8 +1132,75 @@ async function envoyerIA() {
 
 // Style animation loader
 const styleEl = document.createElement('style');
-styleEl.textContent = `@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`;
+styleEl.textContent = `
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+`;
 document.head.appendChild(styleEl);
+
+// ══════════════════════════════════════════════
+// DICTÉE VOCALE (Web Speech API)
+// ══════════════════════════════════════════════
+let recognition = null;
+let isRecording = false;
+
+function initSpeechRecognition() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    toast('Dictée vocale non supportée par votre navigateur (Utilisez Chrome ou Edge)', 'error');
+    return false;
+  }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'fr-FR';
+  recognition.continuous = true;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    isRecording = true;
+    const micBtn = document.getElementById('ia-mic-btn');
+    if (micBtn) {
+      micBtn.innerHTML = '<i class="ti ti-microphone" style="color:var(--rouge); animation: pulse 1s infinite"></i>';
+    }
+    toast('🎤 Écoute en cours... Parlez !', 'info');
+  };
+
+  recognition.onresult = (event) => {
+    let finalTranscript = '';
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        finalTranscript += event.results[i][0].transcript + ' ';
+      }
+    }
+    if (finalTranscript) {
+      const input = document.getElementById('ia-prompt');
+      input.value = (input.value + ' ' + finalTranscript).trim();
+    }
+  };
+
+  recognition.onerror = (event) => {
+    console.error('Speech recognition error', event.error);
+    stopDictation();
+    toast('Erreur micro : ' + event.error, 'error');
+  };
+
+  recognition.onend = () => stopDictation();
+  return true;
+}
+
+function toggleDictation() {
+  if (isRecording) stopDictation();
+  else {
+    if (!recognition) if (!initSpeechRecognition()) return;
+    try { recognition.start(); } catch(e) { console.error(e); }
+  }
+}
+
+function stopDictation() {
+  if (recognition && isRecording) recognition.stop();
+  isRecording = false;
+  const micBtn = document.getElementById('ia-mic-btn');
+  if (micBtn) micBtn.innerHTML = '<i class="ti ti-microphone"></i>';
+}
 
 function getBadgeClass(s) {
   const m = {'Créé':'badge-cree','Envoyé':'badge-envoye','Accepté':'badge-accepte','Rejeté':'badge-rejete','Payé':'badge-paye','Payé en partie':'badge-partiel','Annulé':'badge-annule'};

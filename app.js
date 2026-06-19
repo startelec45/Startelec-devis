@@ -4,23 +4,24 @@
    ============================================ */
 
 // ══════════════════════════════════════════════
-// CONFIGURATION
+// CONFIGURATION PAR DÉFAUT
+// (Modifiez vos vraies informations via la page Réglages de l'application)
 // ══════════════════════════════════════════════
 const CONFIG = {
   entreprise: {
     nom:       'StarElec',
-    siret:     '880 075 098 00025',
-    iban:      'FR76 4061 8803 8000 0403 8380 440',
-    bic:       'BOUSFRPPXXX',
-    banque:    'Boursorama',
-    adresse:   '9 rue Maurice Berger',
+    siret:     '000 000 000 00000',
+    iban:      'FR76 XXXX XXXX XXXX XXXX XXXX XXX',
+    bic:       'XXXXXXXXXXX',
+    banque:    'Votre Banque',
+    adresse:   'Votre adresse',
     cp:        '45000',
     ville:     'Orléans',
     pays:      'France',
-    email:     'startelec45@gmail.com',
-    tel:       '06 60 19 35 21',
+    email:     'contact@votre-email.com',
+    tel:       '06 00 00 00 00',
     tva_msg:   'TVA non applicable, article 293B du CGI. Régime micro-entrepreneur.',
-    vendeur:   'FLORIAN FERNANDES',
+    vendeur:   'Florian Fernandes',
     lieu:      'Orléans',
   },
   devis: {
@@ -368,52 +369,236 @@ function setupAutocomplete(input, onSelect) {
 }
 
 // ══════════════════════════════════════════════
-// GÉNÉRATION PDF via Netlify Function
+// GÉNÉRATION PDF — html2pdf (sans popup, 100% client)
 // ══════════════════════════════════════════════
-async function genererPDF(devis_id, type = 'devis') {
+
+// Charge un script externe dynamiquement (une seule fois)
+function chargerScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s    = document.createElement('script');
+    s.src      = src;
+    s.onload   = resolve;
+    s.onerror  = () => reject(new Error('Impossible de charger ' + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function genererPDF(devis_id) {
   const devis = DB.getDevisById(devis_id);
   if (!devis) { toast('Devis introuvable', 'error'); return; }
 
-  const cfg = DB.getConfig();
+  // ⚠️ SÉCURITÉ CHROME : html2canvas produit une page blanche si on est en "file://"
+  // On utilise window.print() en local, et le VRAI téléchargement direct sur serveur (Netlify)
+  if (window.location.protocol === 'file:') {
+    toast('Mode local détecté : ouverture de l\'aperçu (utilisez "Enregistrer en PDF")', 'info', 4000);
+    window.open(`voir.html?id=${devis_id}&print=1`, '_blank');
+    return;
+  }
+
+  // ── Téléchargement direct (Pour Netlify / Serveur) ──
+  const overlay = document.createElement('div');
+  overlay.style.cssText = [
+    'position:fixed;inset:0;z-index:99998',
+    'background:rgba(15,24,32,0.85)',
+    'display:flex;flex-direction:column;align-items:center;justify-content:center',
+    'color:#fff;font-family:Inter,sans-serif;gap:16px',
+  ].join(';');
+  overlay.innerHTML = `
+    <div style="font-size:18px;font-weight:600">⏳ Génération du PDF en cours…</div>
+    <div style="font-size:13px;opacity:.7">Téléchargement direct (Mode Serveur)</div>`;
+  document.body.appendChild(overlay);
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;top:0;left:0;width:794px;background:#fff;z-index:99999;overflow:visible';
+  wrap.innerHTML = buildPDFHtml(devis, DB.getConfig().entreprise);
+  document.body.appendChild(wrap);
 
   try {
-    toast('Génération du PDF en cours...', 'info');
+    await chargerScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
 
-    const payload = {
-      type,
-      devis,
-      config: cfg.entreprise,
+    const opt = {
+      margin:      0,
+      filename:    `${(devis.numero || 'devis').replace(/\//g, '-')}.pdf`,
+      image:       { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, windowWidth: 794 },
+      jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
     };
 
-    const res = await fetch('/.netlify/functions/generate-pdf', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
-    });
-
-    if (!res.ok) throw new Error('Erreur serveur');
-
-    const blob = await res.blob();
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `${devis.numero.replace('/','-')}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast('PDF téléchargé !', 'success');
-
+    await html2pdf().set(opt).from(wrap).save();
+    toast('Fichier PDF téléchargé directement !', 'success');
   } catch(e) {
-    console.error(e);
-    toast('Erreur lors de la génération du PDF', 'error');
+    console.error('Erreur PDF:', e);
+    toast('Erreur lors de la génération', 'error');
+  } finally {
+    try { wrap.remove(); overlay.remove(); } catch(_) {}
   }
 }
 
+// ── Construit le HTML du document PDF ──
+function buildPDFHtml(d, cfg) {
+  const total_ht    = d.montant_ht || 0;
+  const acompte_pct = d.acompte_pct || 30;
+  const acompte     = Math.round(total_ht * acompte_pct / 100 * 100) / 100;
+
+  const clientAdresse = [
+    d.client_adresse,
+    d.client_cp && d.client_ville ? `${d.client_cp} ${d.client_ville}` : (d.client_cp || d.client_ville),
+    d.client_pays && d.client_pays !== 'France' ? d.client_pays : ''
+  ].filter(Boolean).join('<br/>');
+
+  const logoSaved = localStorage.getItem('se_logo');
+  const logoHTML  = logoSaved
+    ? `<img src="${logoSaved}" style="height:50px;width:auto" />`
+    : `<div style="font-size:20px;font-weight:700;color:#0F1820;letter-spacing:1px">START★ELEC</div>`;
+
+  const lignesHTML = (d.lignes || []).map((l, i) => {
+    if (l.type === 'soustotal') return `<tr><td colspan="4" style="font-weight:700;text-align:right;padding:6px 8px;background:#e8e8e8">Sous-total</td><td style="text-align:right;font-weight:700;padding:6px 8px;background:#e8e8e8">${fmt(l.total||0)}</td></tr>`;
+    if (l.type === 'texte')    return `<tr><td colspan="5" style="padding:6px 8px;color:#444;font-style:italic">${l.designation||''}</td></tr>`;
+    return `<tr>
+      <td style="width:30px;text-align:center;color:#666;padding:6px 8px">${i+1}</td>
+      <td style="padding:6px 8px">
+        <strong>${l.designation||''}</strong>
+        ${l.description ? `<div style="font-size:9px;color:#666;margin-top:2px">${l.description}</div>` : ''}
+      </td>
+      <td style="text-align:center;width:50px;padding:6px 8px">${l.qte||''}</td>
+      <td style="text-align:right;width:80px;padding:6px 8px">${fmt(l.pu||0)}</td>
+      <td style="text-align:right;width:90px;font-weight:600;padding:6px 8px">${fmt(l.total||0)}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+  <div style="background:#fff;width:794px;font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#1A1A1A">
+
+    <!-- HEADER -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px">
+      <div>${logoHTML}</div>
+      <div style="text-align:right">
+        <div style="font-size:26px;font-weight:700;color:#0F1820;line-height:1">${d.type||'DEVIS'}</div>
+        <div style="font-size:11px;color:#666;margin-top:4px">N° ${d.numero||''}</div>
+      </div>
+    </div>
+    <div style="height:3px;background:#961414"></div>
+
+    <!-- BANDE INFOS -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);background:#F2F2F2;border-bottom:1px solid #D0D0D0">
+      <div style="padding:7px 10px;font-size:9px;border-right:1px solid #D0D0D0"><span style="color:#666">Date de création :</span><strong style="display:block;font-size:9.5px">${fmtDate(d.date)}</strong></div>
+      <div style="padding:7px 10px;font-size:9px;border-right:1px solid #D0D0D0"><span style="color:#666">Date de validité :</span><strong style="display:block;font-size:9.5px">${fmtDate(d.date_validite)}</strong></div>
+      <div style="padding:7px 10px;font-size:9px;border-right:1px solid #D0D0D0"><span style="color:#666">Lieu de création :</span><strong style="display:block;font-size:9.5px">${d.lieu||cfg.lieu}</strong></div>
+      <div style="padding:7px 10px;font-size:9px"><span style="color:#666">Vendeur :</span><strong style="display:block;font-size:9.5px">${d.vendeur_nom||cfg.vendeur}</strong></div>
+    </div>
+
+    <!-- VENDEUR / ACHETEUR -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:14px 20px">
+      <div style="border:1px solid #D0D0D0;border-radius:4px;overflow:hidden">
+        <div style="background:#4A4A4A;color:#fff;font-size:9px;font-weight:700;padding:5px 8px;border-bottom:2px solid #961414;text-transform:uppercase">Vendeur</div>
+        <div style="padding:8px;background:#F2F2F2;font-size:10px;line-height:1.7">
+          <strong>${cfg.nom}</strong><br/>
+          ${cfg.adresse}<br/>
+          ${cfg.cp} ${cfg.ville}<br/>
+          SIRET ${cfg.siret}<br/>
+          ${cfg.iban} ${cfg.banque}
+        </div>
+      </div>
+      <div style="border:1px solid #D0D0D0;border-radius:4px;overflow:hidden">
+        <div style="background:#4A4A4A;color:#fff;font-size:9px;font-weight:700;padding:5px 8px;border-bottom:2px solid #961414;text-transform:uppercase">Acheteur</div>
+        <div style="padding:8px;background:#F2F2F2;font-size:10px;line-height:1.7">
+          <strong>${d.client||''}</strong><br/>
+          ${clientAdresse}
+          ${d.client_email ? `<br/>${d.client_email}` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- MENTION FISCALE -->
+    <div style="padding:4px 20px;font-size:8.5px;color:#666;font-style:italic">${cfg.tva_msg||''}</div>
+
+    <!-- OBJET -->
+    ${d.objet ? `<div style="margin:0 20px 10px;background:#F5E8E8;border:1px solid #D0D0D0;border-bottom:2px solid #961414;padding:6px 10px;font-size:10px"><strong>Objet :</strong> ${d.objet}</div>` : ''}
+
+    <!-- TABLEAU -->
+    <div style="padding:0 20px 14px">
+      <table style="width:100%;border-collapse:collapse;font-size:10px">
+        <thead>
+          <tr>
+            <th style="background:#4A4A4A;color:#fff;padding:7px 8px;text-align:left;font-size:9.5px;border-bottom:2px solid #961414;width:30px">N°</th>
+            <th style="background:#4A4A4A;color:#fff;padding:7px 8px;text-align:left;font-size:9.5px;border-bottom:2px solid #961414">DÉSIGNATION</th>
+            <th style="background:#4A4A4A;color:#fff;padding:7px 8px;text-align:center;font-size:9.5px;border-bottom:2px solid #961414;width:50px">QTÉ</th>
+            <th style="background:#4A4A4A;color:#fff;padding:7px 8px;text-align:right;font-size:9.5px;border-bottom:2px solid #961414;width:80px">PU HT (€)</th>
+            <th style="background:#4A4A4A;color:#fff;padding:7px 8px;text-align:right;font-size:9.5px;border-bottom:2px solid #961414;width:90px">TOTAL HT (€)</th>
+          </tr>
+        </thead>
+        <tbody>${lignesHTML}</tbody>
+      </table>
+    </div>
+
+    <!-- TOTAUX + CONDITIONS -->
+    <div style="display:flex;justify-content:flex-end;padding:0 20px 14px;gap:16px;align-items:start">
+      <div style="flex:1;font-size:9px;color:#444;line-height:1.6">
+        <strong style="color:#961414;font-size:9.5px">Mise en garde / Conditions :</strong><br/>
+        ${d.infos_spec||'Forfait global "Prêt à brancher" incluant : câbles, fournitures, temps de pose. Tableau électrique exclu.'}
+      </div>
+      <div style="min-width:240px;border:1px solid #D0D0D0;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;padding:5px 10px;font-size:10px;border-bottom:1px solid #D0D0D0"><label>Total HT</label><span>${fmt(total_ht)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 10px;font-size:10px;border-bottom:1px solid #D0D0D0"><label>Réduction</label><span>0,00 €</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 10px;font-size:11px;font-weight:700;background:#0F1820;color:#fff;border-top:2px solid #961414"><label>TOTAL À PAYER</label><span>${fmt(total_ht)}</span></div>
+      </div>
+    </div>
+
+    <!-- RÈGLEMENT -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;margin:0 20px 14px;border:1px solid #D0D0D0;overflow:hidden">
+      <div style="border-right:1px solid #D0D0D0">
+        <div style="background:#F2F2F2;font-weight:700;font-size:9px;padding:5px 10px;border-bottom:2px solid #961414;text-transform:uppercase">Modalités de règlement</div>
+        <div style="padding:8px 10px;font-size:9.5px;line-height:1.7">
+          Acompte à verser à la commande (${acompte_pct}%) : <strong>${fmt(acompte)}</strong><br/>
+          Solde à la fin des travaux.<br/>
+          Mode de règlement : ${d.mode_reglement||'Virement bancaire'}
+        </div>
+      </div>
+      <div>
+        <div style="background:#F2F2F2;font-weight:700;font-size:9px;padding:5px 10px;border-bottom:2px solid #961414;text-transform:uppercase">Coordonnées bancaires</div>
+        <div style="padding:8px 10px;font-size:9.5px;line-height:1.7">
+          Banque : ${cfg.banque}<br/>
+          BIC : ${cfg.bic}<br/>
+          IBAN : ${cfg.iban}
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNATURES -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;margin:0 20px 14px;border:1px solid #D0D0D0;border-top:2px solid #961414;overflow:hidden">
+      <div style="padding:12px 10px 30px;font-size:9.5px;line-height:1.7;border-right:1px solid #D0D0D0">
+        <strong>Pour le vendeur : ${d.vendeur_nom||cfg.vendeur}</strong><br/><br/>
+        Signature électronique :
+      </div>
+      <div style="padding:12px 10px 30px;font-size:9.5px;line-height:1.7">
+        <strong>Pour le client :</strong><br/>
+        Mention manuscrite <em>"Bon pour accord"</em><br/>
+        Date et signature :
+      </div>
+    </div>
+
+    ${d.texte_fin ? `<div style="padding:8px 20px;font-size:9px;color:#444">${d.texte_fin}</div>` : ''}
+
+    <!-- FOOTER -->
+    <div style="height:2px;background:#961414;margin:0 20px"></div>
+    <div style="padding:6px 20px 12px;font-size:7.5px;color:#666;text-align:center">
+      ${cfg.nom} — ${cfg.adresse}, ${cfg.cp} ${cfg.ville} — SIRET ${cfg.siret} — ${cfg.email} — ${cfg.tel}
+    </div>
+
+  </div>`;
+}
+
 // ══════════════════════════════════════════════
-// IA — APPEL CLAUDE API
+// IA — APPEL MULTI-FOURNISSEURS (Claude / Gemini)
 // ══════════════════════════════════════════════
 async function appelIA(prompt, contexte = {}) {
   const cfg       = DB.getConfig();
   const catalogue = DB.getCatalogue();
+  const provider  = localStorage.getItem('se_ai_provider') || 'anthropic';
+  const apiKey    = localStorage.getItem('se_api_key') || '';
+
+  if (!apiKey) throw new Error('Clé API manquante — configurez-la dans les Réglages.');
 
   const systemPrompt = `Tu es l'assistant de facturation de ${cfg.entreprise.nom}, entreprise d'électricité à ${cfg.entreprise.ville}.
 Tu aides à créer des devis professionnels.
@@ -445,24 +630,58 @@ Ne réponds JAMAIS en dehors du JSON. Pas de texte avant ou après.`;
 ${contexte.devisExistant ? `Devis en cours : ${JSON.stringify(contexte.devisExistant)}` : ''}`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model:      'claude-haiku-4-5',
-        max_tokens: 1500,
-        system:     systemPrompt,
-        messages:   [{ role: 'user', content: userPrompt }],
-      }),
-    });
+    let text = '';
 
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error?.message || 'Erreur API');
+    // ── ANTHROPIC (Claude) ──
+    if (provider === 'anthropic') {
+      const model = localStorage.getItem('se_ai_model') || 'claude-haiku-4-5';
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key':    apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 1500,
+          system:   systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }],
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error?.message || 'Erreur API Anthropic');
+      }
+      const data = await res.json();
+      text = data.content?.[0]?.text || '';
+
+    // ── GOOGLE GEMINI ──
+    } else if (provider === 'gemini') {
+      const model = localStorage.getItem('se_ai_model') || 'gemini-1.5-flash';
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: systemPrompt }] },
+            contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+            generationConfig: { maxOutputTokens: 1500, temperature: 0.2 },
+          }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error?.message || 'Erreur API Gemini');
+      }
+      const data = await res.json();
+      text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    } else {
+      throw new Error('Fournisseur IA inconnu : ' + provider);
     }
-
-    const data = await res.json();
-    const text = data.content?.[0]?.text || '';
 
     // Nettoyer et parser le JSON
     const clean = text.replace(/```json|```/g, '').trim();

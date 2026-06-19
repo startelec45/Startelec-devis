@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- html2pdf : génération PDF client-side -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     /* Aperçu PDF style */
     .pdf-wrap {
@@ -184,6 +186,34 @@
       color: var(--texte-sec);
       text-transform: uppercase;
     }
+
+    /* ══ IMPRESSION / PDF ══ */
+    @media print {
+      /* Masquer toute l'interface */
+      .sidebar, .topbar, .action-bar, .linked-docs,
+      .toast-container, #overlay { display: none !important; }
+
+      /* Supprimer le fond gris et les paddings de layout */
+      body, .app-layout, .main-content, .page-content {
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      /* Le wrapper gris du PDF → fond blanc sans ombre */
+      .pdf-wrap {
+        background: #fff !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+      }
+
+      /* La page elle-même prend toute la largeur */
+      .pdf-page {
+        max-width: 100% !important;
+        box-shadow: none !important;
+        page-break-after: always;
+      }
+    }
   </style>
 </head>
 <body>
@@ -357,6 +387,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Action auto
   if (action === 'pdf')     genererPDF(id);
   if (action === 'envoyer') envoyerMail();
+
+  // Impression auto si ?print=1 (appelé depuis genererPDF)
+  if (getUrlParam('print') === '1') {
+    // Laisser le temps au DOM de se rendre (fonts, images)
+    setTimeout(() => {
+      window.print();
+    }, 600);
+  }
 });
 
 // ══ RENDER PDF APERÇU ══

@@ -269,35 +269,71 @@
         <!-- ── IA ── -->
         <div class="settings-card">
           <div class="settings-card-header">
-            <i class="ti ti-sparkles"></i> Intelligence artificielle (Claude)
+            <i class="ti ti-sparkles"></i> Intelligence artificielle
           </div>
 
+          <!-- Fournisseur -->
           <div class="settings-row">
             <div>
-              <div class="settings-label">Clé API Anthropic</div>
-              <div class="settings-sub">
-                Récupérez votre clé sur
-                <a href="https://console.anthropic.com" target="_blank" style="color:var(--rouge)">console.anthropic.com</a>
-              </div>
+              <div class="settings-label">Fournisseur IA</div>
+              <div class="settings-sub">Choisissez votre service d'IA</div>
             </div>
             <div class="settings-control">
-              <input type="password" class="form-control" id="s-api-key"
-                placeholder="sk-ant-..." />
+              <select class="form-control" id="s-ai-provider" onchange="onProviderChange()" style="max-width:220px">
+                <option value="anthropic">🟣 Anthropic (Claude)</option>
+                <option value="gemini">🔵 Google (Gemini)</option>
+              </select>
             </div>
           </div>
 
+          <!-- Modèle -->
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Modèle</div>
+              <div class="settings-sub" id="ia-model-sub">Modèle Claude à utiliser</div>
+            </div>
+            <div class="settings-control">
+              <select class="form-control" id="s-ai-model" style="max-width:260px">
+                <!-- Peuplé dynamiquement par onProviderChange() -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Clé API -->
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">Clé API</div>
+              <div class="settings-sub" id="ia-key-sub">
+                Récupérez votre clé sur
+                <a id="ia-console-link" href="https://console.anthropic.com" target="_blank" style="color:var(--rouge)">console.anthropic.com</a>
+              </div>
+            </div>
+            <div class="settings-control" style="display:flex;gap:8px;align-items:center">
+              <input type="password" class="form-control" id="s-api-key"
+                placeholder="sk-ant-..." />
+              <button class="btn btn-ghost" id="ia-key-toggle" onclick="toggleApiKeyVisibility()" title="Afficher/Masquer" style="padding:8px 10px">
+                <i class="ti ti-eye" id="ia-eye-icon"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Test connexion -->
           <div class="settings-row">
             <div>
               <div class="settings-label">Tester la connexion IA</div>
               <div class="settings-sub" id="ia-test-result">—</div>
             </div>
-            <div class="settings-control">
-              <button class="btn btn-secondary" onclick="testerIA()">
+            <div class="settings-control" style="display:flex;gap:8px">
+              <button class="btn btn-secondary" onclick="testerIA()" id="ia-test-btn">
                 <i class="ti ti-plug"></i> Tester
+              </button>
+              <button class="btn btn-primary" onclick="sauvegarderIA()">
+                <i class="ti ti-device-floppy"></i> Valider &amp; sauvegarder
               </button>
             </div>
           </div>
         </div>
+
 
         <!-- ── LOGO ── -->
         <div class="settings-card">
@@ -447,7 +483,12 @@ function chargerReglages() {
   document.getElementById('s-prefix-facture').value = d.prefix_facture   || 'F';
   document.getElementById('s-prefix-acompte').value = d.prefix_acompte   || 'FA';
 
-  // API Key
+  // IA — provider, modèle, clé
+  const provider = localStorage.getItem('se_ai_provider') || 'anthropic';
+  document.getElementById('s-ai-provider').value = provider;
+  onProviderChange(); // peuple la liste des modèles
+  const savedModel = localStorage.getItem('se_ai_model') || '';
+  if (savedModel) document.getElementById('s-ai-model').value = savedModel;
   const apiKey = localStorage.getItem('se_api_key') || '';
   document.getElementById('s-api-key').value = apiKey;
 }
@@ -487,9 +528,8 @@ function sauvegarderTout() {
 
   DB.saveConfig(newCfg);
 
-  // Clé API séparée (sécurité)
-  const apiKey = document.getElementById('s-api-key').value.trim();
-  if (apiKey) localStorage.setItem('se_api_key', apiKey);
+  // IA — provider, modèle, clé (via sauvegarderIA)
+  sauvegarderIA(false);
 
   document.getElementById('save-status').textContent =
     'Sauvegardé à ' + new Date().toLocaleTimeString('fr-FR');
@@ -502,38 +542,147 @@ function reinitialiserFormulaire() {
   chargerReglages();
 }
 
+// ── FOURNISSEURS & MODÈLES ──
+const AI_PROVIDERS = {
+  anthropic: {
+    label:    'Anthropic (Claude)',
+    console:  'https://console.anthropic.com',
+    consoleLabel: 'console.anthropic.com',
+    keyHint:  'sk-ant-...',
+    models: [
+      { value: 'claude-haiku-4-5',   label: 'Claude Haiku 4.5 (rapide & économique)' },
+      { value: 'claude-sonnet-4-5',  label: 'Claude Sonnet 4.5 (équilibré)' },
+      { value: 'claude-opus-4-5',    label: 'Claude Opus 4.5 (le plus puissant)' },
+    ],
+  },
+  gemini: {
+    label:    'Google Gemini',
+    console:  'https://aistudio.google.com/app/apikey',
+    consoleLabel: 'aistudio.google.com',
+    keyHint:  'AIza...',
+    models: [
+      { value: 'gemini-2.0-flash',        label: 'Gemini 2.0 Flash (rapide & gratuit)' },
+      { value: 'gemini-2.5-flash',        label: 'Gemini 2.5 Flash (recommandé)' },
+      { value: 'gemini-1.5-flash',        label: 'Gemini 1.5 Flash' },
+      { value: 'gemini-1.5-pro',          label: 'Gemini 1.5 Pro (le plus puissant)' },
+    ],
+  },
+};
+
+function onProviderChange() {
+  const provider = document.getElementById('s-ai-provider').value;
+  const info     = AI_PROVIDERS[provider];
+  if (!info) return;
+
+  // Mettre à jour la liste des modèles
+  const sel = document.getElementById('s-ai-model');
+  sel.innerHTML = info.models.map(m =>
+    `<option value="${m.value}">${m.label}</option>`
+  ).join('');
+
+  // Mettre à jour le texte/lien de la console
+  document.getElementById('ia-console-link').href        = info.console;
+  document.getElementById('ia-console-link').textContent = info.consoleLabel;
+  document.getElementById('s-api-key').placeholder       = info.keyHint;
+  document.getElementById('ia-model-sub').textContent    = 'Modèle ' + info.label + ' à utiliser';
+}
+
+// ── AFFICHER / MASQUER CLÉ ──
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('s-api-key');
+  const icon  = document.getElementById('ia-eye-icon');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.className = 'ti ti-eye-off';
+  } else {
+    input.type = 'password';
+    icon.className = 'ti ti-eye';
+  }
+}
+
+// ── SAUVEGARDER CONFIG IA ──
+function sauvegarderIA(showToast = true) {
+  const provider = document.getElementById('s-ai-provider').value;
+  const model    = document.getElementById('s-ai-model').value;
+  const key      = document.getElementById('s-api-key').value.trim();
+
+  localStorage.setItem('se_ai_provider', provider);
+  if (model) localStorage.setItem('se_ai_model', model);
+  if (key)   localStorage.setItem('se_api_key', key);
+
+  if (showToast) {
+    document.getElementById('save-status').textContent =
+      'Config IA sauvegardée à ' + new Date().toLocaleTimeString('fr-FR');
+    toast('Configuration IA sauvegardée !', 'success');
+  }
+}
+
 // ── TEST IA ──
 async function testerIA() {
-  const key = document.getElementById('s-api-key').value.trim();
+  const provider = document.getElementById('s-ai-provider').value;
+  const model    = document.getElementById('s-ai-model').value;
+  const key      = document.getElementById('s-api-key').value.trim();
+
   if (!key) { toast('Saisissez d\'abord votre clé API', 'error'); return; }
 
-  localStorage.setItem('se_api_key', key);
-  document.getElementById('ia-test-result').textContent = 'Test en cours...';
+  // Sauvegarder avant de tester
+  sauvegarderIA(false);
+
+  const resultEl = document.getElementById('ia-test-result');
+  const btn      = document.getElementById('ia-test-btn');
+  resultEl.textContent = 'Test en cours...';
+  btn.disabled = true;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5',
-        max_tokens: 50,
-        messages: [{ role: 'user', content: 'Réponds juste "OK StarElec"' }],
-      }),
-    });
+    let reponse = '';
 
-    if (res.ok) {
+    if (provider === 'anthropic') {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key':    key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 30,
+          messages: [{ role: 'user', content: 'Réponds uniquement : OK StarElec' }],
+        }),
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erreur ' + res.status); }
       const data = await res.json();
-      document.getElementById('ia-test-result').innerHTML =
-        '<span style="color:#0F6E56"><i class="ti ti-check"></i> Connexion réussie — ' +
-        (data.content?.[0]?.text||'OK') + '</span>';
-      toast('IA connectée !', 'success');
-    } else {
-      throw new Error('Erreur ' + res.status);
+      reponse = data.content?.[0]?.text || 'OK';
+
+    } else if (provider === 'gemini') {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: 'Réponds uniquement : OK StarElec' }] }],
+            generationConfig: { maxOutputTokens: 30 },
+          }),
+        }
+      );
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erreur ' + res.status); }
+      const data = await res.json();
+      reponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'OK';
     }
+
+    const providerLabel = AI_PROVIDERS[provider]?.label || provider;
+    resultEl.innerHTML =
+      `<span style="color:#0F6E56"><i class="ti ti-check"></i> Connexion réussie (${providerLabel}) — ${reponse.trim()}</span>`;
+    toast('IA connectée avec succès !', 'success');
+
   } catch(e) {
-    document.getElementById('ia-test-result').innerHTML =
-      '<span style="color:#c0392b"><i class="ti ti-x"></i> Erreur : ' + e.message + '</span>';
-    toast('Clé API invalide', 'error');
+    resultEl.innerHTML =
+      `<span style="color:#c0392b"><i class="ti ti-x"></i> Erreur : ${e.message}</span>`;
+    toast('Clé API invalide ou fournisseur inaccessible', 'error');
+  } finally {
+    btn.disabled = false;
   }
 }
 
@@ -606,7 +755,7 @@ function importerDonnees(input) {
 function effacerDonnees() {
   if (!confirm('⚠️ Effacer TOUTES les données ?\n\nDevis, clients, catalogue et réglages seront supprimés définitivement.')) return;
   if (!confirm('Dernière confirmation — cette action est IRRÉVERSIBLE.')) return;
-  ['se_devis','se_clients','se_catalogue','se_factures','se_config','se_api_key','se_logo'].forEach(k => localStorage.removeItem(k));
+  ['se_devis','se_clients','se_catalogue','se_factures','se_config','se_api_key','se_ai_provider','se_ai_model','se_logo'].forEach(k => localStorage.removeItem(k));
   toast('Toutes les données ont été effacées', 'info');
   setTimeout(() => window.location.href = 'index.html', 1500);
 }
