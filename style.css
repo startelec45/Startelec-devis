@@ -680,6 +680,7 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
 
 .lignes-table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
   font-size: 13px;
 }

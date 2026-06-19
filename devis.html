@@ -300,24 +300,26 @@
           </button>
         </div>
 
-        <table class="lignes-table" id="lignes-table">
-          <thead>
-            <tr>
-              <th class="td-drag"></th>
-              <th class="td-num-ligne">#</th>
-              <th class="td-nom">Nom <span style="color:var(--rouge)">*</span></th>
-              <th class="td-reduc reduc-col" style="display:none">Réduction %</th>
-              <th class="td-qte">Qté <span style="color:var(--rouge)">*</span></th>
-              <th class="td-unite">Unité</th>
-              <th class="td-pu">PU HT <span style="color:var(--rouge)">*</span></th>
-              <th class="td-total-ht">Total HT</th>
-              <th class="td-del"></th>
-            </tr>
-          </thead>
-          <tbody id="lignes-body">
-            <!-- Lignes générées dynamiquement -->
-          </tbody>
-        </table>
+        <div class="table-responsive">
+          <table class="lignes-table" id="lignes-table">
+            <thead>
+              <tr>
+                <th class="td-drag"></th>
+                <th class="td-num-ligne">#</th>
+                <th class="td-nom">Nom <span style="color:var(--rouge)">*</span></th>
+                <th class="td-reduc reduc-col" style="display:none">Réduction %</th>
+                <th class="td-qte">Qté <span style="color:var(--rouge)">*</span></th>
+                <th class="td-unite">Unité</th>
+                <th class="td-pu">PU HT <span style="color:var(--rouge)">*</span></th>
+                <th class="td-total-ht">Total HT</th>
+                <th class="td-del"></th>
+              </tr>
+            </thead>
+            <tbody id="lignes-body">
+              <!-- Lignes générées dynamiquement -->
+            </tbody>
+          </table>
+        </div>
 
         <div class="lignes-footer">
           <button class="btn btn-secondary btn-sm" onclick="ajouterLigne()">
