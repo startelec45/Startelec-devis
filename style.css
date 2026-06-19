@@ -672,6 +672,12 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
   letter-spacing: 0.5px;
 }
 
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .lignes-table {
   width: 100%;
   border-collapse: collapse;
