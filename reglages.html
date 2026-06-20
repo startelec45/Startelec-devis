@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,758 +9,745 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
+
 <body>
 
-<div class="app-layout">
+  <div class="app-layout">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <a href="index.html" class="sidebar-logo">
-      <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
-      <div><span>StarElec</span><span class="logo-sub">Devis & Factures</span></div>
-    </a>
-    <div class="nav-section">Principal</div>
-    <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-    <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
-    <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
-    <div class="nav-section">Gestion</div>
-    <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
-    <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
-    <a href="catalogue.html" class="nav-item"><i class="ti ti-list-check"></i> Catalogue</a>
-    <div class="nav-section">Compte</div>
-    <a href="reglages.html" class="nav-item active"><i class="ti ti-settings"></i> Réglages</a>
-    <div class="sidebar-bottom">
-      <a href="reglages.html" class="sidebar-user">
-        <div class="avatar" id="avatar-initiales">FF</div>
-        <div>
-          <div class="sidebar-user-name" id="sidebar-nom">Florian Fernandes</div>
-          <div class="sidebar-user-role">StarElec — Orléans</div>
-        </div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="index.html" class="sidebar-logo">
+        <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
+        <div><span>StarElec</span><span class="logo-sub">Devis & Factures</span></div>
       </a>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <div class="main-content">
-
-    <div class="topbar">
-      <div class="topbar-left">
-        <h1 class="topbar-title">Réglages</h1>
+      <div class="nav-section">Principal</div>
+      <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+      <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
+      <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
+      <div class="nav-section">Gestion</div>
+      <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
+      <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
+      <a href="catalogue.html" class="nav-item"><i class="ti ti-list-check"></i> Catalogue</a>
+      <div class="nav-section">Compte</div>
+      <a href="reglages.html" class="nav-item active"><i class="ti ti-settings"></i> Réglages</a>
+      <div class="sidebar-bottom">
+        <a href="reglages.html" class="sidebar-user">
+          <div class="avatar" id="avatar-initiales">FF</div>
+          <div>
+            <div class="sidebar-user-name" id="sidebar-nom">Florian Fernandes</div>
+            <div class="sidebar-user-role">StarElec — Orléans</div>
+          </div>
+        </a>
       </div>
-      <div class="topbar-right">
-        <button class="btn btn-primary" onclick="sauvegarderTout()">
-          <i class="ti ti-device-floppy"></i> Sauvegarder
-        </button>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-content">
+
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Réglages</h1>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-primary" onclick="sauvegarderTout()">
+            <i class="ti ti-device-floppy"></i> Sauvegarder
+          </button>
+        </div>
       </div>
-    </div>
 
-    <div class="page-content">
-      <div class="settings-sections">
+      <div class="page-content">
+        <div class="settings-sections">
 
-        <!-- ── ENTREPRISE ── -->
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="ti ti-building"></i> Informations entreprise
-          </div>
+          <!-- ── ENTREPRISE ── -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <i class="ti ti-building"></i> Informations entreprise
+            </div>
 
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Nom de l'entreprise</div>
-              <div class="settings-sub">Affiché sur tous les documents</div>
-            </div>
-            <div class="settings-control">
-              <input type="text" class="form-control" id="s-nom" placeholder="StarElec" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">SIRET</div>
-            </div>
-            <div class="settings-control">
-              <input type="text" class="form-control" id="s-siret" placeholder="880 075 098 00025" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Adresse</div>
-            </div>
-            <div class="settings-control">
-              <input type="text" class="form-control" id="s-adresse" placeholder="9 rue Maurice Berger" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Code postal</div>
-            </div>
-            <div class="settings-control">
-              <input type="text" class="form-control" id="s-cp" placeholder="45000" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Ville</div>
-            </div>
-            <div class="settings-control">
-              <input type="text" class="form-control" id="s-ville" placeholder="Orléans" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Email</div>
-            </div>
-            <div class="settings-control">
-              <input type="email" class="form-control" id="s-email" placeholder="startelec45@gmail.com" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Téléphone</div>
-            </div>
-            <div class="settings-control">
-              <input type="tel" class="form-control" id="s-tel" placeholder="06 60 19 35 21" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Nom du vendeur</div>
-              <div class="settings-sub">Affiché sur les documents</div>
-            </div>
-            <div class="settings-control">
-              <input type="text" class="form-control" id="s-vendeur" placeholder="FLORIAN FERNANDES" />
-            </div>
-          </div>
-        </div>
-
-        <!-- ── BANCAIRE ── -->
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="ti ti-building-bank"></i> Coordonnées bancaires
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">IBAN</div>
-            </div>
-            <div class="settings-control">
-              <input type="text" class="form-control" id="s-iban"
-                placeholder="FR76 4061 8803 8000 0403 8380 440" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">BIC</div>
-            </div>
-            <div class="settings-control">
-              <input type="text" class="form-control" id="s-bic" placeholder="BOUSFRPPXXX" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Banque</div>
-            </div>
-            <div class="settings-control">
-              <input type="text" class="form-control" id="s-banque" placeholder="Boursorama" />
-            </div>
-          </div>
-        </div>
-
-        <!-- ── DEVIS ── -->
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="ti ti-file-description"></i> Paramètres devis
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Taux horaire main d'œuvre</div>
-              <div class="settings-sub">Appliqué sur les lignes MO</div>
-            </div>
-            <div class="settings-control">
-              <input type="number" class="form-control" id="s-taux-mo"
-                placeholder="46" min="0" step="0.5" style="max-width:120px" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Marge matériel Sonepar (%)</div>
-              <div class="settings-sub">Appliquée à l'import de liste</div>
-            </div>
-            <div class="settings-control">
-              <input type="number" class="form-control" id="s-marge"
-                placeholder="30" min="0" max="200" style="max-width:120px" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Acompte par défaut (%)</div>
-              <div class="settings-sub">% demandé à la commande</div>
-            </div>
-            <div class="settings-control">
-              <input type="number" class="form-control" id="s-acompte"
-                placeholder="30" min="0" max="100" style="max-width:120px" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Validité devis (jours)</div>
-              <div class="settings-sub">Durée avant expiration</div>
-            </div>
-            <div class="settings-control">
-              <input type="number" class="form-control" id="s-validite"
-                placeholder="30" min="1" style="max-width:120px" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Lieu de création par défaut</div>
-            </div>
-            <div class="settings-control">
-              <input type="text" class="form-control" id="s-lieu" placeholder="Orléans" />
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Format numérotation devis</div>
-              <div class="settings-sub">Préfixe utilisé pour les numéros</div>
-            </div>
-            <div class="settings-control" style="display:flex;gap:8px;align-items:center">
-              <input type="text" class="form-control" id="s-prefix-devis"
-                placeholder="D" style="max-width:60px" />
-              <span style="color:var(--texte-sec);font-size:13px">2026/001</span>
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Format numérotation facture</div>
-            </div>
-            <div class="settings-control" style="display:flex;gap:8px;align-items:center">
-              <input type="text" class="form-control" id="s-prefix-facture"
-                placeholder="F" style="max-width:60px" />
-              <span style="color:var(--texte-sec);font-size:13px">2026/001</span>
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Format numérotation acompte</div>
-            </div>
-            <div class="settings-control" style="display:flex;gap:8px;align-items:center">
-              <input type="text" class="form-control" id="s-prefix-acompte"
-                placeholder="FA" style="max-width:60px" />
-              <span style="color:var(--texte-sec);font-size:13px">2026/001</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── IA ── -->
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="ti ti-sparkles"></i> Intelligence artificielle
-          </div>
-
-          <!-- Fournisseur -->
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Fournisseur IA</div>
-              <div class="settings-sub">Choisissez votre service d'IA</div>
-            </div>
-            <div class="settings-control">
-              <select class="form-control" id="s-ai-provider" onchange="onProviderChange()" style="max-width:220px">
-                <option value="anthropic">🟣 Anthropic (Claude)</option>
-                <option value="gemini">🔵 Google (Gemini)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Modèle -->
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Modèle</div>
-              <div class="settings-sub" id="ia-model-sub">Modèle Claude à utiliser</div>
-            </div>
-            <div class="settings-control">
-              <select class="form-control" id="s-ai-model" style="max-width:260px">
-                <!-- Peuplé dynamiquement par onProviderChange() -->
-              </select>
-            </div>
-          </div>
-
-          <!-- Clé API -->
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Clé API</div>
-              <div class="settings-sub" id="ia-key-sub">
-                Récupérez votre clé sur
-                <a id="ia-console-link" href="https://console.anthropic.com" target="_blank" style="color:var(--rouge)">console.anthropic.com</a>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Nom de l'entreprise</div>
+                <div class="settings-sub">Affiché sur tous les documents</div>
+              </div>
+              <div class="settings-control">
+                <input type="text" class="form-control" id="s-nom" placeholder="StarElec" />
               </div>
             </div>
-            <div class="settings-control" style="display:flex;gap:8px;align-items:center">
-              <input type="password" class="form-control" id="s-api-key"
-                placeholder="sk-ant-..." />
-              <button class="btn btn-ghost" id="ia-key-toggle" onclick="toggleApiKeyVisibility()" title="Afficher/Masquer" style="padding:8px 10px">
-                <i class="ti ti-eye" id="ia-eye-icon"></i>
-              </button>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">SIRET</div>
+              </div>
+              <div class="settings-control">
+                <input type="text" class="form-control" id="s-siret" placeholder="880 075 098 00025" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Adresse</div>
+              </div>
+              <div class="settings-control">
+                <input type="text" class="form-control" id="s-adresse" placeholder="9 rue Maurice Berger" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Code postal</div>
+              </div>
+              <div class="settings-control">
+                <input type="text" class="form-control" id="s-cp" placeholder="45000" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Ville</div>
+              </div>
+              <div class="settings-control">
+                <input type="text" class="form-control" id="s-ville" placeholder="Orléans" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Email</div>
+              </div>
+              <div class="settings-control">
+                <input type="email" class="form-control" id="s-email" placeholder="startelec45@gmail.com" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Téléphone</div>
+              </div>
+              <div class="settings-control">
+                <input type="tel" class="form-control" id="s-tel" placeholder="06 60 19 35 21" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Nom du vendeur</div>
+                <div class="settings-sub">Affiché sur les documents</div>
+              </div>
+              <div class="settings-control">
+                <input type="text" class="form-control" id="s-vendeur" placeholder="FLORIAN FERNANDES" />
+              </div>
             </div>
           </div>
 
-          <!-- Test connexion -->
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Tester la connexion IA</div>
-              <div class="settings-sub" id="ia-test-result">—</div>
+          <!-- ── BANCAIRE ── -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <i class="ti ti-building-bank"></i> Coordonnées bancaires
             </div>
-            <div class="settings-control" style="display:flex;gap:8px">
-              <button class="btn btn-secondary" onclick="testerIA()" id="ia-test-btn">
-                <i class="ti ti-plug"></i> Tester
-              </button>
-              <button class="btn btn-primary" onclick="sauvegarderIA()">
-                <i class="ti ti-device-floppy"></i> Valider &amp; sauvegarder
-              </button>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">IBAN</div>
+              </div>
+              <div class="settings-control">
+                <input type="text" class="form-control" id="s-iban" placeholder="FR76 4061 8803 8000 0403 8380 440" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">BIC</div>
+              </div>
+              <div class="settings-control">
+                <input type="text" class="form-control" id="s-bic" placeholder="BOUSFRPPXXX" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Banque</div>
+              </div>
+              <div class="settings-control">
+                <input type="text" class="form-control" id="s-banque" placeholder="Boursorama" />
+              </div>
             </div>
           </div>
+
+          <!-- ── DEVIS ── -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <i class="ti ti-file-description"></i> Paramètres devis
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Taux horaire main d'œuvre</div>
+                <div class="settings-sub">Appliqué sur les lignes MO</div>
+              </div>
+              <div class="settings-control">
+                <input type="number" class="form-control" id="s-taux-mo" placeholder="46" min="0" step="0.5"
+                  style="max-width:120px" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Acompte par défaut (%)</div>
+                <div class="settings-sub">% demandé à la commande</div>
+              </div>
+              <div class="settings-control">
+                <input type="number" class="form-control" id="s-acompte" placeholder="30" min="0" max="100"
+                  style="max-width:120px" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Validité devis (jours)</div>
+                <div class="settings-sub">Durée avant expiration</div>
+              </div>
+              <div class="settings-control">
+                <input type="number" class="form-control" id="s-validite" placeholder="30" min="1"
+                  style="max-width:120px" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Lieu de création par défaut</div>
+              </div>
+              <div class="settings-control">
+                <input type="text" class="form-control" id="s-lieu" placeholder="Orléans" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Format numérotation devis</div>
+                <div class="settings-sub">Préfixe utilisé pour les numéros</div>
+              </div>
+              <div class="settings-control" style="display:flex;gap:8px;align-items:center">
+                <input type="text" class="form-control" id="s-prefix-devis" placeholder="D" style="max-width:60px" />
+                <span style="color:var(--texte-sec);font-size:13px">2026/001</span>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Format numérotation facture</div>
+              </div>
+              <div class="settings-control" style="display:flex;gap:8px;align-items:center">
+                <input type="text" class="form-control" id="s-prefix-facture" placeholder="F" style="max-width:60px" />
+                <span style="color:var(--texte-sec);font-size:13px">2026/001</span>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Format numérotation acompte</div>
+              </div>
+              <div class="settings-control" style="display:flex;gap:8px;align-items:center">
+                <input type="text" class="form-control" id="s-prefix-acompte" placeholder="FA" style="max-width:60px" />
+                <span style="color:var(--texte-sec);font-size:13px">2026/001</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── IA ── -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <i class="ti ti-sparkles"></i> Intelligence artificielle
+            </div>
+
+            <!-- Fournisseur -->
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Fournisseur IA</div>
+                <div class="settings-sub">Choisissez votre service d'IA</div>
+              </div>
+              <div class="settings-control">
+                <select class="form-control" id="s-ai-provider" onchange="onProviderChange()" style="max-width:220px">
+                  <option value="anthropic">🟣 Anthropic (Claude)</option>
+                  <option value="gemini">🔵 Google (Gemini)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Modèle -->
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Modèle</div>
+                <div class="settings-sub" id="ia-model-sub">Modèle Claude à utiliser</div>
+              </div>
+              <div class="settings-control">
+                <select class="form-control" id="s-ai-model" style="max-width:260px">
+                  <!-- Peuplé dynamiquement par onProviderChange() -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Clé API -->
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Clé API</div>
+                <div class="settings-sub" id="ia-key-sub">
+                  Récupérez votre clé sur
+                  <a id="ia-console-link" href="https://console.anthropic.com" target="_blank"
+                    style="color:var(--rouge)">console.anthropic.com</a>
+                </div>
+              </div>
+              <div class="settings-control" style="display:flex;gap:8px;align-items:center">
+                <input type="password" class="form-control" id="s-api-key" placeholder="sk-ant-..." />
+                <button class="btn btn-ghost" id="ia-key-toggle" onclick="toggleApiKeyVisibility()"
+                  title="Afficher/Masquer" style="padding:8px 10px">
+                  <i class="ti ti-eye" id="ia-eye-icon"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Test connexion -->
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Tester la connexion IA</div>
+                <div class="settings-sub" id="ia-test-result">—</div>
+              </div>
+              <div class="settings-control" style="display:flex;gap:8px">
+                <button class="btn btn-secondary" onclick="testerIA()" id="ia-test-btn">
+                  <i class="ti ti-plug"></i> Tester
+                </button>
+                <button class="btn btn-primary" onclick="sauvegarderIA()">
+                  <i class="ti ti-device-floppy"></i> Valider &amp; sauvegarder
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- ── LOGO ── -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <i class="ti ti-photo"></i> Logo & charte graphique
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Logo entreprise</div>
+                <div class="settings-sub">Affiché en haut de tous les PDF</div>
+              </div>
+              <div class="settings-control" style="display:flex;align-items:center;gap:12px">
+                <img id="logo-preview" src="assets/logo.png" alt="Logo"
+                  style="height:40px;width:auto;border:1px solid var(--border);border-radius:var(--radius);padding:4px;background:#fff"
+                  onerror="this.style.display='none'" />
+                <label class="btn btn-secondary" style="cursor:pointer">
+                  <i class="ti ti-upload"></i> Changer le logo
+                  <input type="file" accept="image/*" style="display:none" onchange="changerLogo(this)" />
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Mention fiscale</div>
+                <div class="settings-sub">Affichée sur tous les documents</div>
+              </div>
+              <div class="settings-control" style="min-width:340px">
+                <textarea class="form-control" id="s-tva-msg" rows="2"
+                  placeholder="TVA non applicable, article 293B du CGI..."></textarea>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Texte conditions par défaut</div>
+                <div class="settings-sub">Affiché dans la section conditions de chaque devis</div>
+              </div>
+              <div class="settings-control" style="min-width:340px">
+                <textarea class="form-control" id="s-conditions" rows="3"
+                  placeholder='Forfait "Prêt à brancher" incluant...'></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── DONNÉES ── -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <i class="ti ti-database"></i> Données & sauvegarde
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Exporter toutes les données</div>
+                <div class="settings-sub">Devis, clients, catalogue — fichier JSON</div>
+              </div>
+              <div class="settings-control">
+                <button class="btn btn-secondary" onclick="exporterDonnees()">
+                  <i class="ti ti-download"></i> Exporter
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Importer des données</div>
+                <div class="settings-sub">Restaurer depuis un fichier JSON</div>
+              </div>
+              <div class="settings-control">
+                <label class="btn btn-secondary" style="cursor:pointer">
+                  <i class="ti ti-upload"></i> Importer
+                  <input type="file" accept=".json" style="display:none" onchange="importerDonnees(this)" />
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label" style="color:#c0392b">Effacer toutes les données</div>
+                <div class="settings-sub">Supprime définitivement devis, clients et réglages</div>
+              </div>
+              <div class="settings-control">
+                <button class="btn btn-danger" onclick="effacerDonnees()">
+                  <i class="ti ti-trash"></i> Effacer tout
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /settings-sections -->
+      </div><!-- /page-content -->
+
+      <!-- Barre de sauvegarde -->
+      <div class="save-bar">
+        <span id="save-status" style="font-size:12px;color:var(--texte-sec)"></span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" onclick="reinitialiserFormulaire()">
+            <i class="ti ti-refresh"></i> Réinitialiser
+          </button>
+          <button class="btn btn-primary" onclick="sauvegarderTout()">
+            <i class="ti ti-device-floppy"></i> Sauvegarder
+          </button>
         </div>
-
-
-        <!-- ── LOGO ── -->
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="ti ti-photo"></i> Logo & charte graphique
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Logo entreprise</div>
-              <div class="settings-sub">Affiché en haut de tous les PDF</div>
-            </div>
-            <div class="settings-control" style="display:flex;align-items:center;gap:12px">
-              <img id="logo-preview" src="assets/logo.png" alt="Logo"
-                style="height:40px;width:auto;border:1px solid var(--border);border-radius:var(--radius);padding:4px;background:#fff"
-                onerror="this.style.display='none'" />
-              <label class="btn btn-secondary" style="cursor:pointer">
-                <i class="ti ti-upload"></i> Changer le logo
-                <input type="file" accept="image/*" style="display:none" onchange="changerLogo(this)" />
-              </label>
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Mention fiscale</div>
-              <div class="settings-sub">Affichée sur tous les documents</div>
-            </div>
-            <div class="settings-control" style="min-width:340px">
-              <textarea class="form-control" id="s-tva-msg" rows="2"
-                placeholder="TVA non applicable, article 293B du CGI..."></textarea>
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Texte conditions par défaut</div>
-              <div class="settings-sub">Affiché dans la section conditions de chaque devis</div>
-            </div>
-            <div class="settings-control" style="min-width:340px">
-              <textarea class="form-control" id="s-conditions" rows="3"
-                placeholder='Forfait "Prêt à brancher" incluant...'></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── DONNÉES ── -->
-        <div class="settings-card">
-          <div class="settings-card-header">
-            <i class="ti ti-database"></i> Données & sauvegarde
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Exporter toutes les données</div>
-              <div class="settings-sub">Devis, clients, catalogue — fichier JSON</div>
-            </div>
-            <div class="settings-control">
-              <button class="btn btn-secondary" onclick="exporterDonnees()">
-                <i class="ti ti-download"></i> Exporter
-              </button>
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label">Importer des données</div>
-              <div class="settings-sub">Restaurer depuis un fichier JSON</div>
-            </div>
-            <div class="settings-control">
-              <label class="btn btn-secondary" style="cursor:pointer">
-                <i class="ti ti-upload"></i> Importer
-                <input type="file" accept=".json" style="display:none" onchange="importerDonnees(this)" />
-              </label>
-            </div>
-          </div>
-
-          <div class="settings-row">
-            <div>
-              <div class="settings-label" style="color:#c0392b">Effacer toutes les données</div>
-              <div class="settings-sub">Supprime définitivement devis, clients et réglages</div>
-            </div>
-            <div class="settings-control">
-              <button class="btn btn-danger" onclick="effacerDonnees()">
-                <i class="ti ti-trash"></i> Effacer tout
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /settings-sections -->
-    </div><!-- /page-content -->
-
-    <!-- Barre de sauvegarde -->
-    <div class="save-bar">
-      <span id="save-status" style="font-size:12px;color:var(--texte-sec)"></span>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="reinitialiserFormulaire()">
-          <i class="ti ti-refresh"></i> Réinitialiser
-        </button>
-        <button class="btn btn-primary" onclick="sauvegarderTout()">
-          <i class="ti ti-device-floppy"></i> Sauvegarder
-        </button>
       </div>
-    </div>
 
-  </div><!-- /main-content -->
-</div>
+    </div><!-- /main-content -->
+  </div>
 
-<div class="toast-container" id="toasts"></div>
+  <div class="toast-container" id="toasts"></div>
 
-<script src="app.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  chargerReglages();
-});
+  <script src="app.js?v=1.0.3"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      chargerReglages();
+    });
 
-function chargerReglages() {
-  const cfg = DB.getConfig();
-  const e   = cfg.entreprise;
-  const d   = cfg.devis;
+    function chargerReglages() {
+      const cfg = DB.getConfig();
+      const e = cfg.entreprise;
+      const d = cfg.devis;
 
-  // Entreprise
-  document.getElementById('s-nom').value     = e.nom     || '';
-  document.getElementById('s-siret').value   = e.siret   || '';
-  document.getElementById('s-adresse').value = e.adresse || '';
-  document.getElementById('s-cp').value      = e.cp      || '';
-  document.getElementById('s-ville').value   = e.ville   || '';
-  document.getElementById('s-email').value   = e.email   || '';
-  document.getElementById('s-tel').value     = e.tel     || '';
-  document.getElementById('s-vendeur').value = e.vendeur || '';
-  document.getElementById('s-tva-msg').value = e.tva_msg || '';
-  document.getElementById('s-conditions').value = e.conditions || '';
+      // Entreprise
+      document.getElementById('s-nom').value = e.nom || '';
+      document.getElementById('s-siret').value = e.siret || '';
+      document.getElementById('s-adresse').value = e.adresse || '';
+      document.getElementById('s-cp').value = e.cp || '';
+      document.getElementById('s-ville').value = e.ville || '';
+      document.getElementById('s-email').value = e.email || '';
+      document.getElementById('s-tel').value = e.tel || '';
+      document.getElementById('s-vendeur').value = e.vendeur || '';
+      document.getElementById('s-tva-msg').value = e.tva_msg || '';
+      document.getElementById('s-conditions').value = e.conditions || '';
 
-  // Bancaire
-  document.getElementById('s-iban').value   = e.iban   || '';
-  document.getElementById('s-bic').value    = e.bic    || '';
-  document.getElementById('s-banque').value = e.banque || '';
+      // Bancaire
+      document.getElementById('s-iban').value = e.iban || '';
+      document.getElementById('s-bic').value = e.bic || '';
+      document.getElementById('s-banque').value = e.banque || '';
 
-  // Devis
-  document.getElementById('s-taux-mo').value       = d.taux_horaire_mo  || 46;
-  document.getElementById('s-marge').value          = d.marge_sonepar    || 30;
-  document.getElementById('s-acompte').value        = d.acompte_pct      || 30;
-  document.getElementById('s-validite').value       = d.validite_jours   || 30;
-  document.getElementById('s-lieu').value           = e.lieu             || 'Orléans';
-  document.getElementById('s-prefix-devis').value   = d.prefix_devis     || 'D';
-  document.getElementById('s-prefix-facture').value = d.prefix_facture   || 'F';
-  document.getElementById('s-prefix-acompte').value = d.prefix_acompte   || 'FA';
+      // Devis
+      document.getElementById('s-taux-mo').value = d.taux_horaire_mo || 46;
+      document.getElementById('s-acompte').value = d.acompte_pct || 30;
+      document.getElementById('s-validite').value = d.validite_jours || 30;
+      document.getElementById('s-lieu').value = e.lieu || 'Orléans';
+      document.getElementById('s-prefix-devis').value = d.prefix_devis || 'D';
+      document.getElementById('s-prefix-facture').value = d.prefix_facture || 'F';
+      document.getElementById('s-prefix-acompte').value = d.prefix_acompte || 'FA';
 
-  // IA — provider, modèle, clé
-  const provider = localStorage.getItem('se_ai_provider') || 'anthropic';
-  document.getElementById('s-ai-provider').value = provider;
-  onProviderChange(); // peuple la liste des modèles
-  const savedModel = localStorage.getItem('se_ai_model') || '';
-  if (savedModel) document.getElementById('s-ai-model').value = savedModel;
-  const apiKey = localStorage.getItem('se_api_key') || '';
-  document.getElementById('s-api-key').value = apiKey;
-}
-
-function sauvegarderTout() {
-  const cfg = DB.getConfig();
-
-  const newCfg = {
-    entreprise: {
-      ...cfg.entreprise,
-      nom:        document.getElementById('s-nom').value.trim(),
-      siret:      document.getElementById('s-siret').value.trim(),
-      adresse:    document.getElementById('s-adresse').value.trim(),
-      cp:         document.getElementById('s-cp').value.trim(),
-      ville:      document.getElementById('s-ville').value.trim(),
-      email:      document.getElementById('s-email').value.trim(),
-      tel:        document.getElementById('s-tel').value.trim(),
-      vendeur:    document.getElementById('s-vendeur').value.trim(),
-      tva_msg:    document.getElementById('s-tva-msg').value.trim(),
-      conditions: document.getElementById('s-conditions').value.trim(),
-      iban:       document.getElementById('s-iban').value.trim(),
-      bic:        document.getElementById('s-bic').value.trim(),
-      banque:     document.getElementById('s-banque').value.trim(),
-      lieu:       document.getElementById('s-lieu').value.trim(),
-    },
-    devis: {
-      ...cfg.devis,
-      taux_horaire_mo: parseFloat(document.getElementById('s-taux-mo').value)       || 46,
-      marge_sonepar:   parseFloat(document.getElementById('s-marge').value)          || 30,
-      acompte_pct:     parseFloat(document.getElementById('s-acompte').value)        || 30,
-      validite_jours:  parseInt(document.getElementById('s-validite').value)         || 30,
-      prefix_devis:    document.getElementById('s-prefix-devis').value.trim()   || 'D',
-      prefix_facture:  document.getElementById('s-prefix-facture').value.trim() || 'F',
-      prefix_acompte:  document.getElementById('s-prefix-acompte').value.trim() || 'FA',
+      // IA — provider, modèle, clé
+      const provider = localStorage.getItem('se_ai_provider') || 'anthropic';
+      document.getElementById('s-ai-provider').value = provider;
+      onProviderChange(); // peuple la liste des modèles
+      const savedModel = localStorage.getItem('se_ai_model') || '';
+      if (savedModel) document.getElementById('s-ai-model').value = savedModel;
+      const apiKey = localStorage.getItem('se_api_key') || '';
+      document.getElementById('s-api-key').value = apiKey;
     }
-  };
 
-  DB.saveConfig(newCfg);
+    function sauvegarderTout() {
+      const cfg = DB.getConfig();
 
-  // IA — provider, modèle, clé (via sauvegarderIA)
-  sauvegarderIA(false);
-
-  document.getElementById('save-status').textContent =
-    'Sauvegardé à ' + new Date().toLocaleTimeString('fr-FR');
-
-  toast('Réglages sauvegardés !', 'success');
-}
-
-function reinitialiserFormulaire() {
-  if (!confirm('Annuler les modifications non sauvegardées ?')) return;
-  chargerReglages();
-}
-
-// ── FOURNISSEURS & MODÈLES ──
-const AI_PROVIDERS = {
-  anthropic: {
-    label:    'Anthropic (Claude)',
-    console:  'https://console.anthropic.com',
-    consoleLabel: 'console.anthropic.com',
-    keyHint:  'sk-ant-...',
-    models: [
-      { value: 'claude-haiku-4-5',   label: 'Claude Haiku 4.5 (rapide & économique)' },
-      { value: 'claude-sonnet-4-5',  label: 'Claude Sonnet 4.5 (équilibré)' },
-      { value: 'claude-opus-4-5',    label: 'Claude Opus 4.5 (le plus puissant)' },
-    ],
-  },
-  gemini: {
-    label:    'Google Gemini',
-    console:  'https://aistudio.google.com/app/apikey',
-    consoleLabel: 'aistudio.google.com',
-    keyHint:  'AIza...',
-    models: [
-      { value: 'gemini-2.0-flash',        label: 'Gemini 2.0 Flash (rapide & gratuit)' },
-      { value: 'gemini-2.5-flash',        label: 'Gemini 2.5 Flash (recommandé)' },
-      { value: 'gemini-1.5-flash',        label: 'Gemini 1.5 Flash' },
-      { value: 'gemini-1.5-pro',          label: 'Gemini 1.5 Pro (le plus puissant)' },
-    ],
-  },
-};
-
-function onProviderChange() {
-  const provider = document.getElementById('s-ai-provider').value;
-  const info     = AI_PROVIDERS[provider];
-  if (!info) return;
-
-  // Mettre à jour la liste des modèles
-  const sel = document.getElementById('s-ai-model');
-  sel.innerHTML = info.models.map(m =>
-    `<option value="${m.value}">${m.label}</option>`
-  ).join('');
-
-  // Mettre à jour le texte/lien de la console
-  document.getElementById('ia-console-link').href        = info.console;
-  document.getElementById('ia-console-link').textContent = info.consoleLabel;
-  document.getElementById('s-api-key').placeholder       = info.keyHint;
-  document.getElementById('ia-model-sub').textContent    = 'Modèle ' + info.label + ' à utiliser';
-}
-
-// ── AFFICHER / MASQUER CLÉ ──
-function toggleApiKeyVisibility() {
-  const input = document.getElementById('s-api-key');
-  const icon  = document.getElementById('ia-eye-icon');
-  if (input.type === 'password') {
-    input.type = 'text';
-    icon.className = 'ti ti-eye-off';
-  } else {
-    input.type = 'password';
-    icon.className = 'ti ti-eye';
-  }
-}
-
-// ── SAUVEGARDER CONFIG IA ──
-function sauvegarderIA(showToast = true) {
-  const provider = document.getElementById('s-ai-provider').value;
-  const model    = document.getElementById('s-ai-model').value;
-  const key      = document.getElementById('s-api-key').value.trim();
-
-  localStorage.setItem('se_ai_provider', provider);
-  if (model) localStorage.setItem('se_ai_model', model);
-  if (key)   localStorage.setItem('se_api_key', key);
-
-  if (showToast) {
-    document.getElementById('save-status').textContent =
-      'Config IA sauvegardée à ' + new Date().toLocaleTimeString('fr-FR');
-    toast('Configuration IA sauvegardée !', 'success');
-  }
-}
-
-// ── TEST IA ──
-async function testerIA() {
-  const provider = document.getElementById('s-ai-provider').value;
-  const model    = document.getElementById('s-ai-model').value;
-  const key      = document.getElementById('s-api-key').value.trim();
-
-  if (!key) { toast('Saisissez d\'abord votre clé API', 'error'); return; }
-
-  // Sauvegarder avant de tester
-  sauvegarderIA(false);
-
-  const resultEl = document.getElementById('ia-test-result');
-  const btn      = document.getElementById('ia-test-btn');
-  resultEl.textContent = 'Test en cours...';
-  btn.disabled = true;
-
-  try {
-    let reponse = '';
-
-    if (provider === 'anthropic') {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key':    key,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
+      const newCfg = {
+        entreprise: {
+          ...cfg.entreprise,
+          nom: document.getElementById('s-nom').value.trim(),
+          siret: document.getElementById('s-siret').value.trim(),
+          adresse: document.getElementById('s-adresse').value.trim(),
+          cp: document.getElementById('s-cp').value.trim(),
+          ville: document.getElementById('s-ville').value.trim(),
+          email: document.getElementById('s-email').value.trim(),
+          tel: document.getElementById('s-tel').value.trim(),
+          vendeur: document.getElementById('s-vendeur').value.trim(),
+          tva_msg: document.getElementById('s-tva-msg').value.trim(),
+          conditions: document.getElementById('s-conditions').value.trim(),
+          iban: document.getElementById('s-iban').value.trim(),
+          bic: document.getElementById('s-bic').value.trim(),
+          banque: document.getElementById('s-banque').value.trim(),
+          lieu: document.getElementById('s-lieu').value.trim(),
         },
-        body: JSON.stringify({
-          model,
-          max_tokens: 30,
-          messages: [{ role: 'user', content: 'Réponds uniquement : OK StarElec' }],
-        }),
-      });
-      if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erreur ' + res.status); }
-      const data = await res.json();
-      reponse = data.content?.[0]?.text || 'OK';
-
-    } else if (provider === 'gemini') {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: 'Réponds uniquement : OK StarElec' }] }],
-            generationConfig: { maxOutputTokens: 30 },
-          }),
+        devis: {
+          ...cfg.devis,
+          taux_horaire_mo: parseFloat(document.getElementById('s-taux-mo').value) || 46,
+          acompte_pct: parseFloat(document.getElementById('s-acompte').value) || 30,
+          validite_jours: parseInt(document.getElementById('s-validite').value) || 30,
+          prefix_devis: document.getElementById('s-prefix-devis').value.trim() || 'D',
+          prefix_facture: document.getElementById('s-prefix-facture').value.trim() || 'F',
+          prefix_acompte: document.getElementById('s-prefix-acompte').value.trim() || 'FA',
         }
-      );
-      if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erreur ' + res.status); }
-      const data = await res.json();
-      reponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'OK';
+      };
+
+      DB.saveConfig(newCfg);
+
+      // IA — provider, modèle, clé (via sauvegarderIA)
+      sauvegarderIA(false);
+
+      document.getElementById('save-status').textContent =
+        'Sauvegardé à ' + new Date().toLocaleTimeString('fr-FR');
+
+      toast('Réglages sauvegardés !', 'success');
     }
 
-    const providerLabel = AI_PROVIDERS[provider]?.label || provider;
-    resultEl.innerHTML =
-      `<span style="color:#0F6E56"><i class="ti ti-check"></i> Connexion réussie (${providerLabel}) — ${reponse.trim()}</span>`;
-    toast('IA connectée avec succès !', 'success');
-
-  } catch(e) {
-    resultEl.innerHTML =
-      `<span style="color:#c0392b"><i class="ti ti-x"></i> Erreur : ${e.message}</span>`;
-    toast('Clé API invalide ou fournisseur inaccessible', 'error');
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-// ── LOGO ──
-function changerLogo(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const data = e.target.result;
-    localStorage.setItem('se_logo', data);
-    document.getElementById('logo-preview').src = data;
-    document.getElementById('logo-preview').style.display = 'block';
-    toast('Logo mis à jour !', 'success');
-  };
-  reader.readAsDataURL(file);
-}
-
-// Charger logo custom si existant
-const logoSaved = localStorage.getItem('se_logo');
-if (logoSaved) {
-  document.addEventListener('DOMContentLoaded', () => {
-    const img = document.getElementById('logo-preview');
-    if (img) { img.src = logoSaved; img.style.display = 'block'; }
-  });
-}
-
-// ── EXPORT / IMPORT ──
-function exporterDonnees() {
-  const data = {
-    version:   '1.0',
-    date:      new Date().toISOString(),
-    devis:     DB.getDevis(),
-    clients:   DB.getClients(),
-    catalogue: DB.getCatalogue(),
-    factures:  DB.getFactures(),
-    config:    DB.getConfig(),
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a    = document.createElement('a');
-  a.href     = URL.createObjectURL(blob);
-  a.download = `startelec-backup-${new Date().toISOString().split('T')[0]}.json`;
-  a.click();
-  toast('Export téléchargé !', 'success');
-}
-
-function importerDonnees(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (!confirm('Importer ces données ? Les données actuelles seront remplacées.')) return;
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (data.devis)     DB.saveDevis(data.devis);
-      if (data.clients)   DB.saveClients(data.clients);
-      if (data.catalogue) DB.saveCatalogue(data.catalogue);
-      if (data.factures)  DB.saveFactures(data.factures);
-      if (data.config)    DB.saveConfig(data.config);
-      toast('Données importées avec succès !', 'success');
-      setTimeout(() => chargerReglages(), 500);
-    } catch(err) {
-      toast('Fichier invalide', 'error');
+    function reinitialiserFormulaire() {
+      if (!confirm('Annuler les modifications non sauvegardées ?')) return;
+      chargerReglages();
     }
-  };
-  reader.readAsText(file);
-}
 
-function effacerDonnees() {
-  if (!confirm('⚠️ Effacer TOUTES les données ?\n\nDevis, clients, catalogue et réglages seront supprimés définitivement.')) return;
-  if (!confirm('Dernière confirmation — cette action est IRRÉVERSIBLE.')) return;
-  ['se_devis','se_clients','se_catalogue','se_factures','se_config','se_api_key','se_ai_provider','se_ai_model','se_logo'].forEach(k => localStorage.removeItem(k));
-  toast('Toutes les données ont été effacées', 'info');
-  setTimeout(() => window.location.href = 'index.html', 1500);
-}
-</script>
+    // ── FOURNISSEURS & MODÈLES ──
+    const AI_PROVIDERS = {
+      anthropic: {
+        label: 'Anthropic (Claude)',
+        console: 'https://console.anthropic.com',
+        consoleLabel: 'console.anthropic.com',
+        keyHint: 'sk-ant-...',
+        models: [
+          { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 (rapide & économique)' },
+          { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5 (équilibré)' },
+          { value: 'claude-opus-4-5', label: 'Claude Opus 4.5 (le plus puissant)' },
+        ],
+      },
+      gemini: {
+        label: 'Google Gemini',
+        console: 'https://aistudio.google.com/app/apikey',
+        consoleLabel: 'aistudio.google.com',
+        keyHint: 'AIza...',
+        models: [
+          { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash (très rapide & performant)' },
+          { value: 'gemini-2.0-flash-lite-preview-02-05', label: 'Gemini 2.0 Flash-Lite (très rapide & économique)' },
+          { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (rapide)' },
+          { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash-8B (très économique)' },
+          { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (le plus puissant)' },
+        ],
+      },
+    };
+
+    function onProviderChange() {
+      const provider = document.getElementById('s-ai-provider').value;
+      const info = AI_PROVIDERS[provider];
+      if (!info) return;
+
+      // Mettre à jour la liste des modèles
+      const sel = document.getElementById('s-ai-model');
+      sel.innerHTML = info.models.map(m =>
+        `<option value="${m.value}">${m.label}</option>`
+      ).join('');
+
+      // Mettre à jour le texte/lien de la console
+      document.getElementById('ia-console-link').href = info.console;
+      document.getElementById('ia-console-link').textContent = info.consoleLabel;
+      document.getElementById('s-api-key').placeholder = info.keyHint;
+      document.getElementById('ia-model-sub').textContent = 'Modèle ' + info.label + ' à utiliser';
+    }
+
+    // ── AFFICHER / MASQUER CLÉ ──
+    function toggleApiKeyVisibility() {
+      const input = document.getElementById('s-api-key');
+      const icon = document.getElementById('ia-eye-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'ti ti-eye-off';
+      } else {
+        input.type = 'password';
+        icon.className = 'ti ti-eye';
+      }
+    }
+
+    // ── SAUVEGARDER CONFIG IA ──
+    function sauvegarderIA(showToast = true) {
+      const provider = document.getElementById('s-ai-provider').value;
+      const model = document.getElementById('s-ai-model').value;
+      const key = document.getElementById('s-api-key').value.trim();
+
+      localStorage.setItem('se_ai_provider', provider);
+      if (model) localStorage.setItem('se_ai_model', model);
+      if (key) localStorage.setItem('se_api_key', key);
+
+      if (showToast) {
+        document.getElementById('save-status').textContent =
+          'Config IA sauvegardée à ' + new Date().toLocaleTimeString('fr-FR');
+        toast('Configuration IA sauvegardée !', 'success');
+      }
+    }
+
+    // ── TEST IA ──
+    async function testerIA() {
+      const provider = document.getElementById('s-ai-provider').value;
+      const model = document.getElementById('s-ai-model').value;
+      const key = document.getElementById('s-api-key').value.trim();
+
+      if (!key) { toast('Saisissez d\'abord votre clé API', 'error'); return; }
+
+      // Sauvegarder avant de tester
+      sauvegarderIA(false);
+
+      const resultEl = document.getElementById('ia-test-result');
+      const btn = document.getElementById('ia-test-btn');
+      resultEl.textContent = 'Test en cours...';
+      btn.disabled = true;
+
+      try {
+        let reponse = '';
+
+        if (provider === 'anthropic') {
+          const res = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': key,
+              'anthropic-version': '2023-06-01',
+              'anthropic-dangerous-direct-browser-access': 'true',
+            },
+            body: JSON.stringify({
+              model,
+              max_tokens: 30,
+              messages: [{ role: 'user', content: 'Réponds uniquement : OK StarElec' }],
+            }),
+          });
+          if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erreur ' + res.status); }
+          const data = await res.json();
+          reponse = data.content?.[0]?.text || 'OK';
+
+        } else if (provider === 'gemini') {
+          const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${key}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: 'Réponds uniquement : OK StarElec' }] }],
+                generationConfig: { maxOutputTokens: 30 },
+              }),
+            }
+          );
+          if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Erreur ' + res.status); }
+          const data = await res.json();
+          reponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'OK';
+        }
+
+        const providerLabel = AI_PROVIDERS[provider]?.label || provider;
+        resultEl.innerHTML =
+          `<span style="color:#0F6E56"><i class="ti ti-check"></i> Connexion réussie (${providerLabel}) — ${reponse.trim()}</span>`;
+        toast('IA connectée avec succès !', 'success');
+
+      } catch (e) {
+        resultEl.innerHTML =
+          `<span style="color:#c0392b"><i class="ti ti-x"></i> Erreur : ${e.message}</span>`;
+        toast('Clé API invalide ou fournisseur inaccessible', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ── LOGO ──
+    function changerLogo(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const data = e.target.result;
+        localStorage.setItem('se_logo', data);
+        document.getElementById('logo-preview').src = data;
+        document.getElementById('logo-preview').style.display = 'block';
+        toast('Logo mis à jour !', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Charger logo custom si existant
+    const logoSaved = localStorage.getItem('se_logo');
+    if (logoSaved) {
+      document.addEventListener('DOMContentLoaded', () => {
+        const img = document.getElementById('logo-preview');
+        if (img) { img.src = logoSaved; img.style.display = 'block'; }
+      });
+    }
+
+    // ── EXPORT / IMPORT ──
+    function exporterDonnees() {
+      const data = {
+        version: '1.0',
+        date: new Date().toISOString(),
+        devis: DB.getDevis(),
+        clients: DB.getClients(),
+        catalogue: DB.getCatalogue(),
+        factures: DB.getFactures(),
+        config: DB.getConfig(),
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `startelec-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      toast('Export téléchargé !', 'success');
+    }
+
+    function importerDonnees(input) {
+      const file = input.files[0];
+      if (!file) return;
+      if (!confirm('Importer ces données ? Les données actuelles seront remplacées.')) return;
+
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.devis) DB.saveDevis(data.devis);
+          if (data.clients) DB.saveClients(data.clients);
+          if (data.catalogue) DB.saveCatalogue(data.catalogue);
+          if (data.factures) DB.saveFactures(data.factures);
+          if (data.config) DB.saveConfig(data.config);
+          toast('Données importées avec succès !', 'success');
+          setTimeout(() => chargerReglages(), 500);
+        } catch (err) {
+          toast('Fichier invalide', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function effacerDonnees() {
+      if (!confirm('⚠️ Effacer TOUTES les données ?\n\nDevis, clients, catalogue et réglages seront supprimés définitivement.')) return;
+      if (!confirm('Dernière confirmation — cette action est IRRÉVERSIBLE.')) return;
+      ['se_devis', 'se_clients', 'se_catalogue', 'se_factures', 'se_config', 'se_api_key', 'se_ai_provider', 'se_ai_model', 'se_logo'].forEach(k => localStorage.removeItem(k));
+      toast('Toutes les données ont été effacées', 'info');
+      setTimeout(() => window.location.href = 'index.html', 1500);
+    }
+  </script>
 
 </body>
+
 </html>

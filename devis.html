@@ -97,7 +97,7 @@
       <!-- ══ ZONE IA ══ -->
       <div class="ia-zone" id="ia-zone">
         <div class="ia-header">
-          <span class="ia-badge"><i class="ti ti-sparkles"></i> IA StarElec</span>
+          <span class="ia-badge"><i class="ti ti-sparkles"></i> IA StarElec (v1.0.3)</span>
           <div>
             <div class="ia-title">Crée ton devis en dictant</div>
             <div class="ia-sub">Ex : "Devis pour M. Dupont, 10 prises, 3 va-et-vient, 2 boutons poussoir"</div>
@@ -105,14 +105,24 @@
         </div>
         <div class="ia-input-row">
           <input type="text" class="ia-input" id="ia-prompt"
-            placeholder="Décris ton chantier... client, prestations, quantités"
+            placeholder="Décris ton chantier ou joins une liste de matériel (PDF/CSV/Image)..."
             onkeydown="if(event.key==='Enter') envoyerIA()" />
+          
+          <input type="file" id="ia-file" accept=".pdf, .csv, image/*" style="display:none" onchange="gererFichierIA()" />
+          <button class="btn btn-ghost btn-icon" id="ia-attach-btn" onclick="document.getElementById('ia-file').click()" title="Joindre un fichier (PDF, CSV, Image)" style="color:var(--texte-sec); margin-right:4px;">
+            <i class="ti ti-paperclip"></i>
+          </button>
+          
           <button class="btn btn-ghost btn-icon" id="ia-mic-btn" onclick="toggleDictation()" title="Dicter à la voix" style="color:var(--texte-sec); margin-right:8px;">
             <i class="ti ti-microphone"></i>
           </button>
           <button class="ia-btn-send" onclick="envoyerIA()" id="ia-btn">
             <i class="ti ti-send"></i> Générer
           </button>
+        </div>
+        <div id="ia-file-badge" style="display:none; align-items:center; gap:6px; margin: 8px 20px; font-size:12px; color:var(--bleu); background:var(--bleu-light, #e3f2fd); padding:4px 10px; border-radius:12px; width:fit-content;">
+          <i class="ti ti-file"></i> <span id="ia-file-name">fichier.pdf</span>
+          <i class="ti ti-x" style="cursor:pointer; margin-left:4px" onclick="supprimerFichierIA()"></i>
         </div>
         <div class="ia-response" id="ia-response"></div>
       </div>
@@ -487,7 +497,7 @@
 <div class="toast-container" id="toasts"></div>
 <div id="overlay" style="display:none;position:fixed;inset:0;z-index:199;" onclick="closeAllDropdowns()"></div>
 
-<script src="app.js"></script>
+<script src="app.js?v=1.0.3"></script>
 <script>
 // ══════════════════════════════════════════════
 // ÉTAT
@@ -1046,13 +1056,59 @@ function aperçuPDF() {
 // ══════════════════════════════════════════════
 // ZONE IA
 // ══════════════════════════════════════════════
+let iaFileData = null; // Contiendra { mimeType, base64, text, isCsv }
+
+function gererFichierIA() {
+  const fileInput = document.getElementById('ia-file');
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const badge = document.getElementById('ia-file-badge');
+  const nameSpan = document.getElementById('ia-file-name');
+  nameSpan.textContent = file.name;
+  badge.style.display = 'flex';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    // Si c'est un CSV, on peut extraire le texte brut
+    if (file.name.toLowerCase().endsWith('.csv') || file.type === 'text/csv') {
+      const textReader = new FileReader();
+      textReader.onload = (ev) => {
+        iaFileData = {
+          mimeType: 'text/csv',
+          text: ev.target.result,
+          isCsv: true
+        };
+      };
+      textReader.readAsText(file);
+    } else {
+      // Pour les PDF et Images, on garde la base64
+      const dataUrl = e.target.result;
+      const base64 = dataUrl.split(',')[1];
+      iaFileData = {
+        mimeType: file.type,
+        base64: base64,
+        isCsv: false
+      };
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function supprimerFichierIA() {
+  iaFileData = null;
+  document.getElementById('ia-file').value = '';
+  document.getElementById('ia-file-badge').style.display = 'none';
+}
+
 async function envoyerIA() {
   const input = document.getElementById('ia-prompt');
   const btn   = document.getElementById('ia-btn');
   const resp  = document.getElementById('ia-response');
   const prompt = input.value.trim();
 
-  if (!prompt) return;
+  // On peut envoyer avec juste un fichier, sans texte
+  if (!prompt && !iaFileData) return;
 
   btn.disabled = true;
   btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Génération...';
@@ -1060,7 +1116,7 @@ async function envoyerIA() {
   resp.innerHTML = '<span class="ia-loading"><i class="ti ti-dots"></i> IA StarElec analyse ta demande...</span>';
 
   try {
-    const result = await appelIA(prompt);
+    const result = await appelIA(prompt, { file: iaFileData });
 
     // Remplir le client
     if (result.client) {
@@ -1123,9 +1179,21 @@ async function envoyerIA() {
     toast('Devis généré par l\'IA !', 'success');
 
   } catch(e) {
-    resp.innerHTML = `<span style="color:#f88"><i class="ti ti-alert-circle"></i> Erreur : ${e.message}</span>
-      <br/><span style="font-size:12px;color:#8aa0b8">Vérifiez votre clé API dans les réglages.</span>`;
-    toast('Erreur IA — vérifiez la clé API', 'error');
+    console.error('Erreur complète de l\'IA :', e);
+    let msg = e.message;
+    let subMsg = "Vérifiez votre clé API dans les réglages.";
+    if (e instanceof SyntaxError || msg.includes("JSON") || msg.includes("SyntaxError")) {
+      msg = "L'IA a mal formaté sa réponse.";
+      subMsg = "Il y a souvent un caractère spécial qui bloque. Reformulez la demande.";
+      if (e.rawText) {
+        subMsg += "<br/><br/><strong>Réponse brute reçue de l'IA :</strong><pre style='background:rgba(255,255,255,0.05);color:#ffdddd;padding:10px;border-radius:4px;overflow-x:auto;margin-top:8px;font-size:11px;font-family:monospace;white-space:pre-wrap;text-align:left;border:1px solid rgba(255,0,0,0.2);'>" + escHtml(e.rawText) + "</pre>";
+      }
+    } else {
+      subMsg = "Détail de l'erreur : " + e.message;
+    }
+    resp.innerHTML = `<span style="color:#f88"><i class="ti ti-alert-circle"></i> Erreur : ${msg}</span>
+      <br/><span style="font-size:12px;color:#8aa0b8">${subMsg}</span>`;
+    toast('Erreur IA — ' + msg, 'error');
   }
 
   btn.disabled = false;

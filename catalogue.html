@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,383 +10,693 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5); z-index: 500;
-      align-items: center; justify-content: center;
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
     }
-    .modal-overlay.open { display: flex; }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
     .modal {
-      background: var(--blanc); border-radius: var(--radius-lg);
-      width: 90%; max-width: 500px; max-height: 90vh;
-      overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+      background: var(--blanc);
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
     }
+
     .modal-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px; border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; background: var(--blanc); z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--blanc);
+      z-index: 10;
     }
-    .modal-title { font-size: 15px; font-weight: 600; }
-    .modal-body  { padding: 20px; }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
     .modal-footer {
-      display: flex; justify-content: flex-end; gap: 8px;
-      padding: 14px 20px; border-top: 1px solid var(--border);
-      position: sticky; bottom: 0; background: var(--blanc);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      position: sticky;
+      bottom: 0;
+      background: var(--blanc);
     }
+
     .categorie-header {
-      display: flex; align-items: center; gap: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       padding: 10px 16px;
       background: var(--gris-clair);
       border-bottom: 1px solid var(--border);
-      font-size: 11px; font-weight: 700;
+      font-size: 11px;
+      font-weight: 700;
       color: var(--texte-sec);
-      text-transform: uppercase; letter-spacing: 0.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .categorie-header i { color: var(--rouge); font-size: 14px; }
+
+    .categorie-header i {
+      color: var(--rouge);
+      font-size: 14px;
+    }
   </style>
 </head>
+
 <body>
 
-<div class="app-layout">
+  <div class="app-layout">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <a href="index.html" class="sidebar-logo">
-      <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
-      <div><span>StarElec</span><span class="logo-sub">Devis & Factures</span></div>
-    </a>
-    <div class="nav-section">Principal</div>
-    <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-    <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
-    <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
-    <div class="nav-section">Gestion</div>
-    <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
-    <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
-    <a href="catalogue.html" class="nav-item active"><i class="ti ti-list-check"></i> Catalogue</a>
-    <div class="nav-section">Compte</div>
-    <a href="reglages.html" class="nav-item"><i class="ti ti-settings"></i> Réglages</a>
-    <div class="sidebar-bottom">
-      <a href="reglages.html" class="sidebar-user">
-        <div class="avatar">FF</div>
-        <div>
-          <div class="sidebar-user-name">Florian Fernandes</div>
-          <div class="sidebar-user-role">StarElec — Orléans</div>
-        </div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <a href="index.html" class="sidebar-logo">
+        <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
+        <div><span>StarElec</span><span class="logo-sub">Devis & Factures</span></div>
       </a>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <div class="main-content">
-
-    <div class="topbar">
-      <div class="topbar-left">
-        <h1 class="topbar-title">Catalogue des prestations</h1>
+      <div class="nav-section">Principal</div>
+      <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+      <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
+      <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
+      <div class="nav-section">Gestion</div>
+      <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
+      <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
+      <a href="catalogue.html" class="nav-item active"><i class="ti ti-list-check"></i> Catalogue</a>
+      <div class="nav-section">Compte</div>
+      <a href="reglages.html" class="nav-item"><i class="ti ti-settings"></i> Réglages</a>
+      <div class="sidebar-bottom">
+        <a href="reglages.html" class="sidebar-user">
+          <div class="avatar">FF</div>
+          <div>
+            <div class="sidebar-user-name">Florian Fernandes</div>
+            <div class="sidebar-user-role">StarElec — Orléans</div>
+          </div>
+        </a>
       </div>
-      <div class="topbar-right">
-        <button class="btn btn-secondary" onclick="resetCatalogue()">
-          <i class="ti ti-refresh"></i> Réinitialiser
-        </button>
-        <button class="btn btn-primary" onclick="ouvrirModal()">
-          <i class="ti ti-plus"></i> Ajouter une prestation
-        </button>
-      </div>
-    </div>
+    </aside>
 
-    <div class="page-content">
+    <!-- MAIN -->
+    <div class="main-content">
 
-      <!-- Recherche -->
-      <div class="search-bar" style="margin-bottom:16px">
-        <div class="search-input-wrap">
-          <i class="ti ti-search"></i>
-          <input type="text" class="search-input" id="search-cat"
-            placeholder="Rechercher une prestation..." oninput="renderCatalogue()" />
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title">Catalogue des prestations</h1>
         </div>
-        <div class="table-filters" id="cat-filters">
-          <!-- Générés dynamiquement -->
-        </div>
-      </div>
-
-      <!-- Stats -->
-      <div class="stats-grid" style="margin-bottom:20px">
-        <div class="stat-card">
-          <div class="stat-card-label">Total prestations</div>
-          <div class="stat-card-value" id="stat-total">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-label">Prix moyen HT</div>
-          <div class="stat-card-value rouge" id="stat-moy">0 €</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-label">Plus cher</div>
-          <div class="stat-card-value" id="stat-max">0 €</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-label">Moins cher</div>
-          <div class="stat-card-value" id="stat-min">0 €</div>
+        <div class="topbar-right">
+          <button class="btn btn-secondary" onclick="resetCatalogue()">
+            <i class="ti ti-refresh"></i> Réinitialiser
+          </button>
+          <button class="btn btn-secondary" onclick="ouvrirModalImport()">
+            <i class="ti ti-file-import"></i> Importer CSV
+          </button>
+          <button class="btn btn-primary" onclick="ouvrirModal()">
+            <i class="ti ti-plus"></i> Ajouter une prestation
+          </button>
         </div>
       </div>
 
-      <!-- Liste catalogue -->
-      <div id="catalogue-container">
-        <!-- Généré dynamiquement -->
-      </div>
+      <div class="page-content">
 
-    </div>
-  </div>
-</div>
+        <!-- Recherche -->
+        <div class="search-bar" style="margin-bottom:16px">
+          <div class="search-input-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" class="search-input" id="search-cat" placeholder="Rechercher une prestation..."
+              oninput="renderCatalogue()" />
+          </div>
+          <div class="table-filters" id="cat-filters">
+            <!-- Générés dynamiquement -->
+          </div>
+        </div>
 
-<!-- Modal prestation -->
-<div class="modal-overlay" id="modal-cat">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title" id="modal-title">Nouvelle prestation</span>
-      <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModal()">
-        <i class="ti ti-x"></i>
-      </button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="m-id" />
-      <div class="form-group" style="margin-bottom:12px">
-        <label>Désignation <span class="required">*</span></label>
-        <input type="text" class="form-control" id="m-designation"
-          placeholder="Ex : Prise de courant" />
-      </div>
-      <div class="form-row cols-2" style="margin-bottom:12px">
-        <div class="form-group">
-          <label>Catégorie</label>
-          <input type="text" class="form-control" id="m-categorie"
-            placeholder="Ex : Appareillage" list="cats-list" />
-          <datalist id="cats-list"></datalist>
+        <!-- Stats -->
+        <div class="stats-grid" style="margin-bottom:20px">
+          <div class="stat-card">
+            <div class="stat-card-label">Total prestations</div>
+            <div class="stat-card-value" id="stat-total">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Prix moyen HT</div>
+            <div class="stat-card-value rouge" id="stat-moy">0 €</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Plus cher</div>
+            <div class="stat-card-value" id="stat-max">0 €</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Moins cher</div>
+            <div class="stat-card-value" id="stat-min">0 €</div>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Unité</label>
-          <select class="form-control" id="m-unite">
-            <option value="u">Unité (u)</option>
-            <option value="h">Heure (h)</option>
-            <option value="m">Mètre (m)</option>
-            <option value="m²">m²</option>
-            <option value="forfait">Forfait</option>
-            <option value="lot">Lot</option>
-          </select>
+
+        <!-- Liste catalogue -->
+        <div id="catalogue-container">
+          <!-- Généré dynamiquement -->
         </div>
+
       </div>
-      <div class="form-group" style="margin-bottom:12px">
-        <label>Prix unitaire HT (€) <span class="required">*</span></label>
-        <input type="number" class="form-control" id="m-pu"
-          placeholder="0.00" min="0" step="0.01" />
-      </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea class="form-control" id="m-description" rows="3"
-          placeholder="Détails inclus dans ce forfait..."></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
-      <button class="btn btn-primary" onclick="sauvegarderPrestation()">
-        <i class="ti ti-device-floppy"></i> Sauvegarder
-      </button>
     </div>
   </div>
-</div>
 
-<div class="toast-container" id="toasts"></div>
+  <!-- Modal prestation -->
+  <div class="modal-overlay" id="modal-cat">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">Nouvelle prestation</span>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModal()">
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="m-id" />
+        <div class="form-group" style="margin-bottom:12px">
+          <label>Désignation <span class="required">*</span></label>
+          <input type="text" class="form-control" id="m-designation" placeholder="Ex : Prise de courant" />
+        </div>
+        <div class="form-row cols-2" style="margin-bottom:12px">
+          <div class="form-group">
+            <label>Catégorie</label>
+            <input type="text" class="form-control" id="m-categorie" placeholder="Ex : Appareillage" list="cats-list" />
+            <datalist id="cats-list"></datalist>
+          </div>
+          <div class="form-group">
+            <label>Unité</label>
+            <select class="form-control" id="m-unite">
+              <option value="u">Unité (u)</option>
+              <option value="h">Heure (h)</option>
+              <option value="m">Mètre (m)</option>
+              <option value="m²">m²</option>
+              <option value="forfait">Forfait</option>
+              <option value="lot">Lot</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label>Prix unitaire HT (€) <span class="required">*</span></label>
+          <input type="number" class="form-control" id="m-pu" placeholder="0.00" min="0" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea class="form-control" id="m-description" rows="3"
+            placeholder="Détails inclus dans ce forfait..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
+        <button class="btn btn-primary" onclick="sauvegarderPrestation()">
+          <i class="ti ti-device-floppy"></i> Sauvegarder
+        </button>
+      </div>
+    </div>
+  </div>
 
-<script src="app.js"></script>
-<script>
-let catFilter = '';
+  <!-- Modal Import CSV -->
+  <div class="modal-overlay" id="modal-import">
+    <div class="modal" style="max-width: 700px;">
+      <div class="modal-header">
+        <span class="modal-title">Importer un catalogue CSV (Yesss Électrique)</span>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModalImport()">
+          <i class="ti ti-x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row cols-2" style="margin-bottom:16px;">
+          <div class="form-group">
+            <label>Sélectionnez votre fichier CSV</label>
+            <input type="file" id="file-csv" accept=".csv" class="form-control" onchange="analyserCSV(this)" />
+          </div>
+          <div class="form-group">
+            <label>Encodage du fichier</label>
+            <select id="import-encoding" class="form-control" onchange="analyserCSV()">
+              <option value="windows-1252">Windows-1252 (Défaut Excel / Yesss)</option>
+              <option value="utf-8">UTF-8 (Standard)</option>
+            </select>
+          </div>
+        </div>
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderCatalogue();
-});
+        <div id="import-preview-zone" style="display:none;">
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>Mode d'importation</label>
+            <select id="import-mode" class="form-control">
+              <option value="add">Ajouter au catalogue existant</option>
+              <option value="replace">Remplacer TOUT le catalogue</option>
+            </select>
+          </div>
 
-function renderCatalogue() {
-  const q       = document.getElementById('search-cat').value.toLowerCase();
-  const cat     = DB.getCatalogue();
-  const categories = [...new Set(cat.map(p => p.categorie||'Autre'))];
+          <p style="font-size:12px; color:var(--texte-sec); margin-bottom:8px;">
+            <strong>Aperçu des 5 premières lignes</strong> (Marge de +50% appliquée automatiquement sur le Prix Client)
+          </p>
+          <div class="table-responsive"
+            style="max-height: 250px; border:1px solid var(--border); border-radius: var(--radius); overflow-y:auto;">
+            <table class="lignes-table" style="min-width: 600px; margin:0; width:100%;">
+              <thead>
+                <tr>
+                  <th
+                    style="padding:6px 10px;text-align:left;background:#f9f9f9;font-size:11px;font-weight:600;border-bottom:1px solid var(--border);">
+                    Désignation</th>
+                  <th
+                    style="padding:6px 10px;text-align:left;background:#f9f9f9;font-size:11px;font-weight:600;border-bottom:1px solid var(--border);">
+                    Catégorie</th>
+                  <th
+                    style="padding:6px 10px;text-align:left;background:#f9f9f9;font-size:11px;font-weight:600;border-bottom:1px solid var(--border);">
+                    Prix Achat</th>
+                  <th
+                    style="padding:6px 10px;text-align:left;background:#f9f9f9;font-size:11px;font-weight:600;color:var(--rouge);border-bottom:1px solid var(--border);">
+                    Prix Devis (+50%)</th>
+                </tr>
+              </thead>
+              <tbody id="preview-tbody"></tbody>
+            </table>
+          </div>
+          <p id="import-stats" style="font-size:12px; font-weight:600; margin-top:8px; color:var(--vert);"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="fermerModalImport()">Annuler</button>
+        <button class="btn btn-primary" id="btn-valider-import" onclick="validerImport()" disabled>
+          <i class="ti ti-check"></i> Valider l'import
+        </button>
+      </div>
+    </div>
+  </div>
 
-  // Filtres catégories
-  const filtersEl = document.getElementById('cat-filters');
-  filtersEl.innerHTML = `<span class="filter-pill ${!catFilter?'active':''}" onclick="filtrerCat('',this)">Tous</span>` +
-    categories.map(c => `<span class="filter-pill ${catFilter===c?'active':''}" onclick="filtrerCat('${c}',this)">${c}</span>`).join('');
+  <div class="toast-container" id="toasts"></div>
 
-  // Datalist catégories pour le modal
-  document.getElementById('cats-list').innerHTML = categories.map(c=>`<option value="${c}">`).join('');
+  <script src="app.js"></script>
+  <script>
+    let catFilter = '';
 
-  // Filtrer
-  let list = cat;
-  if (catFilter) list = list.filter(p => (p.categorie||'Autre') === catFilter);
-  if (q) list = list.filter(p =>
-    p.designation.toLowerCase().includes(q) ||
-    (p.description||'').toLowerCase().includes(q) ||
-    (p.categorie||'').toLowerCase().includes(q)
-  );
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCatalogue();
+    });
 
-  // Stats
-  const prix = cat.map(p=>p.pu||0);
-  document.getElementById('stat-total').textContent = cat.length;
-  document.getElementById('stat-moy').textContent   = cat.length ? fmt(prix.reduce((a,b)=>a+b,0)/prix.length) : '0 €';
-  document.getElementById('stat-max').textContent   = cat.length ? fmt(Math.max(...prix)) : '0 €';
-  document.getElementById('stat-min').textContent   = cat.length ? fmt(Math.min(...prix)) : '0 €';
+    function renderCatalogue() {
+      const q = document.getElementById('search-cat').value.toLowerCase();
+      const cat = DB.getCatalogue();
+      const categories = [...new Set(cat.map(p => p.categorie || 'Autre'))];
 
-  // Grouper par catégorie
-  const container = document.getElementById('catalogue-container');
+      // Filtres catégories
+      const filtersEl = document.getElementById('cat-filters');
+      filtersEl.innerHTML = `<span class="filter-pill ${!catFilter ? 'active' : ''}" onclick="filtrerCat('',this)">Tous</span>` +
+        categories.map(c => `<span class="filter-pill ${catFilter === c ? 'active' : ''}" onclick="filtrerCat('${c}',this)">${c}</span>`).join('');
 
-  if (!list.length) {
-    container.innerHTML = `<div class="empty-state">
+      // Datalist catégories pour le modal
+      document.getElementById('cats-list').innerHTML = categories.map(c => `<option value="${c}">`).join('');
+
+      // Filtrer
+      let list = cat;
+      if (catFilter) list = list.filter(p => (p.categorie || 'Autre') === catFilter);
+      if (q) {
+        const terms = q.split(' ').filter(t => t.length > 0);
+        list = list.filter(p => {
+          const text = (p.designation + ' ' + (p.description || '') + ' ' + (p.categorie || '')).toLowerCase();
+          return terms.every(term => text.includes(term));
+        });
+      }
+
+      // Stats
+      const prix = cat.map(p => p.pu || 0);
+      document.getElementById('stat-total').textContent = cat.length;
+      document.getElementById('stat-moy').textContent = cat.length ? fmt(prix.reduce((a, b) => a + b, 0) / prix.length) : '0 €';
+      document.getElementById('stat-max').textContent = cat.length ? fmt(Math.max(...prix)) : '0 €';
+      document.getElementById('stat-min').textContent = cat.length ? fmt(Math.min(...prix)) : '0 €';
+
+      // Grouper par catégorie
+      const container = document.getElementById('catalogue-container');
+
+      if (!list.length) {
+        container.innerHTML = `<div class="empty-state">
       <i class="ti ti-list-off"></i>
       <h3>Aucune prestation trouvée</h3>
       <p>Modifiez votre recherche ou ajoutez une nouvelle prestation</p>
       <button class="btn btn-primary" onclick="ouvrirModal()"><i class="ti ti-plus"></i> Ajouter</button>
     </div>`;
-    return;
-  }
+        return;
+      }
 
-  // Grouper
-  const grouped = {};
-  list.forEach(p => {
-    const cat = p.categorie || 'Autre';
-    if (!grouped[cat]) grouped[cat] = [];
-    grouped[cat].push(p);
-  });
+      // Limite d'affichage pour éviter les ralentissements du navigateur
+      const limit = 150;
+      const totalResults = list.length;
+      const isLimited = totalResults > limit;
+      if (isLimited) list = list.slice(0, limit);
 
-  const icones = {
-    'Appareillage': 'ti-plug',
-    'Éclairage':    'ti-bulb',
-    'Alimentation': 'ti-bolt',
-    'Chauffage':    'ti-flame',
-    'Réseau':       'ti-network',
-    "Main d'œuvre": 'ti-clock',
-    'Autre':        'ti-tag',
-  };
+      // Grouper
+      const grouped = {};
+      list.forEach(p => {
+        const cat = p.categorie || 'Autre';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(p);
+      });
 
-  container.innerHTML = Object.entries(grouped).map(([cat, prestations]) => `
+      const icones = {
+        'Appareillage': 'ti-plug',
+        'Éclairage': 'ti-bulb',
+        'Alimentation': 'ti-bolt',
+        'Chauffage': 'ti-flame',
+        'Réseau': 'ti-network',
+        "Main d'œuvre": 'ti-clock',
+        'Forfaits': 'ti-box',
+        'Forfait': 'ti-box',
+        'Enregistré manuellement': 'ti-bookmark',
+        'Autre': 'ti-tag',
+      };
+
+      const isSearchActive = q !== '';
+
+      container.innerHTML = Object.entries(grouped).map(([cat, prestations], idx) => {
+        const safeCatId = 'cat-' + idx;
+        const displayStyle = isSearchActive ? 'block' : 'none';
+        const chevronClass = isSearchActive ? 'ti-chevron-up' : 'ti-chevron-down';
+
+        return `
     <div class="catalogue-list" style="margin-bottom:16px">
-      <div class="categorie-header">
-        <i class="ti ${icones[cat]||'ti-tag'}"></i>
-        ${cat}
-        <span style="margin-left:auto;font-size:10px;color:var(--texte-sec)">${prestations.length} prestation(s)</span>
-      </div>
-      ${prestations.map(p => `
-        <div class="cat-item">
-          <div class="cat-icon">
-            <i class="ti ${icones[cat]||'ti-tag'}"></i>
-          </div>
-          <div class="cat-info">
-            <div class="cat-name">${p.designation}</div>
-            ${p.description ? `<div class="cat-desc">${p.description}</div>` : ''}
-          </div>
-          <div style="text-align:right;margin-right:12px">
-            <div class="cat-prix">${fmt(p.pu)}</div>
-            <div style="font-size:10px;color:var(--texte-sec)">par ${p.unite||'u'}</div>
-          </div>
-          <div class="cat-actions">
-            <button class="btn btn-ghost btn-icon btn-sm" onclick="editerPrestation('${p.id}')" title="Modifier">
-              <i class="ti ti-edit"></i>
-            </button>
-            <button class="btn btn-ghost btn-icon btn-sm" onclick="dupliquerPrestation('${p.id}')" title="Dupliquer">
-              <i class="ti ti-copy"></i>
-            </button>
-            <button class="btn btn-ghost btn-icon btn-sm" style="color:#c0392b" onclick="supprimerPrestation('${p.id}')" title="Supprimer">
-              <i class="ti ti-trash"></i>
-            </button>
-          </div>
+      <div class="categorie-header" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="toggleCategorie('${safeCatId}')">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <i class="ti ${icones[cat] || 'ti-tag'}"></i>
+          ${cat} <span style="font-size:10px; opacity:0.6; text-transform:none">(${prestations.length})</span>
         </div>
-      `).join('')}
+        <i class="ti ${chevronClass}" id="icon-${safeCatId}" style="color:var(--texte-sec)"></i>
+      </div>
+      <div class="categorie-body" id="body-${safeCatId}" style="display:${displayStyle};">
+        ${prestations.map(p => `
+          <div class="cat-item">
+            <div class="cat-icon">
+              <i class="ti ${icones[cat] || 'ti-tag'}"></i>
+            </div>
+            <div class="cat-info">
+              <div class="cat-name">${p.designation}</div>
+              ${p.description ? `<div class="cat-desc">${p.description}</div>` : ''}
+            </div>
+            <div style="text-align:right;margin-right:12px">
+              <div class="cat-prix">${fmt(p.pu)}</div>
+              <div style="font-size:10px;color:var(--texte-sec)">par ${p.unite || 'u'}</div>
+            </div>
+            <div class="cat-actions">
+              <button class="btn btn-ghost btn-icon btn-sm" onclick="editerPrestation('${p.id}')" title="Modifier">
+                <i class="ti ti-edit"></i>
+              </button>
+              <button class="btn btn-ghost btn-icon btn-sm" onclick="dupliquerPrestation('${p.id}')" title="Dupliquer">
+                <i class="ti ti-copy"></i>
+              </button>
+              <button class="btn btn-ghost btn-icon btn-sm" style="color:#c0392b" onclick="supprimerPrestation('${p.id}')" title="Supprimer">
+                <i class="ti ti-trash"></i>
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
     </div>
-  `).join('');
-}
+  `}).join('');
 
-function filtrerCat(cat, el) {
-  catFilter = cat;
-  renderCatalogue();
-}
+      if (isLimited) {
+        container.innerHTML += `
+          <div style="text-align:center; padding: 24px; color: var(--texte-sec); font-size: 13px; background: var(--gris-clair); border-radius: var(--radius);">
+            <i class="ti ti-info-circle" style="font-size:16px; color:var(--bleu); vertical-align:middle; margin-right:4px;"></i>
+            Affichage limité aux <strong>${limit} premiers résultats</strong> sur ${totalResults}.<br/>
+            <span style="opacity:0.8; font-size:12px;">Utilisez la barre de recherche en haut pour trouver les autres prestations facilement.</span>
+          </div>
+        `;
+      }
+    }
 
-// ── MODAL ──
-function ouvrirModal(id = null) {
-  resetModal();
-  if (id) {
-    const p = DB.getCatalogue().find(x => x.id === id);
-    if (!p) return;
-    document.getElementById('modal-title').textContent = 'Modifier la prestation';
-    document.getElementById('m-id').value          = p.id;
-    document.getElementById('m-designation').value = p.designation;
-    document.getElementById('m-categorie').value   = p.categorie||'';
-    document.getElementById('m-unite').value       = p.unite||'u';
-    document.getElementById('m-pu').value          = p.pu||'';
-    document.getElementById('m-description').value = p.description||'';
-  }
-  document.getElementById('modal-cat').classList.add('open');
-  setTimeout(() => document.getElementById('m-designation').focus(), 100);
-}
+    function filtrerCat(cat, el) {
+      catFilter = cat;
+      renderCatalogue();
 
-function editerPrestation(id)    { ouvrirModal(id); }
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    }
 
-function fermerModal() {
-  document.getElementById('modal-cat').classList.remove('open');
-  resetModal();
-}
+    function toggleCategorie(safeCatId) {
+      const body = document.getElementById('body-' + safeCatId);
+      const icon = document.getElementById('icon-' + safeCatId);
+      if (body.style.display === 'none') {
+        body.style.display = 'block';
+        icon.className = 'ti ti-chevron-up';
+      } else {
+        body.style.display = 'none';
+        icon.className = 'ti ti-chevron-down';
+      }
+    }
 
-function resetModal() {
-  ['m-id','m-designation','m-categorie','m-pu','m-description'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  document.getElementById('m-unite').value   = 'u';
-  document.getElementById('modal-title').textContent = 'Nouvelle prestation';
-}
+    // ── MODAL ──
+    function ouvrirModal(id = null) {
+      resetModal();
+      if (id) {
+        const p = DB.getCatalogue().find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('modal-title').textContent = 'Modifier la prestation';
+        document.getElementById('m-id').value = p.id;
+        document.getElementById('m-designation').value = p.designation;
+        document.getElementById('m-categorie').value = p.categorie || '';
+        document.getElementById('m-unite').value = p.unite || 'u';
+        document.getElementById('m-pu').value = p.pu || '';
+        document.getElementById('m-description').value = p.description || '';
+      }
+      document.getElementById('modal-cat').classList.add('open');
+      setTimeout(() => document.getElementById('m-designation').focus(), 100);
+    }
 
-function sauvegarderPrestation() {
-  const id          = document.getElementById('m-id').value;
-  const designation = document.getElementById('m-designation').value.trim();
-  const pu          = parseFloat(document.getElementById('m-pu').value);
+    function editerPrestation(id) { ouvrirModal(id); }
 
-  if (!designation) { toast('Veuillez saisir une désignation', 'error'); return; }
-  if (isNaN(pu) || pu < 0) { toast('Veuillez saisir un prix valide', 'error'); return; }
+    function fermerModal() {
+      document.getElementById('modal-cat').classList.remove('open');
+      resetModal();
+    }
 
-  const data = {
-    designation,
-    categorie:   document.getElementById('m-categorie').value.trim() || 'Autre',
-    unite:       document.getElementById('m-unite').value,
-    pu,
-    description: document.getElementById('m-description').value.trim(),
-  };
+    function resetModal() {
+      ['m-id', 'm-designation', 'm-categorie', 'm-pu', 'm-description'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      document.getElementById('m-unite').value = 'u';
+      document.getElementById('modal-title').textContent = 'Nouvelle prestation';
+    }
 
-  if (id) {
-    DB.updatePrestation(id, data);
-    toast('Prestation mise à jour !', 'success');
-  } else {
-    DB.addPrestation(data);
-    toast('Prestation ajoutée !', 'success');
-  }
+    function sauvegarderPrestation() {
+      const id = document.getElementById('m-id').value;
+      const designation = document.getElementById('m-designation').value.trim();
+      const pu = parseFloat(document.getElementById('m-pu').value);
 
-  fermerModal();
-  renderCatalogue();
-}
+      if (!designation) { toast('Veuillez saisir une désignation', 'error'); return; }
+      if (isNaN(pu) || pu < 0) { toast('Veuillez saisir un prix valide', 'error'); return; }
 
-function supprimerPrestation(id) {
-  const p = DB.getCatalogue().find(x => x.id === id);
-  if (!confirm(`Supprimer "${p?.designation}" ?`)) return;
-  DB.deletePrestation(id);
-  renderCatalogue();
-  toast('Prestation supprimée', 'info');
-}
+      const data = {
+        designation,
+        categorie: document.getElementById('m-categorie').value.trim() || 'Autre',
+        unite: document.getElementById('m-unite').value,
+        pu,
+        description: document.getElementById('m-description').value.trim(),
+      };
 
-function dupliquerPrestation(id) {
-  const p = DB.getCatalogue().find(x => x.id === id);
-  if (!p) return;
-  DB.addPrestation({ ...p, id: undefined, designation: p.designation + ' (copie)' });
-  renderCatalogue();
-  toast('Prestation dupliquée', 'success');
-}
+      if (id) {
+        DB.updatePrestation(id, data);
+        toast('Prestation mise à jour !', 'success');
+      } else {
+        DB.addPrestation(data);
+        toast('Prestation ajoutée !', 'success');
+      }
 
-function resetCatalogue() {
-  if (!confirm('Réinitialiser le catalogue avec les prestations par défaut ? Vos modifications seront perdues.')) return;
-  localStorage.removeItem('se_catalogue');
-  renderCatalogue();
-  toast('Catalogue réinitialisé', 'info');
-}
-</script>
+      fermerModal();
+      renderCatalogue();
+    }
+
+    function supprimerPrestation(id) {
+      const p = DB.getCatalogue().find(x => x.id === id);
+      if (!confirm(`Supprimer "${p?.designation}" ?`)) return;
+      DB.deletePrestation(id);
+      renderCatalogue();
+      toast('Prestation supprimée', 'info');
+    }
+
+    function dupliquerPrestation(id) {
+      const p = DB.getCatalogue().find(x => x.id === id);
+      if (!p) return;
+      DB.addPrestation({ ...p, id: undefined, designation: p.designation + ' (copie)' });
+      renderCatalogue();
+      toast('Prestation dupliquée', 'success');
+    }
+
+    function resetCatalogue() {
+      if (!confirm('Réinitialiser le catalogue avec les prestations par défaut ? Vos modifications seront perdues.')) return;
+      localStorage.removeItem('se_catalogue');
+      renderCatalogue();
+      toast('Catalogue réinitialisé', 'info');
+    }
+
+    // ── IMPORT CSV ──
+    function parseCSV(text) {
+      let result = [];
+      let row = [];
+      let inQuotes = false;
+      let val = '';
+      for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+        if (char === '"' && text[i + 1] === '"') {
+          val += '"'; i++;
+        } else if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ';' && !inQuotes) {
+          row.push(val); val = '';
+        } else if (char === '\n' && !inQuotes) {
+          row.push(val); result.push(row); row = []; val = '';
+        } else if (char !== '\r') {
+          val += char;
+        }
+      }
+      if (val || row.length > 0) { row.push(val); result.push(row); }
+      return result;
+    }
+
+    let importedData = [];
+
+    let currentCSVFile = null;
+
+    function ouvrirModalImport() {
+      currentCSVFile = null;
+      document.getElementById('file-csv').value = '';
+      document.getElementById('import-preview-zone').style.display = 'none';
+      document.getElementById('btn-valider-import').disabled = true;
+      document.getElementById('modal-import').classList.add('open');
+    }
+
+    function fermerModalImport() {
+      document.getElementById('modal-import').classList.remove('open');
+    }
+
+    function analyserCSV(input) {
+      if (input && input.files && input.files[0]) {
+        currentCSVFile = input.files[0];
+      }
+      const file = currentCSVFile;
+      if (!file) return;
+
+      const encoding = document.getElementById('import-encoding').value;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const text = e.target.result;
+        const rows = parseCSV(text);
+
+        if (rows.length < 2) {
+          toast('Le fichier semble vide ou invalide.', 'error');
+          return;
+        }
+
+        // Trouver les indices des colonnes Yesss
+        const header = rows[0].map(h => h.trim().toLowerCase());
+        const idxLibelle = header.findIndex(h => h.includes('libelle') && !h.includes('fam'));
+        const idxPrixClient = header.findIndex(h => h.includes('prix_client'));
+        const idxFamille = header.findIndex(h => h.includes('fam_libelle'));
+        const idxRef = header.findIndex(h => h.includes('reference') || h.includes('rfrence') || h.includes('référence'));
+        const idxFournisseur = header.findIndex(h => h.includes('fournisseur'));
+
+        if (idxLibelle === -1 || idxPrixClient === -1) {
+          toast('Colonnes "libelle" ou "prix_client" introuvables. Vérifiez le format du CSV.', 'error');
+          return;
+        }
+
+        importedData = [];
+        const tbody = document.getElementById('preview-tbody');
+        tbody.innerHTML = '';
+
+        let validRows = 0;
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (row.length < header.length) continue;
+
+          const libelle = row[idxLibelle].trim().replace(/["\\]/g, '');
+          let prixStr = row[idxPrixClient].replace(/,/g, '.').replace(/[^0-9.-]/g, '').trim();
+          const prixClientHT = parseFloat(prixStr);
+
+          if (!libelle || isNaN(prixClientHT)) continue;
+
+          // Calcul +50%
+          const prixFinal = parseFloat((prixClientHT * 1.50).toFixed(2));
+
+          let fam = idxFamille > -1 ? row[idxFamille].trim() : 'Autre';
+          let ref = idxRef > -1 ? row[idxRef].trim() : '';
+          let frn = idxFournisseur > -1 ? row[idxFournisseur].trim() : '';
+          let desc = '';
+          if (ref) desc += "Réf: " + ref;
+          if (frn) desc += (desc ? " | " : "") + frn;
+
+          importedData.push({
+            designation: libelle,
+            categorie: fam,
+            unite: 'u',
+            pu: prixFinal,
+            description: desc
+          });
+
+          if (validRows < 5) {
+            tbody.innerHTML += `
+          <tr style="border-bottom:1px solid #eee;">
+            <td style="padding:6px 10px;font-size:11px;vertical-align:middle;">${libelle.substring(0, 60)}${libelle.length > 60 ? '...' : ''}</td>
+            <td style="padding:6px 10px;font-size:11px;vertical-align:middle;">${fam}</td>
+            <td style="padding:6px 10px;font-size:11px;vertical-align:middle;">${prixClientHT.toFixed(2)} €</td>
+            <td style="padding:6px 10px;font-size:11px;font-weight:700;color:var(--rouge);vertical-align:middle;">${prixFinal.toFixed(2)} €</td>
+          </tr>
+        `;
+          }
+          validRows++;
+        }
+
+        document.getElementById('import-stats').textContent = `${validRows} références détectées et prêtes à être importées !`;
+        document.getElementById('import-preview-zone').style.display = 'block';
+        document.getElementById('btn-valider-import').disabled = false;
+      };
+
+      reader.readAsText(file, encoding);
+    }
+
+    function validerImport() {
+      if (importedData.length === 0) return;
+      const mode = document.getElementById('import-mode').value;
+
+      let currentCat = DB.getCatalogue();
+
+      if (mode === 'replace') {
+        currentCat = [];
+      }
+
+      importedData.forEach(p => {
+        currentCat.push({
+          id: 'cat_' + Date.now().toString(36) + Math.random().toString(36).substr(2),
+          ...p
+        });
+      });
+
+      localStorage.setItem('se_catalogue', JSON.stringify(currentCat));
+
+      toast(`${importedData.length} articles importés avec succès !`, 'success');
+      fermerModalImport();
+      renderCatalogue();
+    }
+  </script>
 
 </body>
+
 </html>
