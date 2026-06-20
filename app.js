@@ -704,7 +704,7 @@ ${contexte.devisExistant ? `Devis en cours : ${JSON.stringify(contexte.devisExis
         headers: headers,
         body: JSON.stringify({
           model,
-          max_tokens: 1500,
+          max_tokens: 8000,
           system: systemPrompt,
           messages: [{ role: 'user', content: contentArray }],
         }),
@@ -746,7 +746,7 @@ ${contexte.devisExistant ? `Devis en cours : ${JSON.stringify(contexte.devisExis
           body: JSON.stringify({
             system_instruction: { parts: [{ text: systemPrompt }] },
             contents: [{ role: 'user', parts: partsArray }],
-            generationConfig: { maxOutputTokens: 1500, temperature: 0.2, responseMimeType: "application/json" },
+            generationConfig: { maxOutputTokens: 8192, temperature: 0.2, responseMimeType: "application/json" },
           }),
         }
       );
