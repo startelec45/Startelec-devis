@@ -593,43 +593,6 @@ function buildPDFHtml(d, cfg) {
 // IA — APPEL MULTI-FOURNISSEURS (Claude / Gemini)
 // ══════════════════════════════════════════════
 async function appelIA(prompt, contexte = {}) {
-  DB.config = null;
-  DB.clients = null;
-  DB.devis = null;
-  DB.factures = null;
-  DB.catalogue = null;
-}
-
-// ══════════════════════════════════════════════
-// MIGRATION AUTOMATIQUE DES CATÉGORIES (Usage unique)
-// ══════════════════════════════════════════════
-(function migrateCategories() {
-  if (localStorage.getItem('se_migrated_cats_v1')) return;
-
-  let catData = localStorage.getItem('se_catalogue');
-  if (catData) {
-    try {
-      let catalogue = JSON.parse(catData);
-      let modified = false;
-      catalogue.forEach(p => {
-        const c = (p.categorie || '').trim();
-        // Garder Main d'œuvre et Forfaits
-        if (c !== "Main d'œuvre" && c !== "Main d'oeuvre" && c !== "Forfait" && c !== "Forfaits") {
-          p.categorie = "Enregistré manuellement";
-          modified = true;
-        }
-      });
-      if (modified) {
-        localStorage.setItem('se_catalogue', JSON.stringify(catalogue));
-      }
-    } catch (e) {
-      console.error("Erreur migration catalogue", e);
-    }
-  }
-  localStorage.setItem('se_migrated_cats_v1', 'true');
-})();
-
-async function getCatalogue() {
   const cfg = DB.getConfig();
   const catalogue = DB.getCatalogue();
   const provider = localStorage.getItem('se_ai_provider') || 'anthropic';
@@ -640,8 +603,8 @@ async function getCatalogue() {
   // Filtrage intelligent du catalogue pour éviter d'envoyer des milliers de lignes au modèle
   let catalogueFiltre = catalogue;
   if (catalogue.length > 80) {
-    const promptWords = prompt.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Enlever les accents
+    const promptWords = (prompt || '').toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .split(/[\s,.'";()\-+]+/)
       .filter(w => w.length > 2 && !['pour', 'avec', 'dans', 'faire', 'plus', 'tout', 'devis', 'jean', 'dupont', 'rue', 'paix', 'client', 'adresse', 'creer', 'ajouter'].includes(w));
 
@@ -649,13 +612,8 @@ async function getCatalogue() {
       const targetText = ((p.designation || '') + ' ' + (p.categorie || '') + ' ' + (p.description || ''))
         .toLowerCase()
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
       let score = 0;
-      promptWords.forEach(word => {
-        if (targetText.includes(word)) {
-          score += 1.5;
-        }
-      });
+      promptWords.forEach(word => { if (targetText.includes(word)) score += 1.5; });
       return { item: p, score };
     });
 
@@ -665,14 +623,10 @@ async function getCatalogue() {
       .map(x => x.item);
 
     if (matches.length > 0) {
-      // Inclure toujours la main d'œuvre par défaut
-      const mo = catalogue.find(p => (p.designation || '').toLowerCase().includes("main d'oeuvre") || (p.designation || '').toLowerCase().includes("main d'œuvre"));
-      if (mo && !matches.includes(mo)) {
-        matches.push(mo);
-      }
+      const mo = catalogue.find(p => (p.designation || '').toLowerCase().includes("main d'oeuvre") || (p.designation || '').toLowerCase().includes("main d'\u0153uvre"));
+      if (mo && !matches.includes(mo)) matches.push(mo);
       catalogueFiltre = matches.slice(0, 80);
     } else {
-      // Si aucune correspondance, envoyer les 50 premiers articles
       catalogueFiltre = catalogue.slice(0, 50);
     }
   }
@@ -758,40 +712,28 @@ ${contexte.devisExistant ? `Devis en cours : ${JSON.stringify(contexte.devisExis
       if (!res.ok) {
         const errText = await res.text();
         let errMsg = 'Erreur API Anthropic';
-        try {
-          const errObj = JSON.parse(errText);
-          errMsg = errObj.error?.message || errMsg;
-        } catch (_) {
-          errMsg = errText || errMsg;
-        }
+        try { const errObj = JSON.parse(errText); errMsg = errObj.error?.message || errMsg; } catch (_) { errMsg = errText || errMsg; }
         throw new Error("API_ERROR: " + errMsg);
       }
       rawResponseText = await res.text();
       let data;
-      try {
-        data = JSON.parse(rawResponseText);
-      } catch (parseErr) {
+      try { data = JSON.parse(rawResponseText); } catch (parseErr) {
         const err = new SyntaxError("Réponse de l'API Anthropic invalide.");
         err.rawText = rawResponseText;
         throw err;
       }
       text = data.content?.[0]?.text || '';
 
-      // ── GOOGLE GEMINI ──
+    // ── GOOGLE GEMINI ──
     } else if (provider === 'gemini') {
-      const model = localStorage.getItem('se_ai_model') || 'gemini-1.5-flash';
+      const model = localStorage.getItem('se_ai_model') || 'gemini-2.5-flash';
 
       let partsArray = [];
       if (contexte.file) {
         if (contexte.file.isCsv) {
           partsArray.push({ text: `CONTENU DU FICHIER CSV IMPORTÉ :\n${contexte.file.text}` });
         } else {
-          partsArray.push({
-            inlineData: {
-              mimeType: contexte.file.mimeType,
-              data: contexte.file.base64
-            }
-          });
+          partsArray.push({ inlineData: { mimeType: contexte.file.mimeType, data: contexte.file.base64 } });
         }
       }
       partsArray.push({ text: userPrompt });
@@ -804,31 +746,19 @@ ${contexte.devisExistant ? `Devis en cours : ${JSON.stringify(contexte.devisExis
           body: JSON.stringify({
             system_instruction: { parts: [{ text: systemPrompt }] },
             contents: [{ role: 'user', parts: partsArray }],
-            generationConfig: {
-              maxOutputTokens: 1500,
-              temperature: 0.2,
-              responseMimeType: "application/json"
-            },
+            generationConfig: { maxOutputTokens: 1500, temperature: 0.2, responseMimeType: "application/json" },
           }),
         }
       );
       if (!res.ok) {
         const errText = await res.text();
         let errMsg = 'Erreur API Gemini';
-        try {
-          const errObj = JSON.parse(errText);
-          errMsg = errObj.error?.message || errMsg;
-        } catch (_) {
-          errMsg = errText || errMsg;
-        }
-        // Préfixer pour éviter que devis.html ne l'écrase en croyant à une erreur de parsing
+        try { const errObj = JSON.parse(errText); errMsg = errObj.error?.message || errMsg; } catch (_) { errMsg = errText || errMsg; }
         throw new Error("API_ERROR: " + errMsg);
       }
       rawResponseText = await res.text();
       let data;
-      try {
-        data = JSON.parse(rawResponseText);
-      } catch (parseErr) {
+      try { data = JSON.parse(rawResponseText); } catch (parseErr) {
         const err = new SyntaxError("Réponse de l'API Gemini invalide.");
         err.rawText = rawResponseText;
         throw err;
@@ -839,7 +769,7 @@ ${contexte.devisExistant ? `Devis en cours : ${JSON.stringify(contexte.devisExis
       throw new Error('Fournisseur IA inconnu : ' + provider);
     }
 
-    // Nettoyer et parser le JSON de manière robuste
+    // Nettoyer et parser le JSON
     const startIdx = text.indexOf('{');
     const endIdx = text.lastIndexOf('}');
     if (startIdx === -1 || endIdx === -1) {
@@ -861,6 +791,34 @@ ${contexte.devisExistant ? `Devis en cours : ${JSON.stringify(contexte.devisExis
     throw e;
   }
 }
+
+// ══════════════════════════════════════════════
+// MIGRATION AUTOMATIQUE DES CATÉGORIES (Usage unique)
+// ══════════════════════════════════════════════
+(function migrateCategories() {
+  if (localStorage.getItem('se_migrated_cats_v1')) return;
+
+  let catData = localStorage.getItem('se_catalogue');
+  if (catData) {
+    try {
+      let catalogue = JSON.parse(catData);
+      let modified = false;
+      catalogue.forEach(p => {
+        const c = (p.categorie || '').trim();
+        if (c !== "Main d'\u0153uvre" && c !== "Main d'oeuvre" && c !== "Forfait" && c !== "Forfaits") {
+          p.categorie = "Enregistré manuellement";
+          modified = true;
+        }
+      });
+      if (modified) {
+        localStorage.setItem('se_catalogue', JSON.stringify(catalogue));
+      }
+    } catch (e) {
+      console.error("Erreur migration catalogue", e);
+    }
+  }
+  localStorage.setItem('se_migrated_cats_v1', 'true');
+})();
 
 // ══════════════════════════════════════════════
 // CRÉER FACTURE DEPUIS DEVIS
