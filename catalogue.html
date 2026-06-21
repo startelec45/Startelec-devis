@@ -198,8 +198,10 @@
         <div class="form-row cols-2" style="margin-bottom:12px">
           <div class="form-group">
             <label>Catégorie</label>
-            <input type="text" class="form-control" id="m-categorie" placeholder="Ex : Appareillage" list="cats-list" />
-            <datalist id="cats-list"></datalist>
+            <select class="form-control" id="m-categorie">
+              <option value="Prestations manuelles">Prestations manuelles</option>
+              <option value="Main d'&#x153;uvre">Main d'œuvre</option>
+            </select>
           </div>
           <div class="form-group">
             <label>Unité</label>
@@ -268,8 +270,20 @@
           <p style="font-size:12px; color:var(--texte-sec); margin-bottom:8px;">
             <strong>Aperçu des 5 premières lignes</strong> (Marge de +50% appliquée automatiquement sur le Prix Client)
           </p>
+
+          <!-- Nom du menu déroulant -->
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="font-weight:600">📂 Nom du menu déroulant <span class="required">*</span></label>
+            <input type="text" id="import-categorie-nom" class="form-control"
+              placeholder="Ex : Yesss 2024, Sonepar Juin, Rexel Hiver..."
+              style="margin-top:4px" />
+            <p style="font-size:11px;color:var(--texte-sec);margin-top:4px">
+              Toutes les références de ce fichier seront regroupées dans ce menu déroulant dans le catalogue.
+            </p>
+          </div>
+
           <div class="table-responsive"
-            style="max-height: 250px; border:1px solid var(--border); border-radius: var(--radius); overflow-y:auto;">
+            style="max-height: 220px; border:1px solid var(--border); border-radius: var(--radius); overflow-y:auto;">
             <table class="lignes-table" style="min-width: 600px; margin:0; width:100%;">
               <thead>
                 <tr>
@@ -488,11 +502,12 @@
     }
 
     function resetModal() {
-      ['m-id', 'm-designation', 'm-categorie', 'm-pu', 'm-description'].forEach(id => {
+      ['m-id', 'm-designation', 'm-pu', 'm-description'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
       });
       document.getElementById('m-unite').value = 'u';
+      document.getElementById('m-categorie').value = 'Prestations manuelles';
       document.getElementById('modal-title').textContent = 'Nouvelle prestation';
     }
 
@@ -597,6 +612,8 @@
       document.getElementById('file-csv').value = '';
       document.getElementById('import-preview-zone').style.display = 'none';
       document.getElementById('btn-valider-import').disabled = true;
+      const nomInput = document.getElementById('import-categorie-nom');
+      if (nomInput) nomInput.value = '';
       document.getElementById('modal-import').classList.add('open');
     }
 
@@ -693,6 +710,16 @@
     async function validerImport() {
       if (importedData.length === 0) return;
 
+      // Récupérer le nom du menu déroulant saisi par l'utilisateur
+      const nomCategorieInput = document.getElementById('import-categorie-nom');
+      const nomCategorie = nomCategorieInput ? nomCategorieInput.value.trim() : '';
+
+      if (!nomCategorie) {
+        toast('Veuillez saisir un nom pour le menu déroulant (ex: Yesss 2024)', 'error');
+        if (nomCategorieInput) nomCategorieInput.focus();
+        return;
+      }
+
       const btn = document.getElementById('btn-valider-import');
       if (btn) {
         btn.disabled = true;
@@ -700,20 +727,20 @@
       }
 
       try {
-        // Envoi de chaque prestation du CSV vers Supabase via app.js
+        // Envoi de chaque prestation vers Supabase avec le nom de catégorie personnalisé
         for (const p of importedData) {
           await DB.addPrestation({
             designation: p.designation || '',
             description: p.description || '',
-            categorie: p.categorie || 'Divers',
+            categorie: nomCategorie,   // ← toutes les refs dans le même menu déroulant nommé
             unite: p.unite || 'u',
             pu: parseFloat(p.pu) || 0
           });
         }
 
         fermerModalImport();
-        toast(`${importedData.length} prestations importées avec succès !`, 'success');
-        renderCatalogue();
+        toast(`${importedData.length} références importées dans "${nomCategorie}" !`, 'success');
+        await renderCatalogue();
       } catch (error) {
         console.error("Erreur lors de l'importation :", error);
         toast("Une erreur est survenue lors de l'importation.", 'error');

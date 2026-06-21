@@ -543,25 +543,13 @@ function copierLienApercu(devis_id) {
 async function genererPDF(devis_id) {
   try {
     const devis = await DB.getDevisById(devis_id);
-    if (!devis) { toast('Devis introuvable','error'); return; }
-    const cfg = await DB.getConfig();
-    toast('Génération du PDF...','info');
-    const res = await fetch('/.netlify/functions/generate-pdf', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({devis, config:cfg.entreprise}),
-    });
-    if (!res.ok) throw new Error('Erreur serveur');
-    const blob = await res.blob();
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    a.download = `${(devis.numero||'devis').replace('/','-')}.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast('PDF téléchargé !','success');
+    if (!devis) { toast('Devis introuvable', 'error'); return; }
+    toast('Ouverture impression PDF...', 'info');
+    // Ouvre la page d'aperçu en mode impression automatique
+    // L'utilisateur peut choisir "Enregistrer en PDF" depuis la boîte d'impression
+    window.open(`voir.html?id=${devis_id}&print=1`, '_blank');
   } catch(e) {
     console.error(e);
-    toast('Erreur PDF — '+e.message,'error');
+    toast('Erreur PDF — ' + e.message, 'error');
   }
 }

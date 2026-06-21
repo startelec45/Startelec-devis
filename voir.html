@@ -241,10 +241,10 @@
     <a href="reglages.html" class="nav-item"><i class="ti ti-settings"></i> Réglages</a>
     <div class="sidebar-bottom">
       <a href="reglages.html" class="sidebar-user">
-        <div class="avatar">FF</div>
+        <div class="avatar" id="sidebar-avatar">SE</div>
         <div>
-          <div class="sidebar-user-name">Florian Fernandes</div>
-          <div class="sidebar-user-role">StarElec — Orléans</div>
+          <div class="sidebar-user-name" id="sidebar-nom">StarElec</div>
+          <div class="sidebar-user-role" id="sidebar-ville">Chargement...</div>
         </div>
       </a>
     </div>
@@ -384,6 +384,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Render
   await renderPDF();
   await renderLinkedDocs();
+
+  // Sidebar dynamique depuis config Supabase
+  const cfgSidebar = await DB.getConfig();
+  const e = cfgSidebar.entreprise;
+  const nomEntreprise = e.nom || 'StarElec';
+  const initiales = nomEntreprise.replace(/[^A-Z]/g, '').slice(0, 2) || nomEntreprise.slice(0, 2).toUpperCase();
+  document.getElementById('sidebar-avatar').textContent = initiales;
+  document.getElementById('sidebar-nom').textContent    = nomEntreprise;
+  document.getElementById('sidebar-ville').textContent  = e.ville ? `${nomEntreprise} — ${e.ville}` : nomEntreprise;
 
   // Action auto
   if (action === 'pdf')     genererPDF(id);

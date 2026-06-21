@@ -706,9 +706,7 @@ async function sauvegarderFacture(genPDF = false) {
 
 // ── Actions ──
 async function voirFacture(id) {
-  const allFact = await DB.getFactures();
-  const f = allFact.find(x=>x.id===id);
-  if (f) toast(`${f.numero} — ${f.client} — ${fmt(f.montant_ht||0)}`, 'info');
+  window.location.href = `voir-facture.html?id=${id}`;
 }
 
 async function supprimerFacture(id) {
