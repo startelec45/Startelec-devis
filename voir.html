@@ -359,15 +359,16 @@ let devisId = null;
 let devis   = null;
 let allIds  = [];
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const id     = getUrlParam('id');
   const action = getUrlParam('action');
 
   if (!id) { window.location.href = 'index.html'; return; }
 
   devisId = id;
-  devis   = DB.getDevisById(id);
-  allIds  = DB.getDevis().map(d => d.id);
+  devis   = await DB.getDevisById(id);
+  const devisList = await DB.getDevis();
+  allIds  = devisList.map(d => d.id);
 
   if (!devis) { toast('Devis introuvable', 'error'); return; }
 
@@ -381,8 +382,8 @@ document.addEventListener('DOMContentLoaded', () => {
   sel.className = `badge badge-select ${getBadgeClass(devis.statut)}`;
 
   // Render
-  renderPDF();
-  renderLinkedDocs();
+  await renderPDF();
+  await renderLinkedDocs();
 
   // Action auto
   if (action === 'pdf')     genererPDF(id);
@@ -398,9 +399,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ══ RENDER PDF APERÇU ══
-function renderPDF() {
+async function renderPDF() {
   const d   = devis;
-  const cfg = DB.getConfig().entreprise;
+  const cfgFull = await DB.getConfig();
+  const cfg = cfgFull.entreprise;
 
   const lignesProduit = (d.lignes||[]).filter(l => l.type === 'produit' || !l.type);
   const total_ht      = d.montant_ht || 0;
@@ -551,8 +553,8 @@ function renderPDF() {
 }
 
 // ══ DOCUMENTS LIÉS ══
-function renderLinkedDocs() {
-  const factures = DB.getFacturesByDevis(devisId);
+async function renderLinkedDocs() {
+  const factures = await DB.getFacturesByDevis(devisId);
   if (!factures.length) return;
 
   document.getElementById('linked-docs').style.display = 'block';
@@ -572,8 +574,8 @@ function renderLinkedDocs() {
 }
 
 // ══ ACTIONS ══
-function changerStatut(statut, sel) {
-  DB.updateStatut(devisId, statut);
+async function changerStatut(statut, sel) {
+  await DB.updateStatut(devisId, statut);
   sel.className = `badge badge-select ${getBadgeClass(statut)}`;
   devis.statut  = statut;
   toast(`Statut : ${statut}`, 'success');
@@ -590,27 +592,27 @@ function imprimerPage() {
   closeAllDropdowns();
 }
 
-function facturer() {
+async function facturer() {
   if (!confirm('Convertir ce devis en facture (solde total) ?')) return;
-  const f = creerFactureDepuisDevis(devisId, 'solde');
-  if (f) { renderLinkedDocs(); toast(`Facture ${f.numero} créée`, 'success'); }
+  const f = await creerFactureDepuisDevis(devisId, 'solde');
+  if (f) { await renderLinkedDocs(); toast(`Facture ${f.numero} créée`, 'success'); }
 }
 
-function creerAcompte() {
-  const f = creerFactureDepuisDevis(devisId, 'acompte');
-  if (f) { renderLinkedDocs(); toast(`Facture d'acompte ${f.numero} créée`, 'success'); }
+async function creerAcompte() {
+  const f = await creerFactureDepuisDevis(devisId, 'acompte');
+  if (f) { await renderLinkedDocs(); toast(`Facture d'acompte ${f.numero} créée`, 'success'); }
   closeAllDropdowns();
 }
 
-function creerSimilaire() {
-  const clone = clonerDevis(devisId);
+async function creerSimilaire() {
+  const clone = await clonerDevis(devisId);
   if (clone) window.location.href = `devis.html?id=${clone.id}`;
   closeAllDropdowns();
 }
 
-function annulerDevis() {
+async function annulerDevis() {
   if (!confirm('Annuler ce devis ?')) return;
-  DB.updateStatut(devisId, 'Annulé');
+  await DB.updateStatut(devisId, 'Annulé');
   devis.statut = 'Annulé';
   const sel = document.getElementById('statut-select');
   sel.value     = 'Annulé';
@@ -619,9 +621,9 @@ function annulerDevis() {
   closeAllDropdowns();
 }
 
-function supprimerDevis() {
+async function supprimerDevis() {
   if (!confirm(`Supprimer définitivement le devis ${devis?.numero} ?`)) return;
-  DB.deleteDevis(devisId);
+  await DB.deleteDevis(devisId);
   toast('Devis supprimé', 'info');
   setTimeout(() => window.location.href = 'index.html', 800);
 }

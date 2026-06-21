@@ -435,12 +435,12 @@
 
   <script src="app.js?v=1.0.3"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      chargerReglages();
+    document.addEventListener('DOMContentLoaded', async () => {
+      await chargerReglages();
     });
 
-    function chargerReglages() {
-      const cfg = DB.getConfig();
+    async function chargerReglages() {
+      const cfg = await DB.getConfig();
       const e = cfg.entreprise;
       const d = cfg.devis;
 
@@ -480,8 +480,8 @@
       document.getElementById('s-api-key').value = apiKey;
     }
 
-    function sauvegarderTout() {
-      const cfg = DB.getConfig();
+    async function sauvegarderTout() {
+      const cfg = await DB.getConfig();
 
       const newCfg = {
         entreprise: {
@@ -512,7 +512,7 @@
         }
       };
 
-      DB.saveConfig(newCfg);
+      await DB.saveConfig(newCfg);
 
       // IA — provider, modèle, clé (via sauvegarderIA)
       sauvegarderIA(false);
@@ -696,22 +696,30 @@
     }
 
     // ── EXPORT / IMPORT ──
-    function exporterDonnees() {
-      const data = {
-        version: '1.0',
-        date: new Date().toISOString(),
-        devis: DB.getDevis(),
-        clients: DB.getClients(),
-        catalogue: DB.getCatalogue(),
-        factures: DB.getFactures(),
-        config: DB.getConfig(),
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `startelec-backup-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      toast('Export téléchargé !', 'success');
+    async function exporterDonnees() {
+      try {
+        const [devis, clients, catalogue, factures, config] = await Promise.all([
+          DB.getDevis(),
+          DB.getClients(),
+          DB.getCatalogue(),
+          DB.getFactures(),
+          DB.getConfig(),
+        ]);
+        const data = {
+          version: '1.0',
+          date: new Date().toISOString(),
+          devis, clients, catalogue, factures, config,
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `startelec-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        toast('Export téléchargé !', 'success');
+      } catch (err) {
+        console.error('Erreur export:', err);
+        toast('Erreur lors de l\'export', 'error');
+      }
     }
 
     function importerDonnees(input) {
@@ -720,18 +728,47 @@
       if (!confirm('Importer ces données ? Les données actuelles seront remplacées.')) return;
 
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = async e => {
         try {
           const data = JSON.parse(e.target.result);
-          if (data.devis) DB.saveDevis(data.devis);
-          if (data.clients) DB.saveClients(data.clients);
-          if (data.catalogue) DB.saveCatalogue(data.catalogue);
-          if (data.factures) DB.saveFactures(data.factures);
-          if (data.config) DB.saveConfig(data.config);
+          toast('Import en cours...', 'info');
+
+          // Config
+          if (data.config) await DB.saveConfig(data.config);
+
+          // Catalogue (prestations)
+          if (Array.isArray(data.catalogue)) {
+            for (const p of data.catalogue) {
+              try { await DB.addPrestation(p); } catch(e) { /* ignore doublons */ }
+            }
+          }
+
+          // Clients
+          if (Array.isArray(data.clients)) {
+            for (const c of data.clients) {
+              try { await DB.addClient(c); } catch(e) { /* ignore doublons */ }
+            }
+          }
+
+          // Devis
+          if (Array.isArray(data.devis)) {
+            for (const d of data.devis) {
+              try { await DB.addDevis(d); } catch(e) { /* ignore doublons */ }
+            }
+          }
+
+          // Factures
+          if (Array.isArray(data.factures)) {
+            for (const f of data.factures) {
+              try { await DB.addFacture(f); } catch(e) { /* ignore doublons */ }
+            }
+          }
+
           toast('Données importées avec succès !', 'success');
           setTimeout(() => chargerReglages(), 500);
         } catch (err) {
-          toast('Fichier invalide', 'error');
+          console.error('Erreur import:', err);
+          toast('Fichier invalide ou erreur d\'import', 'error');
         }
       };
       reader.readAsText(file);

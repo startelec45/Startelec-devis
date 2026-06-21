@@ -141,13 +141,13 @@
     let currentFilter = '';
     let currentSort = { key: 'date', dir: -1 };
 
-    document.addEventListener('DOMContentLoaded', () => {
-      renderStats();
-      renderTable();
+    document.addEventListener('DOMContentLoaded', async () => {
+      await renderStats();
+      await renderTable();
     });
 
-    function renderStats() {
-      const all = DB.getDevis();
+    async function renderStats() {
+      const all = await DB.getDevis();
       const attente = all.filter(d => d.statut === 'Créé' || d.statut === 'Envoyé');
       const acceptes = all.filter(d => d.statut === 'Accepté');
       const caTotal = acceptes.reduce((sum, d) => sum + (d.montant_ht || 0), 0);
@@ -171,8 +171,8 @@
       renderTable();
     }
 
-    function renderTable() {
-      let list = DB.getDevis();
+    async function renderTable() {
+      let list = await DB.getDevis();
 
       // Filtrage statut
       if (currentFilter) {
@@ -265,20 +265,18 @@
       }).join('');
     }
 
-    function changerStatut(id, statut, selectEl) {
-      DB.updateStatut(id, statut);
+    async function changerStatut(id, statut, selectEl) {
+      await DB.updateStatut(id, statut);
       selectEl.className = `badge badge-select ${getBadgeClass(statut)}`;
-      renderStats();
-      renderTable();
+      await Promise.all([renderStats(), renderTable()]);
       toast(`Statut mis à jour : ${statut}`, 'success');
     }
 
-    function supprimerDevis(id) {
-      const d = DB.getDevisById(id);
+    async function supprimerDevis(id) {
+      const d = await DB.getDevisById(id);
       if (!confirm(`Supprimer le devis ${d?.numero} ?`)) return;
-      DB.deleteDevis(id);
-      renderStats();
-      renderTable();
+      await DB.deleteDevis(id);
+      await Promise.all([renderStats(), renderTable()]);
       toast('Devis supprimé', 'info');
       closeAllDropdowns();
     }

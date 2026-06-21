@@ -308,13 +308,13 @@
   <script>
     let catFilter = '';
 
-    document.addEventListener('DOMContentLoaded', () => {
-      renderCatalogue();
+    document.addEventListener('DOMContentLoaded', async () => {
+      await renderCatalogue();
     });
 
-    function renderCatalogue() {
+    async function renderCatalogue() {
       const q = document.getElementById('search-cat').value.toLowerCase();
-      const cat = DB.getCatalogue();
+      const cat = await DB.getCatalogue();
       const categories = [...new Set(cat.map(p => p.categorie || 'Autre'))];
 
       // Filtres catégories
@@ -462,10 +462,11 @@
     }
 
     // ── MODAL ──
-    function ouvrirModal(id = null) {
+    async function ouvrirModal(id = null) {
       resetModal();
       if (id) {
-        const p = DB.getCatalogue().find(x => x.id === id);
+        const catalogue = await DB.getCatalogue();
+        const p = catalogue.find(x => x.id === id);
         if (!p) return;
         document.getElementById('modal-title').textContent = 'Modifier la prestation';
         document.getElementById('m-id').value = p.id;
@@ -495,7 +496,7 @@
       document.getElementById('modal-title').textContent = 'Nouvelle prestation';
     }
 
-    function sauvegarderPrestation() {
+    async function sauvegarderPrestation() {
       const id = document.getElementById('m-id').value;
       const designation = document.getElementById('m-designation').value.trim();
       const pu = parseFloat(document.getElementById('m-pu').value);
@@ -511,31 +512,38 @@
         description: document.getElementById('m-description').value.trim(),
       };
 
-      if (id) {
-        DB.updatePrestation(id, data);
-        toast('Prestation mise à jour !', 'success');
-      } else {
-        DB.addPrestation(data);
-        toast('Prestation ajoutée !', 'success');
-      }
+      try {
+        if (id) {
+          await DB.updatePrestation(id, data);
+          toast('Prestation mise à jour !', 'success');
+        } else {
+          await DB.addPrestation(data);
+          toast('Prestation ajoutée !', 'success');
+        }
 
-      fermerModal();
-      renderCatalogue();
+        fermerModal();
+        await renderCatalogue();
+      } catch (err) {
+        console.error('Erreur sauvegarde prestation:', err);
+        toast('Erreur lors de la sauvegarde', 'error');
+      }
     }
 
-    function supprimerPrestation(id) {
-      const p = DB.getCatalogue().find(x => x.id === id);
+    async function supprimerPrestation(id) {
+      const catalogue = await DB.getCatalogue();
+      const p = catalogue.find(x => x.id === id);
       if (!confirm(`Supprimer "${p?.designation}" ?`)) return;
-      DB.deletePrestation(id);
-      renderCatalogue();
+      await DB.deletePrestation(id);
+      await renderCatalogue();
       toast('Prestation supprimée', 'info');
     }
 
-    function dupliquerPrestation(id) {
-      const p = DB.getCatalogue().find(x => x.id === id);
+    async function dupliquerPrestation(id) {
+      const catalogue = await DB.getCatalogue();
+      const p = catalogue.find(x => x.id === id);
       if (!p) return;
-      DB.addPrestation({ ...p, id: undefined, designation: p.designation + ' (copie)' });
-      renderCatalogue();
+      await DB.addPrestation({ ...p, id: undefined, designation: p.designation + ' (copie)' });
+      await renderCatalogue();
       toast('Prestation dupliquée', 'success');
     }
 

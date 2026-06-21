@@ -237,14 +237,14 @@
 <script>
 let typeFilter = '';
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderClients();
+document.addEventListener('DOMContentLoaded', async () => {
+  await renderClients();
 });
 
-function renderClients() {
+async function renderClients() {
   const q    = document.getElementById('search-client').value.toLowerCase();
-  let list   = DB.getClients();
-  const devis = DB.getDevis();
+  const [allClients, devis] = await Promise.all([DB.getClients(), DB.getDevis()]);
+  let list = [...allClients];
 
   if (typeFilter) list = list.filter(c => c.type === typeFilter);
   if (q) list = list.filter(c =>
@@ -255,7 +255,7 @@ function renderClients() {
   );
 
   // Stats
-  const all = DB.getClients();
+  const all = allClients;
   document.getElementById('stat-total').textContent = all.length;
   document.getElementById('stat-part').textContent  = all.filter(c=>c.type!=='Professionnel').length;
   document.getElementById('stat-pro').textContent   = all.filter(c=>c.type==='Professionnel').length;
@@ -338,14 +338,14 @@ function filtrerType(el) {
   document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   typeFilter = el.dataset.type;
-  renderClients();
+  renderClients(); // async, pas besoin d'await ici
 }
 
 // ── MODAL ──
-function ouvrirModal(clientId = null) {
+async function ouvrirModal(clientId = null) {
   resetModal();
   if (clientId) {
-    const c = DB.getClientById(clientId);
+    const c = await DB.getClientById(clientId);
     if (!c) return;
     document.getElementById('modal-title').textContent = 'Modifier le client';
     document.getElementById('m-client-id').value       = c.id;
@@ -395,7 +395,7 @@ function toggleModalType() {
   document.getElementById('m-zone-pro').style.display  = isPro ? 'block' : 'none';
 }
 
-function sauvegarderClient() {
+async function sauvegarderClient() {
   const isPro   = document.getElementById('m-pro').checked;
   const id      = document.getElementById('m-client-id').value;
   const prenom  = document.getElementById('m-prenom').value.trim();
@@ -424,31 +424,31 @@ function sauvegarderClient() {
     tel:         document.getElementById('m-tel').value.trim(),
   };
 
-  if (id) {
-    DB.updateClient(id, data);
-    toast('Client mis à jour !', 'success');
-  } else {
-    DB.addClient(data);
-    toast('Client créé !', 'success');
+  try {
+    if (id) {
+      await DB.updateClient(id, data);
+      toast('Client mis à jour !', 'success');
+    } else {
+      await DB.addClient(data);
+      toast('Client créé !', 'success');
+    }
+    fermerModal();
+    await renderClients();
+  } catch (err) {
+    console.error('Erreur sauvegarde client:', err);
+    toast('Erreur lors de la sauvegarde', 'error');
   }
-
-  fermerModal();
-  renderClients();
 }
 
-function supprimerClient(id) {
-  const c = DB.getClientById(id);
+async function supprimerClient(id) {
+  const c = await DB.getClientById(id);
   if (!confirm(`Supprimer le client "${c?.nom}" ?`)) return;
-  DB.deleteClient(id);
-  renderClients();
+  await DB.deleteClient(id);
+  await renderClients();
   toast('Client supprimé', 'info');
 }
 
 function nouveauDevisClient(id) {
-  const c = DB.getClientById(id);
-  if (!c) return;
-  // Pré-remplir via URL (géré dans devis.html si besoin)
-  // Pour l'instant on crée un devis vide et on redirige
   window.location.href = `devis.html`;
 }
 </script>

@@ -326,15 +326,15 @@ let filterStatut = '';
 let lignesFact   = [];
 let editFactId   = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  renderFactures();
+document.addEventListener('DOMContentLoaded', async () => {
+  await renderFactures();
 });
 
 // ══ RENDER ══
-function renderFactures() {
+async function renderFactures() {
   const q        = document.getElementById('search-fact').value.toLowerCase();
   const typeF    = document.getElementById('filtre-type').value;
-  let   list     = DB.getFactures();
+  let   list     = await DB.getFactures();
 
   if (filterStatut) list = list.filter(f => f.statut === filterStatut);
   if (typeF)        list = list.filter(f => f.type === typeF || f.titre?.includes(typeF));
@@ -345,7 +345,7 @@ function renderFactures() {
   );
 
   // Stats
-  const all     = DB.getFactures();
+  const all     = await DB.getFactures();
   const attente = all.filter(f => f.statut === 'Créé' || f.statut === 'Envoyé');
   const payes   = all.filter(f => f.statut === 'Payé');
   const caTotal = all.reduce((s,f) => s + (f.montant_ht||f.montant||0), 0);
@@ -437,20 +437,20 @@ function filtrer(el) {
   renderFactures();
 }
 
-function changerStatutFact(id, statut, sel) {
-  const factures = DB.getFactures();
-  const idx      = factures.findIndex(f => f.id === id);
-  if (idx > -1) {
-    factures[idx].statut = statut;
-    DB.saveFactures(factures);
+async function changerStatutFact(id, statut, sel) {
+  try {
+    await DB.updateFacture(id, { statut });
+    sel.className = `badge badge-select ${getBadgeClass(statut)}`;
+    await renderFactures();
+    toast(`Statut : ${statut}`, 'success');
+  } catch (err) {
+    console.error('Erreur statut facture:', err);
+    toast('Erreur lors de la mise à jour', 'error');
   }
-  sel.className = `badge badge-select ${getBadgeClass(statut)}`;
-  renderFactures();
-  toast(`Statut : ${statut}`, 'success');
 }
 
 // ══ MODAL NOUVELLE FACTURE ══
-function nouvelleFacture(type = 'Facture') {
+async function nouvelleFacture(type = 'Facture') {
   editFactId  = null;
   lignesFact  = [];
   resetModal();
@@ -459,12 +459,13 @@ function nouvelleFacture(type = 'Facture') {
   document.getElementById('mf-type').value  = type;
   document.getElementById('mf-date').value  = new Date().toISOString().split('T')[0];
   document.getElementById('mf-echeance').value = addDays(new Date(), 30);
-  updateNumero();
+  await updateNumero();
 
   // Remplir la liste des devis
   const devisSelect = document.getElementById('mf-devis-lie');
+  const devisList = await DB.getDevis();
   devisSelect.innerHTML = '<option value="">— Aucun (facture directe) —</option>' +
-    DB.getDevis().filter(d => d.statut === 'Accepté' || d.statut === 'Créé').map(d =>
+    devisList.filter(d => d.statut === 'Accepté' || d.statut === 'Créé').map(d =>
       `<option value="${d.id}">${d.numero} — ${d.client} — ${fmt(d.montant_ht)}</option>`
     ).join('');
 
@@ -473,8 +474,9 @@ function nouvelleFacture(type = 'Facture') {
   closeAllDropdowns();
 }
 
-function editerFacture(id) {
-  const f = DB.getFactures().find(x => x.id === id);
+async function editerFacture(id) {
+  const allFact = await DB.getFactures();
+  const f = allFact.find(x => x.id === id);
   if (!f) return;
   editFactId = id;
   resetModal();
@@ -494,8 +496,9 @@ function editerFacture(id) {
 
   // Devis liés
   const devisSelect = document.getElementById('mf-devis-lie');
+  const devisList = await DB.getDevis();
   devisSelect.innerHTML = '<option value="">— Aucun —</option>' +
-    DB.getDevis().map(d =>
+    devisList.map(d =>
       `<option value="${d.id}"${d.id===f.devis_id?' selected':''}>${d.numero} — ${d.client}</option>`
     ).join('');
 
@@ -522,18 +525,18 @@ function resetModal() {
   document.getElementById('mf-acompte').value = 0;
 }
 
-function updateNumero() {
+async function updateNumero() {
   const type = document.getElementById('mf-type').value;
   const t    = type === "Facture d'acompte" ? 'acompte' : type === 'Avoir' ? 'avoir' : 'facture';
   if (!editFactId) {
-    document.getElementById('mf-numero').value = DB.getNextNumero(t === 'avoir' ? 'facture' : t);
+    document.getElementById('mf-numero').value = await DB.getNextNumero(t === 'avoir' ? 'facture' : t);
   }
 }
 
-function remplirDepuisDevis() {
+async function remplirDepuisDevis() {
   const devisId = document.getElementById('mf-devis-lie').value;
   if (!devisId) return;
-  const d = DB.getDevisById(devisId);
+  const d = await DB.getDevisById(devisId);
   if (!d) return;
 
   document.getElementById('mf-client').value  = d.client || '';
@@ -652,7 +655,7 @@ function recalculerFact() {
 }
 
 // ── Sauvegarder facture ──
-function sauvegarderFacture(genPDF = false) {
+async function sauvegarderFacture(genPDF = false) {
   const client = document.getElementById('mf-client').value.trim();
   if (!client) { toast('Veuillez saisir le nom du client', 'error'); return; }
   if (!lignesFact.filter(l=>l.designation).length) {
@@ -661,7 +664,7 @@ function sauvegarderFacture(genPDF = false) {
 
   const total  = lignesFact.reduce((s,l)=>s+(l.total||0),0);
   const devisId = document.getElementById('mf-devis-lie').value || null;
-  const devis   = devisId ? DB.getDevisById(devisId) : null;
+  const devis   = devisId ? await DB.getDevisById(devisId) : null;
 
   const data = {
     type:           document.getElementById('mf-type').value,
@@ -683,40 +686,49 @@ function sauvegarderFacture(genPDF = false) {
     statut:         'Créé',
   };
 
-  if (editFactId) {
-    const factures = DB.getFactures();
-    const idx = factures.findIndex(f=>f.id===editFactId);
-    if (idx>-1) { factures[idx] = {...factures[idx], ...data}; DB.saveFactures(factures); }
-    toast('Facture mise à jour !', 'success');
-  } else {
-    const f = DB.addFacture(data);
-    if (genPDF) genererPDF(f.id);
-    toast('Facture créée !', 'success');
-  }
+  try {
+    if (editFactId) {
+      await DB.updateFacture(editFactId, data);
+      toast('Facture mise à jour !', 'success');
+    } else {
+      const f = await DB.addFacture(data);
+      if (genPDF) genererPDF(f.id);
+      toast('Facture créée !', 'success');
+    }
 
-  fermerModal();
-  renderFactures();
+    fermerModal();
+    await renderFactures();
+  } catch (err) {
+    console.error('Erreur sauvegarde facture:', err);
+    toast('Erreur lors de la sauvegarde', 'error');
+  }
 }
 
 // ── Actions ──
-function voirFacture(id) {
-  // Pour l'instant affiche dans une alerte — à connecter à voir.html
-  const f = DB.getFactures().find(x=>x.id===id);
+async function voirFacture(id) {
+  const allFact = await DB.getFactures();
+  const f = allFact.find(x=>x.id===id);
   if (f) toast(`${f.numero} — ${f.client} — ${fmt(f.montant_ht||0)}`, 'info');
 }
 
-function supprimerFacture(id) {
-  const f = DB.getFactures().find(x=>x.id===id);
+async function supprimerFacture(id) {
+  const allFact = await DB.getFactures();
+  const f = allFact.find(x=>x.id===id);
   if (!confirm(`Supprimer la facture ${f?.numero} ?`)) return;
-  const list = DB.getFactures().filter(x=>x.id!==id);
-  DB.saveFactures(list);
-  renderFactures();
-  toast('Facture supprimée', 'info');
-  closeAllDropdowns();
+  try {
+    await DB.deleteFacture(id);
+    await renderFactures();
+    toast('Facture supprimée', 'info');
+    closeAllDropdowns();
+  } catch (err) {
+    console.error('Erreur suppression facture:', err);
+    toast('Erreur lors de la suppression', 'error');
+  }
 }
 
-function envoyerFacture(id) {
-  const f = DB.getFactures().find(x=>x.id===id);
+async function envoyerFacture(id) {
+  const allFact = await DB.getFactures();
+  const f = allFact.find(x=>x.id===id);
   if (!f) return;
   const email = f.client_email || '';
   if (!email) { toast('Aucun email client renseigné', 'error'); return; }
