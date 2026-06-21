@@ -539,11 +539,21 @@
       toast('Prestation dupliquée', 'success');
     }
 
-    function resetCatalogue() {
-      if (!confirm('Réinitialiser le catalogue avec les prestations par défaut ? Vos modifications seront perdues.')) return;
-      localStorage.removeItem('se_catalogue');
-      renderCatalogue();
-      toast('Catalogue réinitialisé', 'info');
+    async function resetCatalogue() {
+      if (!confirm("Voulez-vous vraiment vider tout le catalogue ? Cette action est irréversible.")) return;
+
+      try {
+        const catalogueActuel = await DB.getCatalogue();
+        // Suppression de chaque élément dans Supabase
+        for (const p of catalogueActuel) {
+          await DB.deletePrestation(p.id);
+        }
+        alert("Le catalogue a été entièrement vidé.");
+        await chargerCatalogue();
+      } catch (error) {
+        console.error("Erreur lors de la réinitialisation :", error);
+        alert("Impossible de vider le catalogue.");
+      }
     }
 
     // ── IMPORT CSV ──
@@ -672,28 +682,39 @@
       reader.readAsText(file, encoding);
     }
 
-    function validerImport() {
+    async function validerImport() {
       if (importedData.length === 0) return;
-      const mode = document.getElementById('import-mode').value;
 
-      let currentCat = DB.getCatalogue();
-
-      if (mode === 'replace') {
-        currentCat = [];
+      const btn = document.getElementById('btn-valider-import');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="ti ti-loader-2"></i> Importation en cours...';
       }
 
-      importedData.forEach(p => {
-        currentCat.push({
-          id: 'cat_' + Date.now().toString(36) + Math.random().toString(36).substr(2),
-          ...p
-        });
-      });
+      try {
+        // Envoi de chaque prestation du CSV vers Supabase via app.js
+        for (const p of importedData) {
+          await DB.addPrestation({
+            designation: p.designation || '',
+            description: p.description || '',
+            categorie: p.categorie || 'Divers',
+            unite: p.unite || 'u',
+            pu: parseFloat(p.pu) || 0
+          });
+        }
 
-      localStorage.setItem('se_catalogue', JSON.stringify(currentCat));
-
-      toast(`${importedData.length} articles importés avec succès !`, 'success');
-      fermerModalImport();
-      renderCatalogue();
+        fermerModalImport();
+        toast(`${importedData.length} prestations importées avec succès !`, 'success');
+        renderCatalogue();
+      } catch (error) {
+        console.error("Erreur lors de l'importation :", error);
+        toast("Une erreur est survenue lors de l'importation.", 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="ti ti-check"></i> Valider l\'import';
+        }
+      }
     }
   </script>
 

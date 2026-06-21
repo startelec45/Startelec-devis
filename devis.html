@@ -639,6 +639,10 @@ function ajouterLigne(data = {}) {
     const last   = inputs[inputs.length - 1];
     if (last) last.focus();
   }, 50);
+
+  // Autocomplétion catalogue sur le champ description
+  const newRow = document.querySelector(`tr[data-id="${ligne.id}"]`);
+  if (newRow) setupDescAutocomplete(newRow, ligne.id);
 }
 
 function ajouterLigneTexte() {
@@ -1279,6 +1283,37 @@ function getBadgeClass(s) {
 
 function escHtml(str) {
   return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function setupDescAutocomplete(row, ligneId) {
+  const descInput = row.querySelector('.ligne-desc');
+  if (!descInput) return;
+
+  descInput.addEventListener('input', async (e) => {
+    const query = e.target.value.trim();
+    if (query.length < 2) return;
+
+    try {
+      const catalogue = await DB.getCatalogue();
+      const match = catalogue.find(p => p.designation && p.designation.toLowerCase().includes(query.toLowerCase()));
+
+      if (match) {
+        const puInput    = row.querySelector('.td-pu input');
+        const uniteInput = row.querySelector('.td-unite select');
+
+        if (puInput)    puInput.value    = match.pu || 0;
+        if (uniteInput && match.unite) uniteInput.value = match.unite;
+
+        updateLigneField(ligneId, 'pu', match.pu || 0);
+        if (match.unite) updateLigneField(ligneId, 'unite', match.unite);
+
+        recalculerLigne(ligneId);
+        recalculer();
+      }
+    } catch (err) {
+      console.error("Erreur catalogue :", err);
+    }
+  });
 }
 </script>
 
