@@ -569,8 +569,8 @@
     async function ouvrirModal(id = null) {
       resetModal();
       if (id) {
-        const catalogue = await DB.getCatalogue();
-        const p = catalogue.find(x => x.id === id);
+        const res = await SB.select('catalogue', `?id=eq.${id}`);
+        const p = res[0];
         if (!p) return;
         document.getElementById('modal-title').textContent = 'Modifier la prestation';
         document.getElementById('m-id').value = p.id;
@@ -663,8 +663,8 @@
     }
 
     async function supprimerPrestation(id) {
-      const catalogue = await DB.getCatalogue();
-      const p = catalogue.find(x => x.id === id);
+      const res = await SB.select('catalogue', `?id=eq.${id}`);
+      const p = res[0];
       if (!confirm(`Supprimer "${p?.designation}" ?`)) return;
       await DB.deletePrestation(id);
       await renderCatalogue();
@@ -672,8 +672,8 @@
     }
 
     async function dupliquerPrestation(id) {
-      const catalogue = await DB.getCatalogue();
-      const p = catalogue.find(x => x.id === id);
+      const res = await SB.select('catalogue', `?id=eq.${id}`);
+      const p = res[0];
       if (!p) return;
       await DB.addPrestation({ ...p, id: undefined, designation: p.designation + ' (copie)' });
       await renderCatalogue();
