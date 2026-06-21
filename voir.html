@@ -415,6 +415,12 @@ async function renderPDF() {
   const cfgFull = await DB.getConfig();
   const cfg = cfgFull.entreprise;
 
+  let regime = 'Standard';
+  if (d.notes_privees && d.notes_privees.includes('[[REGIME:SOUS_TRAITANCE]]')) {
+    regime = 'Sous-traitance';
+  }
+  const tva_msg = regime === 'Sous-traitance' && cfg.tva_msg_st ? cfg.tva_msg_st : (cfg.tva_msg || '');
+
   const lignesProduit = (d.lignes||[]).filter(l => l.type === 'produit' || !l.type);
   const total_ht      = d.montant_ht || 0;
   const acompte_pct   = d.acompte_pct || 30;
@@ -485,7 +491,7 @@ async function renderPDF() {
     </div>
 
     <!-- FISCAL -->
-    <div class="pdf-fiscal">${cfg.tva_msg}</div>
+    <div class="pdf-fiscal">${tva_msg}</div>
 
     <!-- OBJET -->
     ${d.objet ? `<div class="pdf-objet"><strong>Objet :</strong> ${d.objet}</div>` : ''}

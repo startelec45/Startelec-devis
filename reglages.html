@@ -348,11 +348,22 @@
             <div class="settings-row">
               <div>
                 <div class="settings-label">Mention fiscale</div>
-                <div class="settings-sub">Affichée sur tous les documents</div>
+                <div class="settings-sub">Affichée sur les documents standard</div>
               </div>
               <div class="settings-control" style="min-width:340px">
                 <textarea class="form-control" id="s-tva-msg" rows="2"
                   placeholder="TVA non applicable, article 293B du CGI..."></textarea>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Mention fiscale (Sous-traitance)</div>
+                <div class="settings-sub">Affichée sur les documents en mode sous-traitance</div>
+              </div>
+              <div class="settings-control" style="min-width:340px">
+                <textarea class="form-control" id="s-tva-msg-st" rows="2"
+                  placeholder="Autoliquidation de la TVA (article 283, 2 nonies du CGI)..."></textarea>
               </div>
             </div>
 
@@ -454,6 +465,7 @@
       document.getElementById('s-tel').value = e.tel || '';
       document.getElementById('s-vendeur').value = e.vendeur || '';
       document.getElementById('s-tva-msg').value = e.tva_msg || '';
+      document.getElementById('s-tva-msg-st').value = e.tva_msg_st || '';
       document.getElementById('s-conditions').value = e.conditions || '';
 
       // Bancaire
@@ -495,6 +507,7 @@
           tel: document.getElementById('s-tel').value.trim(),
           vendeur: document.getElementById('s-vendeur').value.trim(),
           tva_msg: document.getElementById('s-tva-msg').value.trim(),
+          tva_msg_st: document.getElementById('s-tva-msg-st').value.trim(),
           conditions: document.getElementById('s-conditions').value.trim(),
           iban: document.getElementById('s-iban').value.trim(),
           bic: document.getElementById('s-bic').value.trim(),

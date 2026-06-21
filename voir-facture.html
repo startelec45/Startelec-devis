@@ -214,6 +214,12 @@ function renderPDF() {
   const f = facture;
   const e = cfg;
 
+  let regime = 'Standard';
+  if (f.notes && f.notes.includes('[[REGIME:SOUS_TRAITANCE]]')) {
+    regime = 'Sous-traitance';
+  }
+  const tva_msg = regime === 'Sous-traitance' && e.tva_msg_st ? e.tva_msg_st : (e.tva_msg || 'TVA non applicable, art. 293B du CGI');
+
   const montant_ht = parseFloat(f.montant_ht || f.montant || 0);
   const acompte    = f.type?.includes('acompte') && f.acompte_pct
                        ? Math.round(montant_ht * (f.acompte_pct / 100) * 100) / 100
@@ -308,7 +314,7 @@ function renderPDF() {
     </div>
 
     <!-- MENTION TVA -->
-    <div class="pdf-fiscal">${e.tva_msg || 'TVA non applicable, art. 293B du CGI'}</div>
+    <div class="pdf-fiscal">${tva_msg}</div>
 
     <!-- OBJET -->
     ${(f.objet || f.titre) ? `<div class="pdf-objet"><strong>Objet :</strong> ${f.objet || f.titre}</div>` : ''}
@@ -381,7 +387,7 @@ function renderPDF() {
       ${e.siret ? ` — SIRET ${e.siret}` : ''}
       ${e.email ? ` — ${e.email}` : ''}
       ${e.tel   ? ` — ${e.tel}`   : ''}
-      — ${e.tva_msg || 'TVA non applicable, art. 293B du CGI'}
+      — ${tva_msg}
     </div>
   `;
 }

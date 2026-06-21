@@ -172,7 +172,7 @@
                 <input type="text" class="form-control" id="f-lieu" value="Orléans" />
               </div>
             </div>
-            <div class="form-row cols-4">
+            <div class="form-row cols-4" style="margin-top:12px">
               <div class="form-group">
                 <label>Date additionnelle</label>
                 <select class="form-control" id="f-date-add-type">
@@ -198,6 +198,18 @@
                 <label>Acompte requis (%)</label>
                 <input type="number" class="form-control" id="f-acompte" value="30" min="0" max="100" />
               </div>
+            </div>
+            
+            <div class="form-row cols-2" style="margin-top:12px">
+              <div class="form-group">
+                <label>Régime fiscal <span class="required">*</span></label>
+                <select class="form-control" id="f-regime-fiscal" required onchange="updateMentionFiscale()">
+                  <option value="">— Sélectionner —</option>
+                  <option value="Standard">Standard</option>
+                  <option value="Sous-traitance">Sous-traitance</option>
+                </select>
+              </div>
+              <div class="form-group"></div>
             </div>
           </div>
         </div>
@@ -373,8 +385,8 @@
             <div class="form-section-body">
               <div class="form-group" style="margin-bottom:12px">
                 <label>Mention fiscale</label>
-                <div class="form-control-static" style="font-size:12px;color:var(--texte-sec)">
-                  TVA non applicable, article 293B du CGI. Régime micro-entrepreneur.
+                <div class="form-control-static" id="f-mention-fiscale" style="font-size:12px;color:var(--texte-sec)">
+                  Chargement...
                 </div>
               </div>
               <div class="form-group" style="margin-bottom:12px">
@@ -566,6 +578,22 @@
      ${e.iban} ${e.banque}<br/>
      ${e.adresse}<br/>
      ${e.cp} ${e.ville}`;
+     
+      window.appConfigEntreprise = e; // Sauvegarde pour updateMentionFiscale
+      updateMentionFiscale();
+    }
+
+    // ── Mettre à jour la mention fiscale visuelle ──
+    function updateMentionFiscale() {
+      const e = window.appConfigEntreprise;
+      if (!e) return;
+      const regime = document.getElementById('f-regime-fiscal').value;
+      const el = document.getElementById('f-mention-fiscale');
+      if (regime === 'Sous-traitance' && e.tva_msg_st) {
+        el.textContent = e.tva_msg_st;
+      } else {
+        el.textContent = e.tva_msg || 'TVA non applicable, article 293B du CGI...';
+      }
     }
 
     // ── Init form ──
@@ -602,7 +630,18 @@
       document.getElementById('f-acompte').value = d.acompte_pct || 30;
       document.getElementById('acompte-pct').textContent = d.acompte_pct || 30;
       document.getElementById('f-infos-spec').value = d.infos_spec || '';
-      document.getElementById('f-notes-privees').value = d.notes_privees || '';
+      
+      let notes = d.notes_privees || '';
+      let regime = 'Standard';
+      if (notes.includes('[[REGIME:SOUS_TRAITANCE]]')) {
+        regime = 'Sous-traitance';
+        notes = notes.replace('[[REGIME:SOUS_TRAITANCE]]', '').trim();
+      }
+      document.getElementById('f-regime-fiscal').value = regime;
+      updateMentionFiscale();
+      
+      document.getElementById('f-notes-privees').value = notes;
+      
       document.getElementById('f-texte-fin').value = d.texte_fin || '';
       document.getElementById('f-vendeur-nom').value = d.vendeur_nom || 'FLORIAN FERNANDES';
       document.getElementById('f-reduc-globale').value = d.reduc_globale || 0;
@@ -914,6 +953,17 @@
       const total_ht = Math.round((total_avant - remise) * 100) / 100;
       const acompte_pct = parseFloat(document.getElementById('f-acompte').value) || 30;
 
+      const regime = document.getElementById('f-regime-fiscal').value;
+      if (!regime) {
+        toast('Veuillez sélectionner un régime fiscal', 'error');
+        return null;
+      }
+
+      let notes = document.getElementById('f-notes-privees').value.trim();
+      if (regime === 'Sous-traitance') {
+        notes = (notes ? notes + '\n' : '') + '[[REGIME:SOUS_TRAITANCE]]';
+      }
+
       return {
         type: document.getElementById('f-type').value,
         numero: document.getElementById('f-numero').value,
@@ -924,7 +974,7 @@
         acompte_pct,
         objet: document.getElementById('f-objet').value,
         infos_spec: document.getElementById('f-infos-spec').value,
-        notes_privees: document.getElementById('f-notes-privees').value,
+        notes_privees: notes,
         texte_fin: document.getElementById('f-texte-fin').value,
         vendeur_nom: document.getElementById('f-vendeur-nom').value,
         reduc_globale,
@@ -950,9 +1000,10 @@
     // ══════════════════════════════════════════════
     // SAUVEGARDE
     // ══════════════════════════════════════════════
-    async function sauvegarder() {
+    async function sauvegarder(redirect = false) {
       const data = collecterFormulaire();
-
+      if (!data) return; // Stoppé par validation (ex: régime fiscal non sélectionné)
+      
       if (!data.client) { toast('Veuillez renseigner le nom du client', 'error'); return; }
       if (!lignes.filter(l => l.type === 'produit' && l.designation).length) {
         toast('Ajoutez au moins une prestation', 'error'); return;
