@@ -13,7 +13,6 @@
 
 <div class="app-layout">
 
-  <!-- ══ SIDEBAR ══ -->
   <aside class="sidebar">
     <a href="index.html" class="sidebar-logo">
       <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
@@ -62,10 +61,8 @@
     </div>
   </aside>
 
-  <!-- ══ MAIN ══ -->
   <div class="main-content">
 
-    <!-- Topbar -->
     <div class="topbar">
       <div class="topbar-left">
         <h1 class="topbar-title">Dashboard</h1>
@@ -81,10 +78,8 @@
       </div>
     </div>
 
-    <!-- Contenu -->
     <div class="page-content">
 
-      <!-- Stats -->
       <div class="stats-grid" id="stats-grid">
         <div class="stat-card accent">
           <div class="stat-card-label">Devis ce mois</div>
@@ -128,7 +123,6 @@
         </div>
       </div>
 
-      <!-- Tableau -->
       <div class="table-container">
         <div class="table-header">
           <span class="table-title">Revenus / Tous</span>
@@ -173,14 +167,8 @@
         </div>
       </div>
 
-    </div><!-- /page-content -->
-  </div><!-- /main-content -->
-</div><!-- /app-layout -->
+    </div></div></div><div class="toast-container" id="toasts"></div>
 
-<!-- Toast -->
-<div class="toast-container" id="toasts"></div>
-
-<!-- Dropdown overlay -->
 <div id="overlay" style="display:none;position:fixed;inset:0;z-index:199;" onclick="closeAllDropdowns()"></div>
 
 <script src="app.js"></script>
@@ -194,40 +182,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let currentFilter = '';
 let currentSort   = { key: 'date', dir: -1 };
+let allDevis      = []; // Stockage local en mémoire du résultat de Supabase
 
-function renderDashboard() {
-  const devis = DB.getDevis();
+async function renderDashboard() {
+  // Affiche un état de chargement pendant l'appel réseau
+  document.getElementById('tbody-devis').innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--texte-sec)"><i class="ti ti-loader-2" style="animation:spin 1s linear infinite; display:inline-block;"></i> Chargement des données...</td></tr>';
+
+  // Récupération asynchrone des devis depuis Supabase
+  allDevis = await DB.getDevis();
 
   // Badge sidebar
-  document.getElementById('badge-total').textContent = devis.length;
+  document.getElementById('badge-total').textContent = allDevis.length;
 
   // Stats
   const now   = new Date();
   const mois  = now.getMonth();
   const annee = now.getFullYear();
 
-  const ceMois    = devis.filter(d => { const dt = new Date(d.date); return dt.getMonth()===mois && dt.getFullYear()===annee; });
-  const attente   = devis.filter(d => d.statut==='Créé' || d.statut==='Envoyé');
-  const acceptes  = devis.filter(d => d.statut==='Accepté');
-  const refuses   = devis.filter(d => d.statut==='Rejeté' || d.statut==='Annulé');
-  const totalCA   = devis.reduce((s,d)=>s+d.montant_ht, 0);
-  const dejaFact  = devis.reduce((s,d)=>s+(d.deja_facture||0), 0);
-  const reste     = acceptes.reduce((s,d)=>s+(d.montant_ht-(d.deja_facture||0)), 0);
+  const ceMois    = allDevis.filter(d => { const dt = new Date(d.date); return dt.getMonth()===mois && dt.getFullYear()===annee; });
+  const attente   = allDevis.filter(d => d.statut==='Créé' || d.statut==='Envoyé');
+  const acceptes  = allDevis.filter(d => d.statut==='Accepté');
+  const refuses   = allDevis.filter(d => d.statut==='Rejeté' || d.statut==='Annulé');
+  
+  const totalCA   = allDevis.reduce((s,d)=>s+(d.montant_ht||0), 0);
+  const dejaFact  = allDevis.reduce((s,d)=>s+(d.deja_facture||0), 0);
+  const reste     = acceptes.reduce((s,d)=>s+((d.montant_ht||0)-(d.deja_facture||0)), 0);
 
   document.getElementById('stat-mois').textContent     = ceMois.length;
-  document.getElementById('stat-mois-sub').textContent = fmt(ceMois.reduce((s,d)=>s+d.montant_ht,0)) + ' HT';
+  document.getElementById('stat-mois-sub').textContent = fmt(ceMois.reduce((s,d)=>s+(d.montant_ht||0),0)) + ' HT';
   document.getElementById('stat-attente').textContent  = attente.length;
-  document.getElementById('stat-attente-sub').textContent = fmt(attente.reduce((s,d)=>s+d.montant_ht,0)) + ' HT';
+  document.getElementById('stat-attente-sub').textContent = fmt(attente.reduce((s,d)=>s+(d.montant_ht||0),0)) + ' HT';
   document.getElementById('stat-accepte').textContent  = acceptes.length;
-  document.getElementById('stat-accepte-sub').textContent = fmt(acceptes.reduce((s,d)=>s+d.montant_ht,0)) + ' HT';
+  document.getElementById('stat-accepte-sub').textContent = fmt(acceptes.reduce((s,d)=>s+(d.montant_ht||0),0)) + ' HT';
   document.getElementById('stat-ca').textContent       = fmt(totalCA);
-  document.getElementById('stat-ca-sub').textContent   = devis.length + ' devis au total';
+  document.getElementById('stat-ca-sub').textContent   = allDevis.length + ' devis au total';
   document.getElementById('stat-reste').textContent    = fmt(reste);
   document.getElementById('stat-facture').textContent  = fmt(dejaFact);
   document.getElementById('stat-refuse').textContent   = refuses.length;
-  document.getElementById('stat-total').textContent    = devis.length;
+  document.getElementById('stat-total').textContent    = allDevis.length;
 
-  renderTable(devis);
+  renderTable(allDevis);
 }
 
 function renderTable(devis) {
@@ -245,15 +239,15 @@ function renderTable(devis) {
   // Search
   const q = document.getElementById('global-search').value.toLowerCase();
   if (q) list = list.filter(d =>
-    d.numero.toLowerCase().includes(q) ||
-    d.client.toLowerCase().includes(q) ||
+    (d.numero||'').toLowerCase().includes(q) ||
+    (d.client||'').toLowerCase().includes(q) ||
     (d.objet||'').toLowerCase().includes(q)
   );
 
   document.getElementById('count-shown').textContent = list.length;
-  document.getElementById('footer-ht').textContent   = fmt(list.reduce((s,d)=>s+d.montant_ht,0));
-  document.getElementById('footer-ttc').textContent  = fmt(list.reduce((s,d)=>s+d.montant_ht,0)); // TVA 0
-  document.getElementById('footer-reste').textContent= fmt(list.filter(d=>d.statut==='Accepté').reduce((s,d)=>s+(d.montant_ht-(d.deja_facture||0)),0));
+  document.getElementById('footer-ht').textContent   = fmt(list.reduce((s,d)=>s+(d.montant_ht||0),0));
+  document.getElementById('footer-ttc').textContent  = fmt(list.reduce((s,d)=>s+(d.montant_ht||0),0)); // TVA 0
+  document.getElementById('footer-reste').textContent= fmt(list.filter(d=>d.statut==='Accepté').reduce((s,d)=>s+((d.montant_ht||0)-(d.deja_facture||0)),0));
 
   const tbody = document.getElementById('tbody-devis');
   if (!list.length) {
@@ -267,19 +261,20 @@ function renderTable(devis) {
   }
 
   tbody.innerHTML = list.map(d => {
-    const reste   = d.montant_ht - (d.deja_facture||0);
+    const reste   = (d.montant_ht||0) - (d.deja_facture||0);
     const badgeClass = getBadgeClass(d.statut);
-    const produitApercu = (d.lignes||[]).map(l=>l.designation).join(', ').substring(0,40) + ((d.lignes||[]).length > 1 ? '...' : '');
+    const lignes = Array.isArray(d.lignes) ? d.lignes : [];
+    const produitApercu = lignes.map(l=>l.designation).join(', ').substring(0,40) + (lignes.length > 1 ? '...' : '');
 
     return `<tr onclick="voirDevis('${d.id}')" style="cursor:pointer">
       <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check" data-id="${d.id}" /></td>
-      <td><span class="td-num">${d.numero}</span> <small class="td-sec" style="display:block;font-size:10px">${d.type||'Devis'}</small></td>
-      <td class="td-montant">${fmt(d.montant_ht)}</td>
-      <td class="td-montant">${fmt(d.montant_ht)}</td>
-      <td class="td-client">${d.client}</td>
+      <td><span class="td-num">${d.numero||'—'}</span> <small class="td-sec" style="display:block;font-size:10px">${d.type||'Devis'}</small></td>
+      <td class="td-montant">${fmt(d.montant_ht||0)}</td>
+      <td class="td-montant">${fmt(d.montant_ht||0)}</td>
+      <td class="td-client">${d.client||'—'}</td>
       <td class="td-sec">${fmtDate(d.date)}</td>
       <td class="td-sec">${d.date_paiement ? fmtDate(d.date_paiement) : '—'}</td>
-      <td class="td-produit" title="${(d.lignes||[]).map(l=>l.designation).join(', ')}">${produitApercu||'—'}</td>
+      <td class="td-produit" title="${lignes.map(l=>l.designation).join(', ')}">${produitApercu||'—'}</td>
       <td onclick="event.stopPropagation()">
         <select class="badge badge-select ${badgeClass}" onchange="changerStatut('${d.id}', this.value, this)">
           ${['Créé','Envoyé','Accepté','Rejeté','Payé','Payé en partie','Annulé'].map(s=>`<option value="${s}"${s===d.statut?' selected':''}>${s}</option>`).join('')}
@@ -318,51 +313,61 @@ function setupFilters() {
       document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
       pill.classList.add('active');
       currentFilter = pill.dataset.filter;
-      renderTable(DB.getDevis());
+      renderTable(allDevis);
     });
   });
 }
 
 function setupSearch() {
-  document.getElementById('global-search').addEventListener('input', () => renderTable(DB.getDevis()));
+  document.getElementById('global-search').addEventListener('input', () => renderTable(allDevis));
 }
 
 function sortBy(key) {
   if (currentSort.key === key) currentSort.dir *= -1;
   else { currentSort.key = key; currentSort.dir = -1; }
-  renderTable(DB.getDevis());
+  renderTable(allDevis);
 }
 
-function changerStatut(id, statut, selectEl) {
-  DB.updateStatut(id, statut);
-  // Update badge class
+async function changerStatut(id, statut, selectEl) {
+  // Appel async vers Supabase
+  await DB.updateStatut(id, statut);
   selectEl.className = `badge badge-select ${getBadgeClass(statut)}`;
-  renderDashboard();
+  
+  // Met à jour la ligne correspondante en mémoire locale pour éviter un rechargement complet
+  const d = allDevis.find(x=>x.id===id);
+  if (d) d.statut = statut;
+  
   toast(`Statut mis à jour : ${statut}`, 'success');
 }
 
-function supprimerDevis(id) {
-  const d = DB.getDevis().find(x=>x.id===id);
-  if (!confirm(`Supprimer le devis ${d?.numero} ?\nCette action est irréversible.`)) return;
-  DB.deleteDevis(id);
-  renderDashboard();
+async function supprimerDevis(id) {
+  const d = allDevis.find(x=>x.id===id);
+  if (!confirm(`Supprimer le devis ${d?.numero || ''} ?\nCette action est irréversible.`)) return;
+  
+  // Appel async vers Supabase
+  await DB.deleteDevis(id);
+  await renderDashboard();
   toast('Devis supprimé', 'info');
   closeAllDropdowns();
 }
 
-function creerSimilaire(id) {
-  window.location.href = `devis.html?clone=${id}`;
+async function creerSimilaire(id) {
+  toast('Clonage du document...', 'info');
+  const nouveauDevis = await clonerDevis(id);
+  if (nouveauDevis) {
+    window.location.href = `devis.html?id=${nouveauDevis.id}`;
+  } else {
+    toast('Erreur lors du clonage', 'error');
+  }
 }
 
 function telechargerPDF(id) {
-  toast('Génération du PDF...', 'info');
-  // Redirige vers la page voir qui déclenche le téléchargement
-  window.open(`voir.html?id=${id}&action=pdf`, '_blank');
+  genererPDF(id);
   closeAllDropdowns();
 }
 
 function envoyerMail(id) {
-  window.location.href = `voir.html?id=${id}&action=envoyer`;
+  envoyerDevisParMail(id);
   closeAllDropdowns();
 }
 
@@ -382,6 +387,11 @@ function getBadgeClass(statut) {
   };
   return map[statut] || 'badge-cree';
 }
+
+// Style dynamique pour l'icône de chargement
+const styleEl = document.createElement('style');
+styleEl.textContent = '@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }';
+document.head.appendChild(styleEl);
 </script>
 
 </body>
