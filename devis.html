@@ -768,17 +768,7 @@
             updateLigne(l.id, 'description', prestation.description || '');
             updateLigne(l.id, 'unite', prestation.unite || 'u');
             updateLigneCalc(l.id, 'pu', prestation.pu);
-            input.value = prestation.designation;
-            // Mettre à jour les autres champs visuellement
-            const row = document.querySelector(`tr[data-id="${l.id}"]`);
-            if (row) {
-              const desc = row.querySelector('.ligne-desc');
-              const pu = row.querySelectorAll('input[type=number]')[1];
-              const sel = row.querySelector('select.ligne-input');
-              if (desc) desc.value = prestation.description || '';
-              if (pu) pu.value = prestation.pu;
-              if (sel) sel.value = prestation.unite || 'u';
-            }
+            renderLignes(); // Redessine le tableau pour garantir que les valeurs s'affichent au bon endroit
           });
         }
       });
@@ -1325,17 +1315,9 @@
           const match = catalogue.find(p => p.designation && p.designation.toLowerCase().includes(query.toLowerCase()));
 
           if (match) {
-            const puInput = row.querySelector('.td-pu input');
-            const uniteInput = row.querySelector('.td-unite select');
-
-            if (puInput) puInput.value = match.pu || 0;
-            if (uniteInput && match.unite) uniteInput.value = match.unite;
-
-            updateLigneField(ligneId, 'pu', match.pu || 0);
-            if (match.unite) updateLigneField(ligneId, 'unite', match.unite);
-
-            recalculerLigne(ligneId);
-            recalculer();
+            updateLigneCalc(ligneId, 'pu', match.pu || 0);
+            if (match.unite) updateLigne(ligneId, 'unite', match.unite);
+            renderLignes();
           }
         } catch (err) {
           console.error("Erreur catalogue :", err);
