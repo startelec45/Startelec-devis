@@ -198,10 +198,13 @@
         <div class="form-row cols-2" style="margin-bottom:12px">
           <div class="form-group">
             <label>Catégorie</label>
-            <select class="form-control" id="m-categorie">
-              <option value="Prestations manuelles">Prestations manuelles</option>
-              <option value="Main d'&#x153;uvre">Main d'œuvre</option>
-            </select>
+            <input type="text" class="form-control" id="m-categorie"
+              placeholder="Ex: Appareillage, Forfaits..."
+              list="cats-list" autocomplete="off" />
+            <datalist id="cats-list">
+              <option value="Prestations manuelles">
+              <option value="Main d'œuvre">
+            </datalist>
           </div>
           <div class="form-group">
             <label>Unité</label>
@@ -336,8 +339,11 @@
       filtersEl.innerHTML = `<span class="filter-pill ${!catFilter ? 'active' : ''}" onclick="filtrerCat('',this)">Tous</span>` +
         categories.map(c => `<span class="filter-pill ${catFilter === c ? 'active' : ''}" onclick="filtrerCat('${c}',this)">${c}</span>`).join('');
 
-      // Datalist catégories pour le modal
-      document.getElementById('cats-list').innerHTML = categories.map(c => `<option value="${c}">`).join('');
+      // Datalist catégories pour le modal — suggestions fixes + catégories existantes dans Supabase
+      const fixedCats = ['Prestations manuelles', "Main d'\u0153uvre"];
+      const allSuggestions = [...new Set([...fixedCats, ...categories])];
+      const catsListEl = document.getElementById('cats-list');
+      if (catsListEl) catsListEl.innerHTML = allSuggestions.map(c => `<option value="${c}">`).join('');
 
       // Filtrer
       let list = cat;
