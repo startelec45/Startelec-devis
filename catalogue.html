@@ -198,13 +198,12 @@
         <div class="form-row cols-2" style="margin-bottom:12px">
           <div class="form-group">
             <label>Catégorie</label>
-            <input type="text" class="form-control" id="m-categorie"
-              placeholder="Ex: Appareillage, Forfaits..."
-              list="cats-list" autocomplete="off" />
-            <datalist id="cats-list">
-              <option value="Prestations manuelles">
-              <option value="Main d'œuvre">
-            </datalist>
+            <div style="display: flex; gap: 8px;">
+              <select class="form-control" id="m-categorie-select" onchange="toggleNewCategorie()">
+                <!-- Rempli dynamiquement -->
+              </select>
+              <input type="text" class="form-control" id="m-categorie-new" placeholder="Nouvelle catégorie..." style="display:none;" />
+            </div>
           </div>
           <div class="form-group">
             <label>Unité</label>
@@ -339,11 +338,13 @@
       filtersEl.innerHTML = `<span class="filter-pill ${!catFilter ? 'active' : ''}" onclick="filtrerCat('',this)">Tous</span>` +
         categories.map(c => `<span class="filter-pill ${catFilter === c ? 'active' : ''}" onclick="filtrerCat('${c}',this)">${c}</span>`).join('');
 
-      // Datalist catégories pour le modal — suggestions fixes + catégories existantes dans Supabase
+      // Options catégories pour le modal
       const fixedCats = ['Prestations manuelles', "Main d'\u0153uvre"];
       const allSuggestions = [...new Set([...fixedCats, ...categories])];
-      const catsListEl = document.getElementById('cats-list');
-      if (catsListEl) catsListEl.innerHTML = allSuggestions.map(c => `<option value="${c}">`).join('');
+      const catsSelectEl = document.getElementById('m-categorie-select');
+      if (catsSelectEl) {
+        catsSelectEl.innerHTML = allSuggestions.map(c => `<option value="${c}">${c}</option>`).join('') + '<option value="NEW">+ Nouvelle catégorie...</option>';
+      }
 
       // Filtrer
       let list = cat;
@@ -481,6 +482,20 @@
       }
     }
 
+    function toggleNewCategorie() {
+      const sel = document.getElementById('m-categorie-select');
+      const input = document.getElementById('m-categorie-new');
+      if (sel && input) {
+        if (sel.value === 'NEW') {
+          input.style.display = 'block';
+          input.focus();
+        } else {
+          input.style.display = 'none';
+          input.value = '';
+        }
+      }
+    }
+
     // ── MODAL ──
     async function ouvrirModal(id = null) {
       resetModal();
@@ -491,7 +506,20 @@
         document.getElementById('modal-title').textContent = 'Modifier la prestation';
         document.getElementById('m-id').value = p.id;
         document.getElementById('m-designation').value = p.designation;
-        document.getElementById('m-categorie').value = p.categorie || '';
+        const sel = document.getElementById('m-categorie-select');
+        const input = document.getElementById('m-categorie-new');
+        if (sel && input) {
+          const catValue = p.categorie || 'Autre';
+          const optionExists = Array.from(sel.options).some(opt => opt.value === catValue);
+          if (optionExists) {
+            sel.value = catValue;
+            input.style.display = 'none';
+          } else {
+            sel.value = 'NEW';
+            input.style.display = 'block';
+            input.value = catValue;
+          }
+        }
         document.getElementById('m-unite').value = p.unite || 'u';
         document.getElementById('m-pu').value = p.pu || '';
         document.getElementById('m-description').value = p.description || '';
@@ -513,7 +541,11 @@
         if (el) el.value = '';
       });
       document.getElementById('m-unite').value = 'u';
-      document.getElementById('m-categorie').value = 'Prestations manuelles';
+      const sel = document.getElementById('m-categorie-select');
+      if (sel) {
+        sel.value = 'Prestations manuelles';
+        toggleNewCategorie();
+      }
       document.getElementById('modal-title').textContent = 'Nouvelle prestation';
     }
 
@@ -525,9 +557,18 @@
       if (!designation) { toast('Veuillez saisir une désignation', 'error'); return; }
       if (isNaN(pu) || pu < 0) { toast('Veuillez saisir un prix valide', 'error'); return; }
 
+      const sel = document.getElementById('m-categorie-select');
+      const input = document.getElementById('m-categorie-new');
+      const categorie = sel.value === 'NEW' ? input.value.trim() : sel.value;
+      
+      if (sel.value === 'NEW' && !categorie) { 
+        toast('Veuillez saisir un nom pour la nouvelle catégorie', 'error'); 
+        return; 
+      }
+
       const data = {
         designation,
-        categorie: document.getElementById('m-categorie').value.trim() || 'Autre',
+        categorie: categorie || 'Autre',
         unite: document.getElementById('m-unite').value,
         pu,
         description: document.getElementById('m-description').value.trim(),
