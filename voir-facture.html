@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- html2pdf : génération PDF client-side -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     /* ══ APERÇU PDF ══ — même style que voir.html */
     .pdf-wrap { background: #e8e8e8; padding: 24px; border-radius: var(--radius-lg); }
@@ -62,6 +64,8 @@
       .sidebar, .topbar, .action-bar, .toast-container, #overlay { display:none !important; }
       body, .app-layout, .main-content, .page-content {
         background:#fff !important; padding:0 !important; margin:0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       .pdf-wrap { background:#fff !important; padding:0 !important; border-radius:0 !important; }
       .pdf-page { max-width:100% !important; box-shadow:none !important; page-break-after:always; }
@@ -394,11 +398,25 @@ async function changerStatut(statut, sel) {
   }
 }
 
-function telechargerPDF() {
-  toast('Ouverture impression PDF...', 'info');
-  // Ouvre un nouvel onglet avec ?print=1 qui déclenche window.print() automatiquement
-  // L'utilisateur choisit "Enregistrer en PDF" dans la boîte d'impression du navigateur
-  window.open(`voir-facture.html?id=${factureId}&print=1`, '_blank');
+async function telechargerPDF() {
+  toast('Génération du PDF en cours...', 'info');
+  const element = document.getElementById('pdf-page');
+  const filename = `${(facture.numero || 'facture').replace(/\//g, '-')}.pdf`;
+  
+  const opt = {
+    margin:       [0, 0, 0, 0],
+    filename:     filename,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(element).save().then(() => {
+    toast('PDF téléchargé !', 'success');
+  }).catch(e => {
+    console.error(e);
+    toast('Erreur génération PDF', 'error');
+  });
   closeAllDropdowns();
 }
 

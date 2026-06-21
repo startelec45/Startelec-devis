@@ -198,6 +198,8 @@
         background: #fff !important;
         padding: 0 !important;
         margin: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       /* Le wrapper gris du PDF → fond blanc sans ombre */
@@ -289,7 +291,7 @@
         </button>
         <div class="dropdown-menu">
           <div class="dropdown-item" onclick="imprimerPage()"><i class="ti ti-printer"></i> Imprimer</div>
-          <div class="dropdown-item" onclick="genererPDF(devisId)"><i class="ti ti-file-type-pdf"></i> Télécharger PDF</div>
+          <div class="dropdown-item" onclick="telechargerPDFClient()"><i class="ti ti-file-type-pdf"></i> Télécharger PDF</div>
         </div>
       </div>
 
@@ -299,7 +301,7 @@
         </button>
         <div class="dropdown-menu">
           <div class="dropdown-item" onclick="copierLienApercu(devisId)"><i class="ti ti-link"></i> Lien vers aperçu</div>
-          <div class="dropdown-item" onclick="genererPDF(devisId)"><i class="ti ti-file-type-pdf"></i> Télécharger en PDF</div>
+          <div class="dropdown-item" onclick="telechargerPDFClient()"><i class="ti ti-file-type-pdf"></i> Télécharger en PDF</div>
           <div class="dropdown-separator"></div>
           <div class="dropdown-item" onclick="exporterXML(devisId)"><i class="ti ti-code"></i> Télécharger en XML</div>
           <div class="dropdown-item" onclick="exporterJSON(devisId)"><i class="ti ti-braces"></i> Télécharger en JSON</div>
@@ -641,6 +643,27 @@ function naviguer(dir) {
   const idx = allIds.indexOf(devisId);
   const next = allIds[idx + dir];
   if (next) window.location.href = `voir.html?id=${next}`;
+}
+
+async function telechargerPDFClient() {
+  toast('Génération du PDF en cours...', 'info');
+  const element = document.getElementById('pdf-page');
+  const filename = `${(devis.numero || 'devis').replace(/\//g, '-')}.pdf`;
+  
+  const opt = {
+    margin:       [0, 0, 0, 0],
+    filename:     filename,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(element).save().then(() => {
+    toast('PDF téléchargé !', 'success');
+  }).catch(e => {
+    console.error(e);
+    toast('Erreur génération PDF', 'error');
+  });
 }
 
 function getBadgeClass(s) {
