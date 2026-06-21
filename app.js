@@ -3,6 +3,21 @@
    Base de données Supabase (Version Sécurisée)
    ============================================ */
 
+// ── SÉCURITÉ ADMIN ──
+// Vérifie si on est connecté, sauf sur les pages publiques
+(function() {
+  const publicPages = ['login.html', 'espace-client.html', 'voir.html', 'voir-facture.html'];
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  
+  if (!publicPages.includes(currentPage)) {
+    const isAuth = localStorage.getItem('se_admin_auth');
+    if (!isAuth) {
+      window.location.href = 'login.html';
+    }
+  }
+})();
+
+
 // Ces variables iront chercher les configurations injectées ou serviront de passerelle
 const SUPABASE_URL = window.ENV?.SUPABASE_URL || 'https://komwitqbcrvxixpgvnxi.supabase.co';
 const SUPABASE_KEY = window.ENV?.SUPABASE_KEY || 'sb_publishable_wyiTO5uJaP70J22LEO7SlQ_ntO73jcT';
@@ -147,6 +162,117 @@ const DB = {
       await SB.delete('clients', id);
     } catch (e) { console.error('deleteClient:', e); throw e; }
   },
+
+  // ── CHANTIERS ──
+  async getChantiers() {
+    try {
+      return await SB.select('chantiers', '?order=created_at.desc');
+    } catch (e) { return []; }
+  },
+
+  async getChantiersByClient(client_id) {
+    try {
+      return await SB.select('chantiers', `?client_id=eq.${client_id}&order=created_at.desc`);
+    } catch (e) { return []; }
+  },
+
+  async getChantierById(id) {
+    try {
+      const res = await SB.select('chantiers', `?id=eq.${id}`);
+      return res[0] || null;
+    } catch (e) { return null; }
+  },
+
+  async addChantier(data) {
+    try {
+      const res = await SB.insert('chantiers', { ...data, created_at: new Date().toISOString() });
+      return res[0];
+    } catch (e) { console.error('addChantier:', e); throw e; }
+  },
+
+  async updateChantier(id, data) {
+    try {
+      const res = await SB.update('chantiers', id, { ...data, updated_at: new Date().toISOString() });
+      return res[0];
+    } catch (e) { console.error('updateChantier:', e); throw e; }
+  },
+
+  async deleteChantier(id) {
+    try {
+      await SB.delete('chantiers', id);
+    } catch (e) { console.error('deleteChantier:', e); throw e; }
+  },
+
+  // ── TÂCHES DE CHANTIER ──
+  async getTachesByChantier(chantier_id) {
+    try {
+      return await SB.select('taches_chantier', `?chantier_id=eq.${chantier_id}&order=categorie.asc,created_at.asc`);
+    } catch (e) { return []; }
+  },
+
+  async addTache(data) {
+    try {
+      const res = await SB.insert('taches_chantier', { ...data, created_at: new Date().toISOString() });
+      return res[0];
+    } catch (e) { console.error('addTache:', e); throw e; }
+  },
+
+  async updateTache(id, data) {
+    try {
+      const res = await SB.update('taches_chantier', id, { ...data, updated_at: new Date().toISOString() });
+      return res[0];
+    } catch (e) { console.error('updateTache:', e); throw e; }
+  },
+
+  async deleteTache(id) {
+    try {
+      await SB.delete('taches_chantier', id);
+    } catch (e) { console.error('deleteTache:', e); throw e; }
+  },
+
+  // ── TRAVAUX SUPPLÉMENTAIRES ──
+  async getTravauxSuppByChantier(chantierId) {
+    try {
+      return await SB.select('travaux_supp', `?chantier_id=eq.${chantierId}&order=created_at.asc`);
+    } catch (e) { return []; }
+  },
+
+  async addTravailSupp(data) {
+    try {
+      const res = await SB.insert('travaux_supp', {
+        ...data,
+        created_at: new Date().toISOString()
+      });
+      return res[0];
+    } catch (e) { console.error('addTravailSupp:', e); throw e; }
+  },
+
+  async updateTravailSupp(id, data) {
+    try {
+      const res = await SB.update('travaux_supp', id, {
+        ...data,
+        updated_at: new Date().toISOString()
+      });
+      return res[0];
+    } catch (e) { console.error('updateTravailSupp:', e); throw e; }
+  },
+
+  async deleteTravailSupp(id) {
+    try {
+      await SB.delete('travaux_supp', id);
+    } catch (e) { console.error('deleteTravailSupp:', e); throw e; }
+  },
+
+  // ── TOKENS CLIENTS ──
+  async generateClientToken(client_id) {
+    try {
+      // Génère un token unique robuste
+      const token = Math.random().toString(36).substring(2) + Date.now().toString(36) + Math.random().toString(36).substring(2);
+      await SB.update('clients', client_id, { token: token });
+      return token;
+    } catch (e) { console.error('generateToken:', e); throw e; }
+  },
+
 
   async getCatalogue(search = '') {
     try {
@@ -440,7 +566,10 @@ async function appelIA(prompt) {
 
   const systemPrompt = `Tu es l'assistant de facturation de ${cfg.entreprise.nom}, électricien à ${cfg.entreprise.ville}.
 
-RÈGLES : Taux MO ${cfg.devis.taux_horaire_mo}€/h. TVA non applicable. Répondre UNIQUEMENT en JSON. Mets "0" pour le prix unitaire (pu) des matériels, l'application se chargera de trouver le prix exact dans le catalogue. Tu peux évaluer le temps de main d'oeuvre.
+RÈGLES : Taux MO ${cfg.devis.taux_horaire_mo}€/h. TVA non applicable. Répondre UNIQUEMENT en JSON. 
+Si des matériels précis sont demandés, mets "0" pour le pu (le catalogue s'en chargera).
+INTERDICTION FORMELLE : N'invente JAMAIS de références spécifiques ou de noms de gammes (Legrand, Schneider, Céliane, Odace, Dooxie, etc.) si le client ne les a pas expressément tapés. 
+Pour toute demande d'appareillage (prise, va-et-vient, interrupteur, spot, etc.) sans précision de marque, tu DOIS créer une ligne de prestation forfaitaire générique (ex: "Fourniture et pose d'un va-et-vient standard") et estimer un prix unitaire global directement (ex: 80€ ou 90€ l'unité).
 
 FORMAT :
 {"client":{"nom":"","type":"Particulier","civilite":"","prenom":"","nom_famille":"","societe":"","adresse":"","cp":"","ville":"","email":"","tel":""},"objet":"","lignes":[{"designation":"","description":"","qte":1,"pu":0,"unite":"u","total":0}],"note":""}`;

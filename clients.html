@@ -66,6 +66,7 @@
     <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
     <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
     <a href="clients.html" class="nav-item active"><i class="ti ti-users"></i> Clients</a>
+    <a href="chantiers.html" class="nav-item"><i class="ti ti-hammer"></i> Chantiers</a>
     <div class="nav-section">Gestion</div>
     <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
     <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
@@ -221,6 +222,10 @@
           <input type="tel" class="form-control" id="m-tel" placeholder="06..." />
         </div>
       </div>
+      <div class="form-group" style="margin-top:12px">
+        <label>Lien du Logo (URL) <span style="font-size:11px;color:var(--texte-sec);font-weight:normal">(Clic-droit > Copier l'adresse de l'image)</span></label>
+        <input type="url" class="form-control" id="m-logo-url" placeholder="https://monsite.fr/logo.png" />
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
@@ -283,6 +288,12 @@ async function renderClients() {
     const init        = initiales(c.societe || c.nom || '?');
     const affichage   = c.type === 'Professionnel' ? c.societe : c.nom;
 
+    let baseUrl = window.location.origin;
+    if (baseUrl === 'file://' || baseUrl === 'null') {
+      baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+    }
+    const lienEspace = c.token ? `${baseUrl}/espace-client.html?token=${c.token}` : '';
+
     return `
     <div class="client-card">
       <div class="client-card-header">
@@ -291,7 +302,7 @@ async function renderClients() {
           <div class="client-name">${affichage||'—'}</div>
           <div class="client-type">${c.type||'Particulier'}</div>
         </div>
-        <div style="margin-left:auto;display:flex;gap:4px">
+        <div style="margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">
           <button class="btn btn-ghost btn-icon btn-sm" onclick="editerClient('${c.id}')" title="Modifier">
             <i class="ti ti-edit"></i>
           </button>
@@ -308,22 +319,33 @@ async function renderClients() {
         ${c.email   ? `<i class="ti ti-mail" style="font-size:11px"></i> ${c.email}<br/>` : ''}
         ${c.tel     ? `<i class="ti ti-phone" style="font-size:11px"></i> ${c.tel}` : ''}
       </div>
-      <div class="client-stats">
+      <div class="client-stats" style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
         <div class="client-stat-item">
-          <strong>${clientDevis.length}</strong>
-          devis
+          <strong>${clientDevis.length}</strong> devis
         </div>
         <div class="client-stat-item">
-          <strong>${fmt(caClient)}</strong>
-          CA total HT
+          <strong>${fmt(caClient)}</strong> CA total HT
         </div>
-        ${clientDevis.length ? `
-        <div class="client-stat-item" style="margin-left:auto">
-          <a href="index.html" class="btn btn-ghost btn-sm" style="font-size:11px">
-            <i class="ti ti-eye"></i> Voir devis
-          </a>
-        </div>` : ''}
+        <div style="margin-left:auto;display:flex;gap:8px">
+          ${!c.token ? `
+          <button class="btn btn-secondary btn-sm" onclick="genererEspaceClient('${c.id}')" title="Générer Espace Client">
+            <i class="ti ti-link" style="color:var(--rouge)"></i> Activer Espace
+          </button>
+          ` : ''}
+          ${clientDevis.length ? `
+          <a href="liste.html" class="btn btn-ghost btn-sm">
+            <i class="ti ti-eye"></i> Devis
+          </a>` : ''}
+        </div>
       </div>
+      ${c.token ? `
+      <div style="margin-top:12px;padding:8px 12px;background:#f8fafc;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <i class="ti ti-link" style="color:var(--rouge);font-size:16px"></i>
+        <input type="text" readonly value="${lienEspace}" style="flex:1;border:none;background:transparent;font-size:11px;color:var(--texte-sec);outline:none;text-overflow:ellipsis" onclick="this.select()">
+        <button class="btn btn-ghost btn-icon btn-sm" style="color:var(--texte)" onclick="copierLien('${lienEspace}')" title="Copier"><i class="ti ti-copy"></i></button>
+        <button class="btn btn-ghost btn-icon btn-sm" style="color:var(--rouge)" onclick="partagerLien('${lienEspace}', '${affichage.replace(/'/g, "\\'")}')" title="Partager"><i class="ti ti-share"></i></button>
+      </div>
+      ` : ''}
     </div>`;
   }).join('') + `
     <div class="client-card" style="border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:120px;color:var(--texte-sec)" onclick="ouvrirModal()">
@@ -365,6 +387,7 @@ async function ouvrirModal(clientId = null) {
     document.getElementById('m-ville').value   = c.ville||'';
     document.getElementById('m-email').value   = c.email||'';
     document.getElementById('m-tel').value     = c.tel||'';
+    document.getElementById('m-logo-url').value = c.logo_url||'';
   } else {
     document.getElementById('modal-title').textContent = 'Nouveau client';
   }
@@ -383,7 +406,7 @@ function resetModal() {
   document.getElementById('m-part').checked    = true;
   toggleModalType();
   ['m-civilite','m-prenom','m-nom','m-societe','m-contact','m-siret',
-   'm-adresse','m-cp','m-ville','m-email','m-tel'].forEach(id => {
+   'm-adresse','m-cp','m-ville','m-email','m-tel', 'm-logo-url'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -422,6 +445,7 @@ async function sauvegarderClient() {
     ville:       document.getElementById('m-ville').value.trim(),
     email:       document.getElementById('m-email').value.trim(),
     tel:         document.getElementById('m-tel').value.trim(),
+    logo_url:    document.getElementById('m-logo-url').value.trim(),
   };
 
   try {
@@ -450,6 +474,39 @@ async function supprimerClient(id) {
 
 function nouveauDevisClient(id) {
   window.location.href = `devis.html`;
+}
+
+// ── ESPACE CLIENT ──
+async function genererEspaceClient(id) {
+  if (!confirm('Générer un lien d\'Espace Client sécurisé pour ce client ?')) return;
+  toast('Génération du lien...', 'info');
+  await DB.generateClientToken(id);
+  await renderClients(); // Rafraîchir l'interface pour afficher le lien
+  toast('Espace activé avec succès !', 'success');
+}
+
+function copierLien(url) {
+  navigator.clipboard.writeText(url)
+    .then(() => toast('Lien copié dans le presse-papier !', 'success'))
+    .catch(() => toast('Lien : ' + url, 'info', 10000));
+}
+
+async function partagerLien(url, nomClient) {
+  // Le partage natif plante souvent si l'URL est locale (file://)
+  if (navigator.share && url.startsWith('http')) {
+    try {
+      await navigator.share({
+        title: 'Espace Client StarElec',
+        text: `Bonjour ${nomClient},\nVoici le lien sécurisé pour suivre votre chantier : `,
+        url: url
+      });
+    } catch (err) {
+      copierLien(url);
+    }
+  } else {
+    // Si on est en local ou que le partage n'est pas supporté
+    copierLien(url);
+  }
 }
 </script>
 

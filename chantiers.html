@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StarElec — Chantiers</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--blanc); border-radius: var(--radius-lg); width: 90%; max-width: 500px; padding: 24px; box-shadow: 0 8px 40px rgba(0,0,0,0.2); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-size: 18px; font-weight: 600; }
+    
+    .chantiers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    .chantier-card { background: var(--blanc); border-radius: var(--radius); padding: 20px; border: 1px solid var(--border); transition: 0.2s; cursor: pointer; }
+    .chantier-card:hover { border-color: var(--primaire); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .chantier-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .chantier-name { font-size: 16px; font-weight: 600; color: var(--texte); }
+    .chantier-client { font-size: 13px; color: var(--texte-sec); margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+    .chantier-status { font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
+    .status-EnCours { background: #eff6ff; color: #2563eb; }
+    .status-Terminé { background: #f0fdf4; color: #16a34a; }
+    .status-Pause { background: #fefce8; color: #ca8a04; }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
+      <div><span>StarElec</span><span class="logo-sub">Devis & Factures</span></div>
+    </a>
+    <div class="nav-section">Principal</div>
+    <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+    <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
+    <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
+    <a href="chantiers.html" class="nav-item active"><i class="ti ti-hammer"></i> Chantiers</a>
+
+    <div class="nav-section">Gestion</div>
+    <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
+    <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
+    <a href="catalogue.html" class="nav-item"><i class="ti ti-list-check"></i> Catalogue</a>
+    
+    <div class="nav-section">Compte</div>
+    <a href="reglages.html" class="nav-item"><i class="ti ti-settings"></i> Réglages</a>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><h1 class="topbar-title">Chantiers en cours</h1></div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" onclick="ouvrirModalChantier()">
+          <i class="ti ti-plus"></i> Nouveau Chantier
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="chantiers-grid" id="chantiers-grid">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--texte-sec)">
+          <i class="ti ti-loader-2" style="animation:spin 1s linear infinite;font-size:24px"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Nouveau Chantier -->
+<div class="modal-overlay" id="modal-nouveau-chantier">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Créer un chantier</div>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Nom du chantier <span class="required">*</span></label>
+      <input type="text" id="n-nom" class="form-control" placeholder="Ex: Rénovation électrique Maison Dupont" />
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Client associé <span class="required">*</span></label>
+      <select id="n-client" class="form-control">
+        <option value="">Sélectionner un client...</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:24px">
+      <label>Description (optionnelle)</label>
+      <textarea id="n-desc" class="form-control" rows="3" placeholder="Notes générales sur le chantier..."></textarea>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:12px">
+      <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="creerChantier()">Créer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script src="app.js"></script>
+<script>
+let clients = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await chargerChantiers();
+  clients = await DB.getClients();
+  
+  const select = document.getElementById('n-client');
+  select.innerHTML += clients.map(c => `<option value="${c.id}">${c.nom || c.societe}</option>`).join('');
+});
+
+async function chargerChantiers() {
+  const chantiers = await DB.getChantiers();
+  const allClients = await DB.getClients();
+  const grid = document.getElementById('chantiers-grid');
+  
+  if (!chantiers.length) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1">
+        <div class="empty-state">
+          <i class="ti ti-hammer"></i>
+          <h3>Aucun chantier</h3>
+          <p>Créez votre premier chantier pour commencer le suivi.</p>
+          <button class="btn btn-primary" onclick="ouvrirModalChantier()"><i class="ti ti-plus"></i> Nouveau Chantier</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = chantiers.map(ch => {
+    const client = allClients.find(c => c.id === ch.client_id);
+    const clientName = client ? (client.nom || client.societe) : 'Client inconnu';
+    const sClass = 'status-' + (ch.statut ? ch.statut.replace(/\s+/g,'') : 'EnCours');
+    
+    return `
+      <div class="chantier-card" onclick="window.location.href='voir-chantier.html?id=${ch.id}'">
+        <div class="chantier-header">
+          <div>
+            <div class="chantier-name">${ch.nom}</div>
+            <div class="chantier-client"><i class="ti ti-user"></i> ${clientName}</div>
+          </div>
+          <div class="chantier-status ${sClass}">${ch.statut || 'En cours'}</div>
+        </div>
+        <div style="font-size:13px;color:var(--texte-sec);margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+          Créé le ${new Date(ch.created_at).toLocaleDateString('fr-FR')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function ouvrirModalChantier() {
+  document.getElementById('modal-nouveau-chantier').classList.add('open');
+}
+
+function fermerModal() {
+  document.getElementById('modal-nouveau-chantier').classList.remove('open');
+  document.getElementById('n-nom').value = '';
+  document.getElementById('n-client').value = '';
+  document.getElementById('n-desc').value = '';
+}
+
+async function creerChantier() {
+  const nom = document.getElementById('n-nom').value.trim();
+  const client_id = document.getElementById('n-client').value;
+  const description = document.getElementById('n-desc').value.trim();
+
+  if (!nom || !client_id) {
+    toast('Le nom et le client sont obligatoires', 'error');
+    return;
+  }
+
+  try {
+    toast('Création...', 'info');
+    const newChantier = await DB.addChantier({ nom, client_id, description, statut: 'En cours' });
+    fermerModal();
+    window.location.href = `voir-chantier.html?id=${newChantier.id}`;
+  } catch (e) {
+    toast('Erreur de création', 'error');
+  }
+}
+</script>
+
+</body>
+</html>

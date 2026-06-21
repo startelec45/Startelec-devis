@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StarElec — Connexion Admin</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background: var(--fond);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-box {
+      background: var(--blanc);
+      padding: 40px;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-logo {
+      width: 80px;
+      margin-bottom: 20px;
+    }
+    .login-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--texte);
+      margin-bottom: 8px;
+    }
+    .login-sub {
+      color: var(--texte-sec);
+      margin-bottom: 30px;
+    }
+    .input-group {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      font-family: inherit;
+    }
+    .input-group input:focus {
+      border-color: var(--primaire);
+    }
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: var(--primaire);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 16px;
+      transition: opacity 0.2s;
+    }
+    .btn-login:hover {
+      opacity: 0.9;
+    }
+    .error-msg {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-box">
+  <img src="assets/logo.png" alt="StarElec" class="login-logo" onerror="this.style.display='none'" />
+  <h1 class="login-title">Administration</h1>
+  <p class="login-sub">Connectez-vous pour gérer vos devis et chantiers.</p>
+
+  <form id="login-form">
+    <div class="input-group">
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" placeholder="Votre mot de passe..." required />
+    </div>
+    <button type="submit" class="btn-login">Se connecter</button>
+    <div id="error-msg" class="error-msg">Mot de passe incorrect.</div>
+  </form>
+</div>
+
+<script>
+  // Fonction utilitaire pour hasher le mot de passe (SHA-256)
+  async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  document.getElementById('login-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const pwd = document.getElementById('password').value;
+    
+    // Hash attendu (ici c'est le hash de "startelecadmin")
+    // Pour générer un nouveau hash, tapez dans la console de votre navigateur : 
+    // crypto.subtle.digest('SHA-256', new TextEncoder().encode('TON_NOUVEAU_MOT_DE_PASSE')).then(b => console.log(Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('')))
+    const expectedHash = 'bad929d9c915d72561a3ccdb5fadb520f07ab2422bb9f2aa0ab2aa0956521269';
+    
+    const inputHash = await hashPassword(pwd);
+
+    if (inputHash === expectedHash) {
+      localStorage.setItem('se_admin_auth', 'true');
+      window.location.href = 'index.html';
+    } else {
+      document.getElementById('error-msg').style.display = 'block';
+    }
+  });
+</script>
+
+</body>
+</html>

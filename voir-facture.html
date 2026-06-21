@@ -70,7 +70,18 @@
       .pdf-wrap { background:#fff !important; padding:0 !important; border-radius:0 !important; }
       .pdf-page { max-width:100% !important; box-shadow:none !important; page-break-after:always; }
     }
+    
+    /* Vue publique */
+    html.public-view .sidebar,
+    html.public-view .topbar,
+    html.public-view .action-bar { display: none !important; }
+    html.public-view .main-content { margin: 0 auto; max-width: 900px; background: #fff; }
   </style>
+  <script>
+    if (localStorage.getItem('se_admin_auth') !== 'e4d77ebdb2a32ff8816c4fdf4b1db2b54bc9ea5f458e0a77519cfb3e1dd31fc8') {
+      document.documentElement.classList.add('public-view');
+    }
+  </script>
 </head>
 <body>
 
@@ -182,22 +193,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (!facture) { toast('Facture introuvable', 'error'); return; }
 
-  // Topbar
-  document.getElementById('topbar-num').textContent = facture.numero || '—';
-  document.title = `StarElec — ${facture.numero || 'Facture'}`;
+  const isAuth = localStorage.getItem('se_admin_auth') === 'e4d77ebdb2a32ff8816c4fdf4b1db2b54bc9ea5f458e0a77519cfb3e1dd31fc8';
+  if (!isAuth) {
+    const btnBar = document.createElement('div');
+    btnBar.innerHTML = '<div style="padding:20px;text-align:center;background:#fff;border-bottom:1px solid var(--border);margin-bottom:20px"><button class="btn btn-primary" onclick="telechargerPDFClient()"><i class="ti ti-download"></i> Télécharger la facture</button></div>';
+    document.querySelector('.page-content').prepend(btnBar);
+  } else {
+    document.getElementById('topbar-num').textContent = facture.numero || '—';
+    document.title = `StarElec — ${facture.numero || 'Facture'}`;
 
-  // Statut select
-  const sel = document.getElementById('statut-select');
-  sel.value = facture.statut || 'Créé';
-  sel.className = `badge badge-select ${getBadgeClass(facture.statut)}`;
+    // Statut select
+    const sel = document.getElementById('statut-select');
+    sel.value = facture.statut || 'Créé';
+    sel.className = `badge badge-select ${getBadgeClass(facture.statut)}`;
 
-  // Sidebar dynamique depuis config Supabase
-  const nomEntreprise = cfg.nom || 'StarElec';
-  const initiales = nomEntreprise.replace(/[^A-Z]/g, '').slice(0, 2) || nomEntreprise.slice(0, 2).toUpperCase();
-  document.getElementById('sidebar-title').textContent  = nomEntreprise;
-  document.getElementById('sidebar-avatar').textContent = initiales;
-  document.getElementById('sidebar-nom').textContent    = nomEntreprise;
-  document.getElementById('sidebar-ville').textContent  = cfg.ville ? `${nomEntreprise} — ${cfg.ville}` : nomEntreprise;
+    // Sidebar dynamique depuis config Supabase
+    const nomEntreprise = cfg.nom || 'StarElec';
+    const initiales = nomEntreprise.replace(/[^A-Z]/g, '').slice(0, 2) || nomEntreprise.slice(0, 2).toUpperCase();
+    document.getElementById('sidebar-title').textContent  = nomEntreprise;
+    document.getElementById('sidebar-avatar').textContent = initiales;
+    document.getElementById('sidebar-nom').textContent    = nomEntreprise;
+    document.getElementById('sidebar-ville').textContent  = cfg.ville ? `${nomEntreprise} — ${cfg.ville}` : nomEntreprise;
+  }
 
   // Render
   renderPDF();

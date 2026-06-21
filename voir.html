@@ -216,7 +216,19 @@
         page-break-after: always;
       }
     }
+    
+    /* Vue publique */
+    html.public-view .sidebar,
+    html.public-view .topbar,
+    html.public-view .action-bar { display: none !important; }
+    html.public-view .main-content { margin: 0 auto; max-width: 900px; background: #fff; }
   </style>
+  <script>
+    // Exécution immédiate avant l'affichage pour éviter le flash
+    if (localStorage.getItem('se_admin_auth') !== 'e4d77ebdb2a32ff8816c4fdf4b1db2b54bc9ea5f458e0a77519cfb3e1dd31fc8') {
+      document.documentElement.classList.add('public-view');
+    }
+  </script>
 </head>
 <body>
 
@@ -374,27 +386,34 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (!devis) { toast('Devis introuvable', 'error'); return; }
 
-  // Init
-  document.getElementById('topbar-num').textContent = devis.numero;
-  document.getElementById('btn-modifier').href      = `devis.html?id=${id}`;
+  // ── SÉCURITÉ & VUE CLIENT PUBLIC ──
+  const isAuth = localStorage.getItem('se_admin_auth') === 'e4d77ebdb2a32ff8816c4fdf4b1db2b54bc9ea5f458e0a77519cfb3e1dd31fc8';
+  if (!isAuth) {
+    // On ajoute un bouton simple pour télécharger le PDF
+    const btnBar = document.createElement('div');
+    btnBar.innerHTML = '<div style="padding:20px;text-align:center;background:#fff;border-bottom:1px solid var(--border);margin-bottom:20px"><button class="btn btn-primary" onclick="telechargerPDFClient()"><i class="ti ti-download"></i> Télécharger le PDF</button></div>';
+    document.querySelector('.page-content').prepend(btnBar);
+  } else {
+    // ── VUE ADMIN (On initialise les boutons admin) ──
+    document.getElementById('topbar-num').textContent = devis.numero;
+    document.getElementById('btn-modifier').href      = `devis.html?id=${id}`;
 
-  // Statut select
-  const sel = document.getElementById('statut-select');
-  sel.value = devis.statut;
-  sel.className = `badge badge-select ${getBadgeClass(devis.statut)}`;
+    const sel = document.getElementById('statut-select');
+    sel.value = devis.statut;
+    sel.className = `badge badge-select ${getBadgeClass(devis.statut)}`;
+
+    const cfgSidebar = await DB.getConfig();
+    const e = cfgSidebar.entreprise;
+    const nomEntreprise = e.nom || 'StarElec';
+    const initiales = nomEntreprise.replace(/[^A-Z]/g, '').slice(0, 2) || nomEntreprise.slice(0, 2).toUpperCase();
+    document.getElementById('sidebar-avatar').textContent = initiales;
+    document.getElementById('sidebar-nom').textContent    = nomEntreprise;
+    document.getElementById('sidebar-ville').textContent  = e.ville ? `${nomEntreprise} — ${e.ville}` : nomEntreprise;
+  }
 
   // Render
   await renderPDF();
-  await renderLinkedDocs();
-
-  // Sidebar dynamique depuis config Supabase
-  const cfgSidebar = await DB.getConfig();
-  const e = cfgSidebar.entreprise;
-  const nomEntreprise = e.nom || 'StarElec';
-  const initiales = nomEntreprise.replace(/[^A-Z]/g, '').slice(0, 2) || nomEntreprise.slice(0, 2).toUpperCase();
-  document.getElementById('sidebar-avatar').textContent = initiales;
-  document.getElementById('sidebar-nom').textContent    = nomEntreprise;
-  document.getElementById('sidebar-ville').textContent  = e.ville ? `${nomEntreprise} — ${e.ville}` : nomEntreprise;
+  if (isAuth) await renderLinkedDocs();
 
   // Action auto
   if (action === 'pdf')     genererPDF(id);
