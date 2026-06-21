@@ -14,10 +14,10 @@ const SB = {
     const opts = {
       method,
       headers: {
-        'apikey':        SUPABASE_KEY,
+        'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type':  'application/json',
-        'Prefer':        'return=representation',
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
       },
     };
     if (body) opts.body = JSON.stringify(body);
@@ -55,14 +55,14 @@ const DB = {
   async getDevis() {
     try {
       return await SB.select('devis', '?order=created_at.desc');
-    } catch(e) { console.error('getDevis:', e); return []; }
+    } catch (e) { console.error('getDevis:', e); return []; }
   },
 
   async getDevisById(id) {
     try {
       const res = await SB.select('devis', `?id=eq.${id}`);
       return res[0] || null;
-    } catch(e) { return null; }
+    } catch (e) { return null; }
   },
 
   async addDevis(data) {
@@ -74,7 +74,7 @@ const DB = {
         updated_at: new Date().toISOString(),
       });
       return res[0];
-    } catch(e) { console.error('addDevis:', e); throw e; }
+    } catch (e) { console.error('addDevis:', e); throw e; }
   },
 
   async updateDevis(id, data) {
@@ -84,7 +84,7 @@ const DB = {
         updated_at: new Date().toISOString(),
       });
       return res[0];
-    } catch(e) { console.error('updateDevis:', e); throw e; }
+    } catch (e) { console.error('updateDevis:', e); throw e; }
   },
 
   async updateStatut(id, statut) {
@@ -94,23 +94,23 @@ const DB = {
   async deleteDevis(id) {
     try {
       await SB.delete('devis', id);
-    } catch(e) { console.error('deleteDevis:', e); throw e; }
+    } catch (e) { console.error('deleteDevis:', e); throw e; }
   },
 
   async getNextNumero(type = 'devis') {
     try {
-      const annee  = new Date().getFullYear();
-      const cfg    = await this.getConfig();
+      const annee = new Date().getFullYear();
+      const cfg = await this.getConfig();
       const prefix = type === 'facture' ? cfg.devis.prefix_facture
-                   : type === 'acompte' ? cfg.devis.prefix_acompte
-                   : cfg.devis.prefix_devis;
+        : type === 'acompte' ? cfg.devis.prefix_acompte
+          : cfg.devis.prefix_devis;
       const pattern = `${prefix}${annee}/`;
-      const table   = (type === 'facture' || type === 'acompte') ? 'factures' : 'devis';
-      const rows    = await SB.select(table, `?numero=like.${pattern}*&select=numero`);
-      const nums    = rows.map(r => parseInt((r.numero||'').replace(pattern,''))||0);
-      const next    = nums.length ? Math.max(...nums) + 1 : 1;
-      return `${pattern}${String(next).padStart(3,'0')}`;
-    } catch(e) {
+      const table = (type === 'facture' || type === 'acompte') ? 'factures' : 'devis';
+      const rows = await SB.select(table, `?numero=like.${pattern}*&select=numero`);
+      const nums = rows.map(r => parseInt((r.numero || '').replace(pattern, '')) || 0);
+      const next = nums.length ? Math.max(...nums) + 1 : 1;
+      return `${pattern}${String(next).padStart(3, '0')}`;
+    } catch (e) {
       return `D${new Date().getFullYear()}/001`;
     }
   },
@@ -118,34 +118,34 @@ const DB = {
   async getClients() {
     try {
       return await SB.select('clients', '?order=created_at.desc');
-    } catch(e) { return []; }
+    } catch (e) { return []; }
   },
 
   async getClientById(id) {
     try {
       const res = await SB.select('clients', `?id=eq.${id}`);
       return res[0] || null;
-    } catch(e) { return null; }
+    } catch (e) { return null; }
   },
 
   async addClient(data) {
     try {
       const res = await SB.insert('clients', { ...data, created_at: new Date().toISOString() });
       return res[0];
-    } catch(e) { console.error('addClient:', e); throw e; }
+    } catch (e) { console.error('addClient:', e); throw e; }
   },
 
   async updateClient(id, data) {
     try {
       const res = await SB.update('clients', id, data);
       return res[0];
-    } catch(e) { console.error('updateClient:', e); throw e; }
+    } catch (e) { console.error('updateClient:', e); throw e; }
   },
 
   async deleteClient(id) {
     try {
       await SB.delete('clients', id);
-    } catch(e) { console.error('deleteClient:', e); throw e; }
+    } catch (e) { console.error('deleteClient:', e); throw e; }
   },
 
   async getCatalogue(search = '') {
@@ -153,36 +153,64 @@ const DB = {
       let params = '?order=categorie.asc,designation.asc';
       if (search) params += `&designation=ilike.*${search}*`;
       return await SB.select('catalogue', params);
-    } catch(e) { return []; }
+    } catch (e) { return []; }
   },
 
   async searchCatalogue(q) {
     try {
       if (!q || q.length < 2) return [];
-      return await SB.select('catalogue',
-        `?or=(designation.ilike.*${q}*,description.ilike.*${q}*,categorie.ilike.*${q}*)&limit=10`
-      );
-    } catch(e) { return []; }
+
+      // Séparer les mots et retirer les petits mots (ex: "de", "le")
+      const words = q.toLowerCase().split(' ').map(w => w.trim()).filter(w => w.length > 1);
+      if (words.length === 0) return [];
+
+      let results = [];
+      let currentWords = [...words];
+
+      // Limite de sécurité pour éviter trop de requêtes si l'utilisateur tape une longue phrase
+      const maxAttempts = Math.min(currentWords.length, 5);
+      let attempts = 0;
+
+      while (currentWords.length > 0 && results.length === 0 && attempts < maxAttempts) {
+        attempts++;
+        
+        // On construit une requête où TOUS les mots restants doivent être présents (AND)
+        // On cherche le mot soit dans la désignation, soit dans la catégorie, soit dans la description
+        const andArray = currentWords.map(w => `or(designation.ilike.*${w}*,categorie.ilike.*${w}*,description.ilike.*${w}*)`);
+        const andQuery = `?and=(${andArray.join(',')})&limit=50`;
+
+        results = await SB.select('catalogue', andQuery);
+
+        if (results && results.length > 0) {
+          break;
+        }
+
+        // Si aucun résultat, on retire le dernier mot (le moins important) et on recommence
+        currentWords.pop();
+      }
+
+      return results || [];
+    } catch (e) { console.error('searchCatalogue:', e); return []; }
   },
 
   async addPrestation(data) {
     try {
       const res = await SB.insert('catalogue', data);
       return res[0];
-    } catch(e) { console.error('addPrestation:', e); throw e; }
+    } catch (e) { console.error('addPrestation:', e); throw e; }
   },
 
   async updatePrestation(id, data) {
     try {
       const res = await SB.update('catalogue', id, data);
       return res[0];
-    } catch(e) { console.error('updatePrestation:', e); throw e; }
+    } catch (e) { console.error('updatePrestation:', e); throw e; }
   },
 
   async deletePrestation(id) {
     try {
       await SB.delete('catalogue', id);
-    } catch(e) { console.error('deletePrestation:', e); throw e; }
+    } catch (e) { console.error('deletePrestation:', e); throw e; }
   },
 
   async getConfig() {
@@ -190,25 +218,35 @@ const DB = {
       const res = await SB.select('config', '?id=eq.1');
       if (res[0]) return { entreprise: res[0].entreprise || {}, devis: res[0].devis || {} };
       return CONFIG;
-    } catch(e) { return CONFIG; }
+    } catch (e) { return CONFIG; }
   },
 
   async saveConfig(data) {
     try {
       await SB.update('config', 1, { entreprise: data.entreprise, devis: data.devis });
-    } catch(e) { console.error('saveConfig:', e); throw e; }
+    } catch (e) { console.error('saveConfig:', e); throw e; }
+  },
+
+  async addCategorie(catName) {
+    if (!catName) return;
+    const cfg = await this.getConfig();
+    cfg.entreprise.categories = cfg.entreprise.categories || ['Prestations manuelles', "Main d'œuvre", 'Appareillage', 'Éclairage', 'Alimentation', 'Chauffage', 'Réseau', 'Forfaits', 'Enregistré manuellement', 'Autre'];
+    if (!cfg.entreprise.categories.includes(catName)) {
+      cfg.entreprise.categories.push(catName);
+      await this.saveConfig(cfg);
+    }
   },
 
   async getFactures() {
     try {
       return await SB.select('factures', '?order=created_at.desc');
-    } catch(e) { return []; }
+    } catch (e) { return []; }
   },
 
   async getFacturesByDevis(devis_id) {
     try {
       return await SB.select('factures', `?devis_id=eq.${devis_id}`);
-    } catch(e) { return []; }
+    } catch (e) { return []; }
   },
 
   async addFacture(data) {
@@ -216,24 +254,24 @@ const DB = {
       const res = await SB.insert('factures', { ...data, created_at: new Date().toISOString() });
       if (data.devis_id) {
         const factures = await this.getFacturesByDevis(data.devis_id);
-        const total    = factures.reduce((s,f) => s + (f.montant_ht||f.montant||0), 0);
+        const total = factures.reduce((s, f) => s + (f.montant_ht || f.montant || 0), 0);
         await this.updateDevis(data.devis_id, { deja_facture: total });
       }
       return res[0];
-    } catch(e) { console.error('addFacture:', e); throw e; }
+    } catch (e) { console.error('addFacture:', e); throw e; }
   },
 
   async updateFacture(id, data) {
     try {
       const res = await SB.update('factures', id, data);
       return res[0];
-    } catch(e) { console.error('updateFacture:', e); throw e; }
+    } catch (e) { console.error('updateFacture:', e); throw e; }
   },
 
   async deleteFacture(id) {
     try {
       await SB.delete('factures', id);
-    } catch(e) { console.error('deleteFacture:', e); throw e; }
+    } catch (e) { console.error('deleteFacture:', e); throw e; }
   },
 };
 
@@ -242,17 +280,17 @@ const DB = {
 // ══════════════════════════════════════════════
 const CONFIG = {
   entreprise: {
-    nom:'StarElec', siret:'—',
-    iban:'—', bic:'—', banque:'—',
-    adresse:'—', cp:'—', ville:'Orléans', pays:'France',
-    email:'—', tel:'—',
-    tva_msg:'TVA non applicable, article 293B du CGI. Régime micro-entrepreneur.',
-    vendedor:'—', lieu:'Orléans',
+    nom: 'StarElec', siret: '—',
+    iban: '—', bic: '—', banque: '—',
+    adresse: '—', cp: '—', ville: 'Orléans', pays: 'France',
+    email: '—', tel: '—',
+    tva_msg: 'TVA non applicable, article 293B du CGI. Régime micro-entrepreneur.',
+    vendedor: '—', lieu: 'Orléans',
   },
   devis: {
-    validite_jours:30, acompte_pct:30,
-    taux_horaire_mo:46.00, marge_sonepar:30,
-    prefix_devis:'D', prefix_facture:'F', prefix_acompte:'FA',
+    validite_jours: 30, acompte_pct: 30,
+    taux_horaire_mo: 46.00, marge_sonepar: 30,
+    prefix_devis: 'D', prefix_facture: 'F', prefix_acompte: 'FA',
   }
 };
 
@@ -260,13 +298,13 @@ const CONFIG = {
 // UTILITAIRES
 // ══════════════════════════════════════════════
 function genId() {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2,5);
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 }
 
 function fmt(n) {
   if (isNaN(n) || n === null || n === undefined) return '0,00 €';
   return new Intl.NumberFormat('fr-FR', {
-    style:'currency', currency:'EUR', minimumFractionDigits:2
+    style: 'currency', currency: 'EUR', minimumFractionDigits: 2
   }).format(n);
 }
 
@@ -292,27 +330,27 @@ function addDays(date, days) {
 
 function initiales(nom) {
   if (!nom) return '?';
-  return nom.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().substring(0,2);
+  return nom.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().substring(0, 2);
 }
 
 function getUrlParam(key) {
   return new URLSearchParams(window.location.search).get(key);
 }
 
-function toast(msg, type='info', duration=3000) {
+function toast(msg, type = 'info', duration = 3000) {
   const container = document.getElementById('toasts');
   if (!container) return;
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  const icons = { success:'ti-check', error:'ti-alert-circle', info:'ti-info-circle' };
-  el.innerHTML = `<i class="ti ${icons[type]||'ti-info-circle'}"></i> ${msg}`;
+  const icons = { success: 'ti-check', error: 'ti-alert-circle', info: 'ti-info-circle' };
+  el.innerHTML = `<i class="ti ${icons[type] || 'ti-info-circle'}"></i> ${msg}`;
   container.appendChild(el);
   setTimeout(() => el.remove(), duration);
 }
 
 function toggleDropdown(btn) {
   const dropdown = btn.closest('.dropdown');
-  const wasOpen  = dropdown.classList.contains('open');
+  const wasOpen = dropdown.classList.contains('open');
   closeAllDropdowns();
   if (!wasOpen) {
     dropdown.classList.add('open');
@@ -328,16 +366,16 @@ function closeAllDropdowns() {
 }
 
 function calculerLigne(ligne) {
-  const qte   = parseFloat(ligne.qte)   || 0;
-  const pu    = parseFloat(ligne.pu)    || 0;
+  const qte = parseFloat(ligne.qte) || 0;
+  const pu = parseFloat(ligne.pu) || 0;
   const reduc = parseFloat(ligne.reduc) || 0;
-  return Math.round(qte * pu * (1 - reduc/100) * 100) / 100;
+  return Math.round(qte * pu * (1 - reduc / 100) * 100) / 100;
 }
 
 function calculerTotaux(lignes) {
   const total_ht = lignes
     .filter(l => l.type === 'produit' || !l.type)
-    .reduce((s,l) => s + (l.total || calculerLigne(l)), 0);
+    .reduce((s, l) => s + (l.total || calculerLigne(l)), 0);
   return { total_ht, total_ttc: total_ht, acompte: Math.round(total_ht * 0.30 * 100) / 100 };
 }
 
@@ -368,7 +406,7 @@ function setupAutocomplete(input, onSelect) {
         list.innerHTML = matches.map(p => `
           <div class="autocomplete-item" data-id="${p.id}">
             <span>${p.designation}</span>
-            <span class="ac-prix">${fmt(p.pu)} / ${p.unite||'u'}</span>
+            <span class="ac-prix">${fmt(p.pu)} / ${p.unite || 'u'}</span>
           </div>`).join('');
 
         list.querySelectorAll('.autocomplete-item').forEach(item => {
@@ -380,7 +418,7 @@ function setupAutocomplete(input, onSelect) {
         });
 
         list.classList.add('open');
-      } catch(e) { console.error('Autocomplete:', e); }
+      } catch (e) { console.error('Autocomplete:', e); }
     }, 300);
   });
 
@@ -393,20 +431,16 @@ function setupAutocomplete(input, onSelect) {
 // IA — CLAUDE API
 // ══════════════════════════════════════════════
 async function appelIA(prompt) {
-  const cfg       = await DB.getConfig();
-  const catalogue = await DB.getCatalogue();
-  const apiKey    = localStorage.getItem('se_api_key') || '';
-  const provider  = localStorage.getItem('se_ai_provider') || 'anthropic';
-  const model     = localStorage.getItem('se_ai_model') || (provider === 'anthropic' ? 'claude-haiku-4-5' : 'gemini-2.5-flash');
+  const cfg = await DB.getConfig();
+  const apiKey = localStorage.getItem('se_api_key') || '';
+  const provider = localStorage.getItem('se_ai_provider') || 'anthropic';
+  const model = localStorage.getItem('se_ai_model') || (provider === 'anthropic' ? 'claude-haiku-4-5' : 'gemini-2.5-flash');
 
   if (!apiKey) throw new Error('Clé API non configurée. Allez dans Réglages.');
 
   const systemPrompt = `Tu es l'assistant de facturation de ${cfg.entreprise.nom}, électricien à ${cfg.entreprise.ville}.
 
-CATALOGUE (extrait) :
-${catalogue.slice(0,20).map(p => `- ${p.designation} : ${p.pu}€/${p.unite}`).join('\n')}
-
-RÈGLES : Taux MO ${cfg.devis.taux_horaire_mo}€/h. TVA non applicable. Répondre UNIQUEMENT en JSON.
+RÈGLES : Taux MO ${cfg.devis.taux_horaire_mo}€/h. TVA non applicable. Répondre UNIQUEMENT en JSON. Mets "0" pour le prix unitaire (pu) des matériels, l'application se chargera de trouver le prix exact dans le catalogue. Tu peux évaluer le temps de main d'oeuvre.
 
 FORMAT :
 {"client":{"nom":"","type":"Particulier","civilite":"","prenom":"","nom_famille":"","societe":"","adresse":"","cp":"","ville":"","email":"","tel":""},"objet":"","lignes":[{"designation":"","description":"","qte":1,"pu":0,"unite":"u","total":0}],"note":""}`;
@@ -434,8 +468,8 @@ FORMAT :
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error?.message || `Erreur API Anthropic ${res.status}`);
     }
-    const data  = await res.json();
-    text  = data.content?.[0]?.text || '';
+    const data = await res.json();
+    text = data.content?.[0]?.text || '';
   } else if (provider === 'gemini') {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
       method: 'POST',
@@ -455,32 +489,56 @@ FORMAT :
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error?.message || `Erreur API Gemini ${res.status}`);
     }
-    const data  = await res.json();
-    text  = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const data = await res.json();
+    text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
   const clean = text.replace(/```json|```/g, '').trim();
-  return JSON.parse(clean);
+  const result = JSON.parse(clean);
+
+  // Recherche ciblée des prix dans le catalogue (RAG post-génération)
+  if (result.lignes && result.lignes.length > 0) {
+    for (const ligne of result.lignes) {
+      if (!ligne.designation) continue;
+      // On cherche une correspondance (ex: "prise legrand" -> "Prise 2P+T Legrand Dooxie")
+      const matches = await DB.searchCatalogue(ligne.designation);
+      if (matches && matches.length > 0) {
+        // On prend la première correspondance (la plus pertinente)
+        const match = matches[0];
+        ligne.pu = match.pu;
+        ligne.designation = match.designation; // Remplacement par le vrai nom du catalogue
+        ligne.unite = match.unite || ligne.unite;
+      }
+      // Si la ligne est identifiée comme de la Main d'oeuvre et qu'on n'a pas trouvé, on applique le taux horaire de la config
+      else if (ligne.designation.toLowerCase().includes('main d\'oeuvre') || ligne.designation.toLowerCase().includes('main d’oeuvre') || ligne.designation.toLowerCase().includes('mo')) {
+        ligne.pu = cfg.devis.taux_horaire_mo || ligne.pu;
+      }
+
+      ligne.total = parseFloat((ligne.pu * ligne.qte).toFixed(2));
+    }
+  }
+
+  return result;
 }
 
 // ══════════════════════════════════════════════
 // CRÉER FACTURE DEPUIS DEVIS
 // ══════════════════════════════════════════════
 async function creerFactureDepuisDevis(devis_id, type = 'solde') {
-  const devis  = await DB.getDevisById(devis_id);
+  const devis = await DB.getDevisById(devis_id);
   if (!devis) return null;
 
-  const cfg    = await DB.getConfig();
-  const today  = new Date().toISOString().split('T')[0];
+  const cfg = await DB.getConfig();
+  const today = new Date().toISOString().split('T')[0];
   const numero = await DB.getNextNumero(type === 'acompte' ? 'acompte' : 'facture');
 
   let montant, titre;
   if (type === 'acompte') {
-    montant = Math.round(devis.montant_ht * (cfg.devis.acompte_pct/100) * 100) / 100;
-    titre   = `Facture d'acompte (${cfg.devis.acompte_pct}%) — ${devis.numero}`;
+    montant = Math.round(devis.montant_ht * (cfg.devis.acompte_pct / 100) * 100) / 100;
+    titre = `Facture d'acompte (${cfg.devis.acompte_pct}%) — ${devis.numero}`;
   } else {
-    montant = Math.round((devis.montant_ht - (devis.deja_facture||0)) * 100) / 100;
-    titre   = `Facture de solde — ${devis.numero}`;
+    montant = Math.round((devis.montant_ht - (devis.deja_facture || 0)) * 100) / 100;
+    titre = `Facture de solde — ${devis.numero}`;
   }
 
   return await DB.addFacture({
@@ -492,7 +550,7 @@ async function creerFactureDepuisDevis(devis_id, type = 'solde') {
     lignes: type === 'acompte' ? [{
       designation: `Acompte ${cfg.devis.acompte_pct}% — ${devis.objet}`,
       description: `Acompte sur devis ${devis.numero}`,
-      qte:1, pu:montant, total:montant, unite:'forfait'
+      qte: 1, pu: montant, total: montant, unite: 'forfait'
     }] : devis.lignes,
     montant_ht: montant, montant: montant,
     statut: 'Créé', date: today,
@@ -508,11 +566,11 @@ async function clonerDevis(id) {
   const original = await DB.getDevisById(id);
   if (!original) return null;
   const numero = await DB.getNextNumero('devis');
-  const today  = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
   return await DB.addDevis({
-    ...original, id:undefined, numero, statut:'Créé',
-    date:today, date_validite:addDays(today,30),
-    deja_facture:0, created_at:undefined, updated_at:undefined,
+    ...original, id: undefined, numero, statut: 'Créé',
+    date: today, date_validite: addDays(today, 30),
+    deja_facture: 0, created_at: undefined, updated_at: undefined,
   });
 }
 
@@ -537,34 +595,34 @@ async function envoyerDevisParMail(devis_id) {
 async function exporterJSON(devis_id) {
   const devis = await DB.getDevisById(devis_id);
   if (!devis) return;
-  const blob = new Blob([JSON.stringify(devis,null,2)], {type:'application/json'});
+  const blob = new Blob([JSON.stringify(devis, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `${(devis.numero||'devis').replace('/','-')}.json`;
+  a.download = `${(devis.numero || 'devis').replace('/', '-')}.json`;
   a.click();
-  toast('Export JSON téléchargé','success');
+  toast('Export JSON téléchargé', 'success');
 }
 
 async function exporterXML(devis_id) {
   const devis = await DB.getDevisById(devis_id);
   if (!devis) return;
-  const lignesXML = (devis.lignes||[]).map(l=>`<ligne><designation>${escXML(l.designation)}</designation><qte>${l.qte}</qte><pu>${l.pu}</pu><total>${l.total||0}</total></ligne>`).join('');
-  const xml = `<?xml version="1.0" encoding="UTF-8"?><devis><numero>${escXML(devis.numero)}</numero><date>${devis.date}</date><client>${escXML(devis.client)}</client><objet>${escXML(devis.objet||'')}</objet><montant_ht>${devis.montant_ht}</montant_ht><statut>${escXML(devis.statut)}</statut><lignes>${lignesXML}</lignes></devis>`;
-  const blob = new Blob([xml],{type:'application/xml'});
+  const lignesXML = (devis.lignes || []).map(l => `<ligne><designation>${escXML(l.designation)}</designation><qte>${l.qte}</qte><pu>${l.pu}</pu><total>${l.total || 0}</total></ligne>`).join('');
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><devis><numero>${escXML(devis.numero)}</numero><date>${devis.date}</date><client>${escXML(devis.client)}</client><objet>${escXML(devis.objet || '')}</objet><montant_ht>${devis.montant_ht}</montant_ht><statut>${escXML(devis.statut)}</statut><lignes>${lignesXML}</lignes></devis>`;
+  const blob = new Blob([xml], { type: 'application/xml' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `${(devis.numero||'devis').replace('/','-')}.xml`;
+  a.download = `${(devis.numero || 'devis').replace('/', '-')}.xml`;
   a.click();
-  toast('Export XML téléchargé','success');
+  toast('Export XML téléchargé', 'success');
 }
 
 function escXML(str) {
-  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function copierLienApercu(devis_id) {
   const url = `${window.location.origin}/voir.html?id=${devis_id}`;
-  navigator.clipboard.writeText(url).then(() => toast('Lien copié !','success')).catch(() => toast('Lien : '+url,'info',6000));
+  navigator.clipboard.writeText(url).then(() => toast('Lien copié !', 'success')).catch(() => toast('Lien : ' + url, 'info', 6000));
 }
 
 async function genererPDF(devis_id) {
@@ -575,7 +633,7 @@ async function genererPDF(devis_id) {
     // Ouvre la page d'aperçu en mode impression automatique
     // L'utilisateur peut choisir "Enregistrer en PDF" depuis la boîte d'impression
     window.open(`voir.html?id=${devis_id}&print=1`, '_blank');
-  } catch(e) {
+  } catch (e) {
     console.error(e);
     toast('Erreur PDF — ' + e.message, 'error');
   }

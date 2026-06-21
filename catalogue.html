@@ -202,7 +202,8 @@
               <select class="form-control" id="m-categorie-select" onchange="toggleNewCategorie()">
                 <!-- Rempli dynamiquement -->
               </select>
-              <input type="text" class="form-control" id="m-categorie-new" placeholder="Nouvelle catégorie..." style="display:none;" />
+              <input type="text" class="form-control" id="m-categorie-new" placeholder="Nouvelle catégorie..."
+                style="display:none;" />
             </div>
           </div>
           <div class="form-group">
@@ -276,9 +277,9 @@
           <!-- Nom du menu déroulant -->
           <div class="form-group" style="margin-bottom:12px;">
             <label style="font-weight:600">📂 Nom du menu déroulant <span class="required">*</span></label>
-            <input type="text" id="import-categorie-nom" class="form-control"
-              placeholder="Ex : Yesss 2024, Sonepar Juin, Rexel Hiver..."
-              style="margin-top:4px" />
+            <select id="import-categorie-select" class="form-control" style="margin-top:4px" onchange="document.getElementById('import-categorie-nom').style.display = this.value === 'NEW' ? 'block' : 'none'">
+            </select>
+            <input type="text" id="import-categorie-nom" class="form-control" style="display:none; margin-top:8px;" placeholder="Nom de la nouvelle catégorie (ex: Yesss 2024)..." />
             <p style="font-size:11px;color:var(--texte-sec);margin-top:4px">
               Toutes les références de ce fichier seront regroupées dans ce menu déroulant dans le catalogue.
             </p>
@@ -328,68 +329,52 @@
       await renderCatalogue();
     });
 
+    function renderItemsHTML(prestations, cat) {
+      const icones = {
+        'Appareillage': 'ti-plug',
+        'Éclairage': 'ti-bulb',
+        'Alimentation': 'ti-bolt',
+        'Chauffage': 'ti-flame',
+        'Réseau': 'ti-network',
+        "Main d'œuvre": 'ti-clock',
+        'Forfaits': 'ti-box',
+        'Forfait': 'ti-box',
+        'Enregistré manuellement': 'ti-bookmark',
+        'Autre': 'ti-tag',
+      };
+      return prestations.map(p => `
+        <div class="cat-item">
+          <div class="cat-icon">
+            <i class="ti ${icones[cat] || 'ti-tag'}"></i>
+          </div>
+          <div class="cat-info">
+            <div class="cat-name">${p.designation}</div>
+            ${p.description ? `<div class="cat-desc">${p.description}</div>` : ''}
+          </div>
+          <div style="text-align:right;margin-right:12px">
+            <div class="cat-prix">${fmt(p.pu)}</div>
+            <div style="font-size:10px;color:var(--texte-sec)">par ${p.unite || 'u'}</div>
+          </div>
+          <div class="cat-actions">
+            <button class="btn btn-ghost btn-icon btn-sm" onclick="editerPrestation('${p.id}')" title="Modifier">
+              <i class="ti ti-edit"></i>
+            </button>
+            <button class="btn btn-ghost btn-icon btn-sm" onclick="dupliquerPrestation('${p.id}')" title="Dupliquer">
+              <i class="ti ti-copy"></i>
+            </button>
+            <button class="btn btn-ghost btn-icon btn-sm" style="color:#c0392b" onclick="supprimerPrestation('${p.id}')" title="Supprimer">
+              <i class="ti ti-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
     async function renderCatalogue() {
-      const q = document.getElementById('search-cat').value.toLowerCase();
-      const cat = await DB.getCatalogue();
-      const categories = [...new Set(cat.map(p => p.categorie || 'Autre'))];
-
-      // Filtres catégories
-      const filtersEl = document.getElementById('cat-filters');
-      filtersEl.innerHTML = `<span class="filter-pill ${!catFilter ? 'active' : ''}" onclick="filtrerCat('',this)">Tous</span>` +
-        categories.map(c => `<span class="filter-pill ${catFilter === c ? 'active' : ''}" onclick="filtrerCat('${c}',this)">${c}</span>`).join('');
-
-      // Options catégories pour le modal
-      const fixedCats = ['Prestations manuelles', "Main d'\u0153uvre"];
-      const allSuggestions = [...new Set([...fixedCats, ...categories])];
-      const catsSelectEl = document.getElementById('m-categorie-select');
-      if (catsSelectEl) {
-        catsSelectEl.innerHTML = allSuggestions.map(c => `<option value="${c}">${c}</option>`).join('') + '<option value="NEW">+ Nouvelle catégorie...</option>';
-      }
-
-      // Filtrer
-      let list = cat;
-      if (catFilter) list = list.filter(p => (p.categorie || 'Autre') === catFilter);
-      if (q) {
-        const terms = q.split(' ').filter(t => t.length > 0);
-        list = list.filter(p => {
-          const text = (p.designation + ' ' + (p.description || '') + ' ' + (p.categorie || '')).toLowerCase();
-          return terms.every(term => text.includes(term));
-        });
-      }
-
-      // Stats
-      const prix = cat.map(p => p.pu || 0);
-      document.getElementById('stat-total').textContent = cat.length;
-      document.getElementById('stat-moy').textContent = cat.length ? fmt(prix.reduce((a, b) => a + b, 0) / prix.length) : '0 €';
-      document.getElementById('stat-max').textContent = cat.length ? fmt(Math.max(...prix)) : '0 €';
-      document.getElementById('stat-min').textContent = cat.length ? fmt(Math.min(...prix)) : '0 €';
-
-      // Grouper par catégorie
-      const container = document.getElementById('catalogue-container');
-
-      if (!list.length) {
-        container.innerHTML = `<div class="empty-state">
-      <i class="ti ti-list-off"></i>
-      <h3>Aucune prestation trouvée</h3>
-      <p>Modifiez votre recherche ou ajoutez une nouvelle prestation</p>
-      <button class="btn btn-primary" onclick="ouvrirModal()"><i class="ti ti-plus"></i> Ajouter</button>
-    </div>`;
-        return;
-      }
-
-      // Limite d'affichage pour éviter les ralentissements du navigateur
-      const limit = 150;
-      const totalResults = list.length;
-      const isLimited = totalResults > limit;
-      if (isLimited) list = list.slice(0, limit);
-
-      // Grouper
-      const grouped = {};
-      list.forEach(p => {
-        const cat = p.categorie || 'Autre';
-        if (!grouped[cat]) grouped[cat] = [];
-        grouped[cat].push(p);
-      });
+      const q = document.getElementById('search-cat').value.trim();
+      const cfg = await DB.getConfig();
+      let categories = cfg.entreprise?.categories || ['Prestations manuelles', "Main d'œuvre", 'Appareillage', 'Éclairage', 'Alimentation', 'Chauffage', 'Réseau', 'Forfaits', 'Autre'];
+      categories = [...new Set(categories)];
 
       const icones = {
         'Appareillage': 'ti-plug',
@@ -404,61 +389,145 @@
         'Autre': 'ti-tag',
       };
 
-      const isSearchActive = q !== '';
+      const filtersEl = document.getElementById('cat-filters');
+      filtersEl.innerHTML = `<span class="filter-pill ${!catFilter ? 'active' : ''}" onclick="filtrerCat('',this)">Tous</span>` +
+        categories.map(c => `<span class="filter-pill ${catFilter === c ? 'active' : ''}" onclick="filtrerCat('${c}',this)">${c}</span>`).join('');
 
-      container.innerHTML = Object.entries(grouped).map(([cat, prestations], idx) => {
-        const safeCatId = 'cat-' + idx;
-        const displayStyle = isSearchActive ? 'block' : 'none';
-        const chevronClass = isSearchActive ? 'ti-chevron-up' : 'ti-chevron-down';
+      const fixedCats = ['Prestations manuelles', "Main d'\u0153uvre"];
+      const allSuggestions = [...new Set([...fixedCats, ...categories])];
+      const catsSelectEl = document.getElementById('m-categorie-select');
+      if (catsSelectEl) {
+        catsSelectEl.innerHTML = allSuggestions.map(c => `<option value="${c}">${c}</option>`).join('') + '<option value="NEW">+ Nouvelle catégorie...</option>';
+      }
+      
+      const importCatsSelectEl = document.getElementById('import-categorie-select');
+      if (importCatsSelectEl) {
+        importCatsSelectEl.innerHTML = allSuggestions.map(c => `<option value="${c}">${c}</option>`).join('') + '<option value="NEW">+ Nouvelle catégorie...</option>';
+        document.getElementById('import-categorie-nom').style.display = importCatsSelectEl.value === 'NEW' ? 'block' : 'none';
+      }
 
-        return `
-    <div class="catalogue-list" style="margin-bottom:16px">
-      <div class="categorie-header" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="toggleCategorie('${safeCatId}')">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <i class="ti ${icones[cat] || 'ti-tag'}"></i>
-          ${cat} <span style="font-size:10px; opacity:0.6; text-transform:none">(${prestations.length})</span>
-        </div>
-        <i class="ti ${chevronClass}" id="icon-${safeCatId}" style="color:var(--texte-sec)"></i>
-      </div>
-      <div class="categorie-body" id="body-${safeCatId}" style="display:${displayStyle};">
-        ${prestations.map(p => `
-          <div class="cat-item">
-            <div class="cat-icon">
-              <i class="ti ${icones[cat] || 'ti-tag'}"></i>
-            </div>
-            <div class="cat-info">
-              <div class="cat-name">${p.designation}</div>
-              ${p.description ? `<div class="cat-desc">${p.description}</div>` : ''}
-            </div>
-            <div style="text-align:right;margin-right:12px">
-              <div class="cat-prix">${fmt(p.pu)}</div>
-              <div style="font-size:10px;color:var(--texte-sec)">par ${p.unite || 'u'}</div>
-            </div>
-            <div class="cat-actions">
-              <button class="btn btn-ghost btn-icon btn-sm" onclick="editerPrestation('${p.id}')" title="Modifier">
-                <i class="ti ti-edit"></i>
-              </button>
-              <button class="btn btn-ghost btn-icon btn-sm" onclick="dupliquerPrestation('${p.id}')" title="Dupliquer">
-                <i class="ti ti-copy"></i>
-              </button>
-              <button class="btn btn-ghost btn-icon btn-sm" style="color:#c0392b" onclick="supprimerPrestation('${p.id}')" title="Supprimer">
-                <i class="ti ti-trash"></i>
-              </button>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `}).join('');
+      const container = document.getElementById('catalogue-container');
 
-      if (isLimited) {
-        container.innerHTML += `
-          <div style="text-align:center; padding: 24px; color: var(--texte-sec); font-size: 13px; background: var(--gris-clair); border-radius: var(--radius);">
-            <i class="ti ti-info-circle" style="font-size:16px; color:var(--bleu); vertical-align:middle; margin-right:4px;"></i>
-            Affichage limité aux <strong>${limit} premiers résultats</strong> sur ${totalResults}.<br/>
-            <span style="opacity:0.8; font-size:12px;">Utilisez la barre de recherche en haut pour trouver les autres prestations facilement.</span>
-          </div>
-        `;
+      if (q !== '') {
+        // Mode RECHERCHE (on cherche via Supabase avec le Fuzzy Search)
+        let list = await DB.searchCatalogue(q);
+
+        if (catFilter) list = list.filter(p => (p.categorie || 'Autre') === catFilter);
+
+        document.getElementById('stat-total').textContent = list.length;
+        document.getElementById('stat-moy').textContent = '-';
+        document.getElementById('stat-max').textContent = '-';
+        document.getElementById('stat-min').textContent = '-';
+
+        if (!list.length) {
+          container.innerHTML = `<div class="empty-state">
+            <i class="ti ti-list-off"></i>
+            <h3>Aucune prestation trouvée</h3>
+            <p>Modifiez votre recherche ou ajoutez une nouvelle prestation</p>
+          </div>`;
+          return;
+        }
+
+        const grouped = {};
+        list.forEach(p => {
+          const cat = p.categorie || 'Autre';
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(p);
+        });
+
+        container.innerHTML = Object.entries(grouped).map(([cat, prestations], idx) => {
+          const safeCatId = 'cat-s-' + idx;
+          return `
+            <div class="catalogue-list" style="margin-bottom:16px">
+              <div class="categorie-header" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="toggleCategorie('${safeCatId}')">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <i class="ti ${icones[cat] || 'ti-tag'}"></i>
+                  ${cat} <span style="font-size:10px; opacity:0.6; text-transform:none">(${prestations.length} trouvés)</span>
+                </div>
+                <i class="ti ti-chevron-up" id="icon-${safeCatId}" style="color:var(--texte-sec)"></i>
+              </div>
+              <div class="categorie-body" id="body-${safeCatId}" style="display:block;">
+                ${renderItemsHTML(prestations, cat)}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } else {
+        // Mode NORMAL (Lazy Load des catégories)
+        document.getElementById('stat-total').textContent = '-';
+        document.getElementById('stat-moy').textContent = '-';
+        document.getElementById('stat-max').textContent = '-';
+        document.getElementById('stat-min').textContent = '-';
+
+        let catsToShow = categories;
+        if (catFilter) catsToShow = catsToShow.filter(c => c === catFilter);
+
+        if (!catsToShow.length) {
+          container.innerHTML = `<div class="empty-state">
+            <i class="ti ti-list-off"></i>
+            <h3>Aucune catégorie</h3>
+            <p>Importez un fichier ou ajoutez une prestation manuellement</p>
+          </div>`;
+          return;
+        }
+
+        container.innerHTML = catsToShow.map((cat, idx) => {
+          const safeCatId = 'cat-' + idx;
+          return `
+            <div class="catalogue-list" style="margin-bottom:16px">
+              <div class="categorie-header" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="toggleCategorieLazy('${safeCatId}', '${cat.replace(/'/g, "\\'")}')">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <i class="ti ${icones[cat] || 'ti-tag'}"></i>
+                  ${cat} <span style="font-size:10px; opacity:0.6; text-transform:none"></span>
+                </div>
+                <i class="ti ti-chevron-down" id="icon-${safeCatId}" style="color:var(--texte-sec)"></i>
+              </div>
+              <div class="categorie-body" id="body-${safeCatId}" style="display:none; min-height: 50px;">
+                <div style="text-align:center; padding:20px; color:var(--texte-sec);">
+                  <i class="ti ti-loader-2 ti-spin"></i> Chargement...
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    async function toggleCategorieLazy(safeCatId, catName) {
+      const body = document.getElementById('body-' + safeCatId);
+      const icon = document.getElementById('icon-' + safeCatId);
+
+      if (body.style.display === 'none') {
+        body.style.display = 'block';
+        icon.className = 'ti ti-chevron-up';
+
+        // Charger les données si pas déjà fait
+        if (body.innerHTML.includes('ti-loader-2')) {
+          try {
+            // Requête ciblée sur la catégorie
+            const prestations = await SB.select('catalogue', `?categorie=eq.${encodeURIComponent(catName)}&limit=50`);
+            if (prestations.length === 0) {
+              body.innerHTML = `<div style="text-align:center; padding:12px; color:var(--texte-sec); font-size:12px;">Vide</div>`;
+            } else {
+              let html = renderItemsHTML(prestations, catName);
+              if (prestations.length >= 50) {
+                html += `
+                  <div style="padding: 12px; text-align: center; font-size: 12px; color: var(--texte-sec); background: #f9f9f9; border-top: 1px solid var(--border);">
+                    Seuls les <strong>50 premiers éléments</strong> sont affichés.<br/>
+                    Utilisez la recherche pour trouver les autres.
+                  </div>
+                `;
+              }
+              body.innerHTML = html;
+            }
+          } catch (e) {
+            body.innerHTML = `<div style="text-align:center; padding:12px; color:red; font-size:12px;">Erreur de chargement</div>`;
+          }
+        }
+      } else {
+        body.style.display = 'none';
+        icon.className = 'ti ti-chevron-down';
       }
     }
 
@@ -560,10 +629,10 @@
       const sel = document.getElementById('m-categorie-select');
       const input = document.getElementById('m-categorie-new');
       const categorie = sel.value === 'NEW' ? input.value.trim() : sel.value;
-      
-      if (sel.value === 'NEW' && !categorie) { 
-        toast('Veuillez saisir un nom pour la nouvelle catégorie', 'error'); 
-        return; 
+
+      if (sel.value === 'NEW' && !categorie) {
+        toast('Veuillez saisir un nom pour la nouvelle catégorie', 'error');
+        return;
       }
 
       const data = {
@@ -582,6 +651,8 @@
           await DB.addPrestation(data);
           toast('Prestation ajoutée !', 'success');
         }
+        await DB.addCategorie(data.categorie);
+
 
         fermerModal();
         await renderCatalogue();
@@ -757,13 +828,14 @@
     async function validerImport() {
       if (importedData.length === 0) return;
 
-      // Récupérer le nom du menu déroulant saisi par l'utilisateur
-      const nomCategorieInput = document.getElementById('import-categorie-nom');
-      const nomCategorie = nomCategorieInput ? nomCategorieInput.value.trim() : '';
+      // Récupérer le nom du menu déroulant choisi ou saisi
+      const sel = document.getElementById('import-categorie-select');
+      const input = document.getElementById('import-categorie-nom');
+      const nomCategorie = sel && sel.value !== 'NEW' ? sel.value : (input ? input.value.trim() : '');
 
       if (!nomCategorie) {
-        toast('Veuillez saisir un nom pour le menu déroulant (ex: Yesss 2024)', 'error');
-        if (nomCategorieInput) nomCategorieInput.focus();
+        toast('Veuillez sélectionner ou saisir un nom pour la catégorie', 'error');
+        if (input && sel.value === 'NEW') input.focus();
         return;
       }
 
@@ -784,6 +856,8 @@
             pu: parseFloat(p.pu) || 0
           });
         }
+
+        await DB.addCategorie(nomCategorie);
 
         fermerModalImport();
         toast(`${importedData.length} références importées dans "${nomCategorie}" !`, 'success');
