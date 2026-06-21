@@ -1,10 +1,11 @@
 /* ============================================
    STARTELEC DEVIS — app.js
-   Base de données Supabase
+   Base de données Supabase (Version Sécurisée)
    ============================================ */
 
-const SUPABASE_URL = 'https://komwitqbcrvxixpgvnxi.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_wyiTO5uJaP70J22LEO7SlQ_ntO73jcT';
+// Ces variables iront chercher les configurations injectées ou serviront de passerelle
+const SUPABASE_URL = window.ENV?.SUPABASE_URL || 'https://komwitqbcrvxixpgvnxi.supabase.co';
+const SUPABASE_KEY = window.ENV?.SUPABASE_KEY || 'sb_publishable_wyiTO5uJaP70J22LEO7SlQ_ntO73jcT';
 
 // ── Client Supabase léger (sans SDK) ──
 const SB = {
@@ -237,18 +238,16 @@ const DB = {
 };
 
 // ══════════════════════════════════════════════
-// CONFIG PAR DÉFAUT (fallback)
+// CONFIG PAR DÉFAUT (Masquée et nettoyée pour GitHub public)
 // ══════════════════════════════════════════════
 const CONFIG = {
   entreprise: {
-    nom:'StarElec', siret:'880 075 098 00025',
-    iban:'FR76 4061 8803 8000 0403 8380 440',
-    bic:'BOUSFRPPXXX', banque:'Boursorama',
-    adresse:'9 rue Maurice Berger', cp:'45000',
-    ville:'Orléans', pays:'France',
-    email:'startelec45@gmail.com', tel:'06 60 19 35 21',
+    nom:'StarElec', siret:'—',
+    iban:'—', bic:'—', banque:'—',
+    adresse:'—', cp:'—', ville:'Orléans', pays:'France',
+    email:'—', tel:'—',
     tva_msg:'TVA non applicable, article 293B du CGI. Régime micro-entrepreneur.',
-    vendeur:'FLORIAN FERNANDES', lieu:'Orléans',
+    vendedor:'—', lieu:'Orléans',
   },
   devis: {
     validite_jours:30, acompte_pct:30,
