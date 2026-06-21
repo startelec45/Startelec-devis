@@ -396,8 +396,10 @@ async function appelIA(prompt) {
   const cfg       = await DB.getConfig();
   const catalogue = await DB.getCatalogue();
   const apiKey    = localStorage.getItem('se_api_key') || '';
+  const provider  = localStorage.getItem('se_ai_provider') || 'anthropic';
+  const model     = localStorage.getItem('se_ai_model') || (provider === 'anthropic' ? 'claude-haiku-4-5' : 'gemini-2.5-flash');
 
-  if (!apiKey) throw new Error('Clé API Claude non configurée. Allez dans Réglages.');
+  if (!apiKey) throw new Error('Clé API non configurée. Allez dans Réglages.');
 
   const systemPrompt = `Tu es l'assistant de facturation de ${cfg.entreprise.nom}, électricien à ${cfg.entreprise.ville}.
 
@@ -409,29 +411,54 @@ RÈGLES : Taux MO ${cfg.devis.taux_horaire_mo}€/h. TVA non applicable. Répond
 FORMAT :
 {"client":{"nom":"","type":"Particulier","civilite":"","prenom":"","nom_famille":"","societe":"","adresse":"","cp":"","ville":"","email":"","tel":""},"objet":"","lignes":[{"designation":"","description":"","qte":1,"pu":0,"unite":"u","total":0}],"note":""}`;
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5',
-      max_tokens: 2000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  });
+  let text = '';
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || `Erreur API ${res.status}`);
+  if (provider === 'anthropic') {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: model,
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Erreur API Anthropic ${res.status}`);
+    }
+    const data  = await res.json();
+    text  = data.content?.[0]?.text || '';
+  } else if (provider === 'gemini') {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        },
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 2000, responseMimeType: "application/json" },
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Erreur API Gemini ${res.status}`);
+    }
+    const data  = await res.json();
+    text  = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
-  const data  = await res.json();
-  const text  = data.content?.[0]?.text || '';
   const clean = text.replace(/```json|```/g, '').trim();
   return JSON.parse(clean);
 }
