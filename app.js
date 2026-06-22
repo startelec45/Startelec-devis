@@ -6,8 +6,9 @@
 // ── SÉCURITÉ ADMIN ──
 // Vérifie si on est connecté, sauf sur les pages publiques
 (function() {
-  const publicPages = ['login.html', 'espace-client.html', 'voir.html', 'voir-facture.html'];
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const publicPages = ['login', 'espace-client', 'voir', 'voir-facture'];
+  let currentPage = window.location.pathname.split('/').pop() || 'index';
+  currentPage = currentPage.replace(/\.html$/, '');
   
   if (!publicPages.includes(currentPage)) {
     const isAuth = localStorage.getItem('se_admin_auth');
