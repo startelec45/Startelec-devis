@@ -270,26 +270,26 @@ function renderTable(devis) {
     const produitApercu = lignes.map(l=>l.designation).join(', ').substring(0,40) + (lignes.length > 1 ? '...' : '');
 
     return `<tr onclick="voirDevis('${d.id}')" style="cursor:pointer">
-      <td onclick="event.stopPropagation()"><input type="checkbox" class="row-check" data-id="${d.id}" /></td>
-      <td><span class="td-num">${d.numero||'—'}</span> <small class="td-sec" style="display:block;font-size:10px">${d.type||'Devis'}</small></td>
-      <td class="td-montant">${fmt(d.montant_ht||0)}</td>
-      <td class="td-montant">${fmt(d.montant_ht||0)}</td>
-      <td class="td-client">${d.client||'—'}</td>
-      <td class="td-sec">${fmtDate(d.date)}</td>
-      <td class="td-sec">${d.date_paiement ? fmtDate(d.date_paiement) : '—'}</td>
-      <td class="td-produit" title="${lignes.map(l=>l.designation).join(', ')}">${produitApercu||'—'}</td>
-      <td onclick="event.stopPropagation()">
+      <td onclick="event.stopPropagation()" data-label=""><input type="checkbox" class="row-check" data-id="${d.id}" /></td>
+      <td data-label="N°"><span class="td-num">${d.numero||'—'}</span> <small class="td-sec" style="display:block;font-size:10px">${d.type||'Devis'}</small></td>
+      <td class="td-montant" data-label="Montant HT">${fmt(d.montant_ht||0)}</td>
+      <td class="td-montant" data-label="Montant TTC">${fmt(d.montant_ht||0)}</td>
+      <td class="td-client" data-label="Client">${d.client||'—'}</td>
+      <td class="td-sec" data-label="Date Création">${fmtDate(d.date)}</td>
+      <td class="td-sec" data-label="Date Paiement">${d.date_paiement ? fmtDate(d.date_paiement) : '—'}</td>
+      <td class="td-produit" data-label="Produits" title="${lignes.map(l=>l.designation).join(', ')}">${produitApercu||'—'}</td>
+      <td onclick="event.stopPropagation()" data-label="État">
         <select class="badge badge-select ${badgeClass}" onchange="changerStatut('${d.id}', this.value, this)">
           ${['Créé','Envoyé','Accepté','Rejeté','Payé','Payé en partie','Annulé'].map(s=>`<option value="${s}"${s===d.statut?' selected':''}>${s}</option>`).join('')}
         </select>
       </td>
-      <td>
+      <td data-label="Facturé">
         <div class="facturation-info">
           <div class="reste">Reste à facturer : <strong>${fmt(reste)}</strong></div>
           <div class="deja">Déjà facturé : <strong>${fmt(d.deja_facture||0)}</strong></div>
         </div>
       </td>
-      <td onclick="event.stopPropagation()">
+      <td onclick="event.stopPropagation()" data-label="Actions">
         <div class="dropdown row-actions">
           <button class="btn btn-ghost btn-icon btn-sm" onclick="toggleDropdown(this)">
             <i class="ti ti-settings"></i>

@@ -1206,11 +1206,18 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
 .empty-state {
   text-align: center;
   padding: 48px 24px;
-  color: var(--texte-sec);
 }
 .empty-state i { font-size: 40px; margin-bottom: 12px; color: var(--gris-bord); display: block; }
 .empty-state h3 { font-size: 16px; font-weight: 600; color: var(--texte); margin-bottom: 6px; }
 .empty-state p  { font-size: 13px; margin-bottom: 16px; }
+
+/* ── UTILS LAYOUT ── */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
 
 /* ── RESPONSIVE ── */
 @media (max-width: 900px) {
@@ -1231,15 +1238,39 @@ select.form-control { appearance: none; background-image: url("data:image/svg+xm
   .topbar { height: auto; flex-wrap: wrap; padding: 12px 16px; gap: 12px; }
   .topbar-right { width: 100%; justify-content: space-between; }
   .search-input-wrap { flex: 1; max-width: none; }
+  .action-bar { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pdf-wrap { overflow-x: auto; padding-bottom: 20px; }
 }
 
 @media (max-width: 600px) {
   .page-content { padding: 14px; }
   .stats-grid { grid-template-columns: 1fr; }
+  .form-grid-2 { grid-template-columns: 1fr; }
+  
+  /* Tables */
   .data-table thead { display: none; }
-  .data-table tbody td { display: block; padding: 6px 14px; text-align: left; }
-  .data-table tbody tr { display: block; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .td-num { display: inline-block; }
+  .data-table tbody td { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 10px 14px; 
+    text-align: right; 
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .data-table tbody td::before { 
+    content: attr(data-label); 
+    font-weight: 600; 
+    color: var(--texte-sec); 
+    margin-right: 16px; 
+    text-align: left; 
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+  .data-table tbody td:empty { display: none; }
+  .data-table tbody tr { display: block; padding: 12px 0; border-bottom: 2px solid var(--border); }
+  .data-table tbody tr:last-child { border-bottom: none; }
+  .td-num { display: flex !important; }
+  
   .form-row.cols-2, .form-row.cols-3, .form-row.cols-4 { grid-template-columns: 1fr; }
   .ia-input-row { flex-direction: column; }
   .ia-btn-send { width: 100%; justify-content: center; }

@@ -364,6 +364,30 @@ const DB = {
     }
   },
 
+  async editCategorie(oldName, newName) {
+    if (!oldName || !newName || oldName === newName) return;
+    const cfg = await this.getConfig();
+    if (cfg.entreprise.categories) {
+      const idx = cfg.entreprise.categories.indexOf(oldName);
+      if (idx !== -1) {
+        cfg.entreprise.categories[idx] = newName;
+        await this.saveConfig(cfg);
+      }
+    }
+    try {
+      await SB.query('catalogue', 'PATCH', { categorie: newName }, `?categorie=eq.${encodeURIComponent(oldName)}`);
+    } catch(e) { console.error('editCategorie catalogue update:', e); }
+  },
+
+  async deleteCategorie(catName) {
+    if (!catName) return;
+    const cfg = await this.getConfig();
+    if (cfg.entreprise.categories) {
+      cfg.entreprise.categories = cfg.entreprise.categories.filter(c => c !== catName);
+      await this.saveConfig(cfg);
+    }
+  },
+
   async getFactures() {
     try {
       return await SB.select('factures', '?order=created_at.desc');

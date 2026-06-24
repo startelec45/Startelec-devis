@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,250 +9,367 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    .chantier-header-block { background: var(--blanc); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border); margin-bottom: 24px; }
-    .chantier-title-row { display: flex; justify-content: space-between; align-items: flex-start; }
-    .c-title { font-size: 24px; font-weight: 700; color: var(--texte); margin-bottom: 8px; }
-    .c-meta { color: var(--texte-sec); font-size: 14px; display: flex; gap: 16px; }
-    .c-meta i { font-size: 16px; vertical-align: -2px; }
+    .chantier-header-block {
+      background: var(--blanc);
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
 
-    .taches-container { background: var(--blanc); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; }
-    .taches-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border); }
-    .taches-title { font-size: 18px; font-weight: 600; }
-    
-    .tache-row { display: flex; align-items: center; padding: 16px 24px; border-bottom: 1px solid #f1f5f9; gap: 20px; transition: 0.2s; }
-    .tache-row:hover { background: #f8fafc; }
-    .tache-row:last-child { border-bottom: none; }
-    
-    .t-info { flex: 1; }
-    .t-cat { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--primaire); margin-bottom: 4px; }
-    .t-desc { font-size: 15px; font-weight: 500; color: var(--texte); }
-    
-    .t-slider-wrap { width: 200px; display: flex; align-items: center; gap: 12px; }
-    .t-slider { flex: 1; accent-color: var(--primaire); cursor: pointer; }
-    .t-pct { font-weight: 600; width: 40px; text-align: right; }
-    
-    .t-actions { display: flex; gap: 8px; }
+    .chantier-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .c-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--texte);
+      margin-bottom: 8px;
+    }
+
+    .c-meta {
+      color: var(--texte-sec);
+      font-size: 14px;
+      display: flex;
+      gap: 16px;
+    }
+
+    .c-meta i {
+      font-size: 16px;
+      vertical-align: -2px;
+    }
+
+    .taches-container {
+      background: var(--blanc);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .taches-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .taches-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .tache-row {
+      display: flex;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid #f1f5f9;
+      gap: 20px;
+      transition: 0.2s;
+    }
+
+    .tache-row:hover {
+      background: #f8fafc;
+    }
+
+    .tache-row:last-child {
+      border-bottom: none;
+    }
+
+    .t-info {
+      flex: 1;
+    }
+
+    .t-cat {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--primaire);
+      margin-bottom: 4px;
+    }
+
+    .t-desc {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--texte);
+    }
+
+    .t-slider-wrap {
+      width: 200px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .t-slider {
+      flex: 1;
+      accent-color: var(--primaire);
+      cursor: pointer;
+    }
+
+    .t-pct {
+      font-weight: 600;
+      width: 40px;
+      text-align: right;
+    }
+
+    .t-actions {
+      display: flex;
+      gap: 8px;
+    }
 
     /* Modal */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; }
-    .modal-overlay.open { display: flex; }
-    .modal { background: var(--blanc); border-radius: var(--radius-lg); width: 90%; max-width: 500px; padding: 24px; box-shadow: 0 8px 40px rgba(0,0,0,0.2); }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--blanc);
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 500px;
+      padding: 24px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+    }
   </style>
 </head>
+
 <body>
 
-<div class="app-layout">
-  <aside class="sidebar">
-    <a href="index.html" class="sidebar-logo">
-      <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
-      <div><span>StarElec</span><span class="logo-sub">Devis & Factures</span></div>
-    </a>
-    <div class="nav-section">Principal</div>
-    <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-    <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
-    <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
-    <a href="chantiers.html" class="nav-item active"><i class="ti ti-hammer"></i> Chantiers</a>
-    <div class="nav-section">Gestion</div>
-    <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
-    <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
-  </aside>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <a href="index.html" class="sidebar-logo">
+        <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
+        <div><span>StarElec</span><span class="logo-sub">Devis & Factures</span></div>
+      </a>
+      <div class="nav-section">Principal</div>
+      <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+      <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
+      <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
+      <a href="chantiers.html" class="nav-item active"><i class="ti ti-hammer"></i> Chantiers</a>
+      <div class="nav-section">Gestion</div>
+      <a href="liste.html" class="nav-item"><i class="ti ti-file-text"></i> Tous les devis</a>
+      <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
+    </aside>
 
-  <div class="main-content">
-    <div class="topbar">
-      <div class="topbar-left">
-        <a href="chantiers.html" class="btn btn-ghost btn-icon" style="margin-right:10px"><i class="ti ti-arrow-left"></i></a>
-        <h1 class="topbar-title">Détail Chantier</h1>
-      </div>
-      <div class="topbar-right" style="display:flex;gap:12px">
-        <button class="btn btn-secondary" onclick="ajouterTachesTypes()" title="Générer les étapes classiques (Gaines, Câbles, Tableau...)">
-          <i class="ti ti-bolt" style="color:#eab308"></i> Modèle Électricité
-        </button>
-        <button class="btn btn-primary" onclick="ouvrirModalTache()">
-          <i class="ti ti-plus"></i> Ajouter une tâche
-        </button>
-      </div>
-    </div>
-
-    <div class="page-content" id="page-content" style="display:none">
-      
-      <div class="chantier-header-block">
-        <div class="chantier-title-row">
-          <div>
-            <div class="c-title" id="c-nom">Chargement...</div>
-            <div class="c-meta">
-              <span id="c-client"><i class="ti ti-user"></i> —</span>
-              <span id="c-statut"><i class="ti ti-activity"></i> —</span>
-            </div>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <select class="form-control" id="c-statut-select" onchange="changerStatutChantier(this.value)" style="min-width:140px;">
-              <option value="En cours">En cours</option>
-              <option value="Terminé">Terminé</option>
-              <option value="En pause">En pause</option>
-            </select>
-            <button class="btn btn-ghost btn-icon" style="color:#ef4444; border:1px solid #fee2e2" onclick="supprimerChantier()" title="Supprimer le chantier définitivement">
-              <i class="ti ti-trash"></i>
-            </button>
-          </div>
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-left">
+          <a href="chantiers.html" class="btn btn-ghost btn-icon" style="margin-right:10px"><i
+              class="ti ti-arrow-left"></i></a>
+          <h1 class="topbar-title">Détail Chantier</h1>
         </div>
-        <div id="c-desc" style="margin-top:16px;color:var(--texte-sec);font-size:14px"></div>
-      </div>
-
-      <div class="taches-container">
-        <div class="taches-header">
-          <div class="taches-title">Avancement des tâches</div>
-          <div style="font-size:14px;font-weight:600;color:var(--primaire)">Global: <span id="global-pct">0</span>%</div>
-        </div>
-        <div id="taches-list">
-          <div style="padding:40px;text-align:center;color:var(--texte-sec)">
-            <i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section Travaux Supplémentaires -->
-      <div class="taches-container" style="margin-top:24px">
-        <div class="taches-header" style="background:#fff7ed">
-          <div class="taches-title" style="color:#c2410c"><i class="ti ti-alert-circle"></i> Travaux Supplémentaires & Imprévus</div>
-          <button class="btn btn-secondary btn-sm" onclick="ouvrirModalTS()" style="background:#ea580c;color:#fff;border:none">
-            <i class="ti ti-plus"></i> Ajouter une note
+        <div class="topbar-right" style="display:flex;gap:12px">
+          <button class="btn btn-secondary" onclick="ajouterTachesTypes()"
+            title="Générer les étapes classiques (Gaines, Câbles, Tableau...)">
+            <i class="ti ti-bolt" style="color:#eab308"></i> Modèle Électricité
+          </button>
+          <button class="btn btn-primary" onclick="ouvrirModalTache()">
+            <i class="ti ti-plus"></i> Ajouter une tâche
           </button>
         </div>
-        <div id="ts-list">
-          <div style="padding:40px;text-align:center;color:var(--texte-sec)">
-            <i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i>
-          </div>
-        </div>
       </div>
 
+      <div class="page-content" id="page-content" style="display:none">
+
+        <div class="chantier-header-block">
+          <div class="chantier-title-row">
+            <div>
+              <div class="c-title" id="c-nom">Chargement...</div>
+              <div class="c-meta">
+                <span id="c-client"><i class="ti ti-user"></i> —</span>
+                <span id="c-statut"><i class="ti ti-activity"></i> —</span>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <select class="form-control" id="c-statut-select" onchange="changerStatutChantier(this.value)"
+                style="min-width:140px;">
+                <option value="En cours">En cours</option>
+                <option value="Terminé">Terminé</option>
+                <option value="En pause">En pause</option>
+              </select>
+              <button class="btn btn-ghost btn-icon" style="color:#ef4444; border:1px solid #fee2e2"
+                onclick="supprimerChantier()" title="Supprimer le chantier définitivement">
+                <i class="ti ti-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div id="c-desc" style="margin-top:16px;color:var(--texte-sec);font-size:14px"></div>
+        </div>
+
+        <div class="taches-container">
+          <div class="taches-header">
+            <div class="taches-title">Avancement des tâches</div>
+            <div style="font-size:14px;font-weight:600;color:var(--primaire)">Global: <span id="global-pct">0</span>%
+            </div>
+          </div>
+          <div id="taches-list">
+            <div style="padding:40px;text-align:center;color:var(--texte-sec)">
+              <i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Travaux Supplémentaires -->
+        <div class="taches-container" style="margin-top:24px">
+          <div class="taches-header" style="background:#fff7ed">
+            <div class="taches-title" style="color:#c2410c"><i class="ti ti-alert-circle"></i> Travaux Supplémentaires &
+              Imprévus</div>
+            <button class="btn btn-secondary btn-sm" onclick="ouvrirModalTS()"
+              style="background:#ea580c;color:#fff;border:none">
+              <i class="ti ti-plus"></i> Ajouter une note
+            </button>
+          </div>
+          <div id="ts-list">
+            <div style="padding:40px;text-align:center;color:var(--texte-sec)">
+              <i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Modal Tâche -->
-<div class="modal-overlay" id="modal-tache">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;margin-bottom:20px">
-      <div style="font-size:18px;font-weight:600" id="modal-tache-title">Nouvelle tâche</div>
-      <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModal()"><i class="ti ti-x"></i></button>
-    </div>
-    <input type="hidden" id="t-id" />
-    <div class="form-group" style="margin-bottom:16px">
-      <label>Catégorie <span class="required">*</span></label>
-      <input type="text" id="t-cat" class="form-control" placeholder="Ex: Électricité RDC" list="cat-list" />
-      <datalist id="cat-list">
-        <option value="Électricité RDC"></option>
-        <option value="Électricité Étage"></option>
-        <option value="Tableau électrique"></option>
-        <option value="Appareillage"></option>
-      </datalist>
-    </div>
-    <div class="form-group" style="margin-bottom:16px">
-      <label>Description de la tâche <span class="required">*</span></label>
-      <input type="text" id="t-desc" class="form-control" placeholder="Ex: Tirage de câbles prises" />
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px">
-      <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
-      <button class="btn btn-primary" onclick="sauvegarderTache()">Sauvegarder</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Travail Supplémentaire -->
-<div class="modal-overlay" id="modal-ts">
-  <div class="modal">
-    <div style="display:flex;justify-content:space-between;margin-bottom:20px">
-      <div style="font-size:18px;font-weight:600" id="modal-ts-title">Nouveau Travail Supp.</div>
-      <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModal()"><i class="ti ti-x"></i></button>
-    </div>
-    <input type="hidden" id="ts-id" />
-    <div class="form-group" style="margin-bottom:16px">
-      <label>Titre rapide <span class="required">*</span></label>
-      <input type="text" id="ts-titre" class="form-control" placeholder="Ex: Prise supplémentaire cuisine" />
-    </div>
-    <div class="form-group" style="margin-bottom:16px">
-      <label>Description / Notes</label>
-      <textarea id="ts-desc" class="form-control" rows="3" placeholder="Détails de la demande client..."></textarea>
-    </div>
-    <div class="form-group" style="margin-bottom:16px">
-      <label>Statut</label>
-      <select id="ts-statut" class="form-control">
-        <option value="Noté">Noté (En attente)</option>
-        <option value="Validé">Validé par le client</option>
-        <option value="Réalisé">Réalisé</option>
-        <option value="Facturé">Facturé</option>
-      </select>
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px">
-      <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
-      <button class="btn btn-primary" style="background:#ea580c;border-color:#ea580c" onclick="sauvegarderTS()">Sauvegarder</button>
+  <!-- Modal Tâche -->
+  <div class="modal-overlay" id="modal-tache">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+        <div style="font-size:18px;font-weight:600" id="modal-tache-title">Nouvelle tâche</div>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModal()"><i class="ti ti-x"></i></button>
+      </div>
+      <input type="hidden" id="t-id" />
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Catégorie <span class="required">*</span></label>
+        <input type="text" id="t-cat" class="form-control" placeholder="Ex: Électricité RDC" list="cat-list" />
+        <datalist id="cat-list">
+          <option value="Électricité RDC"></option>
+          <option value="Électricité Étage"></option>
+          <option value="Tableau électrique"></option>
+          <option value="Appareillage"></option>
+        </datalist>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Description de la tâche <span class="required">*</span></label>
+        <input type="text" id="t-desc" class="form-control" placeholder="Ex: Tirage de câbles prises" />
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px">
+        <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
+        <button class="btn btn-primary" onclick="sauvegarderTache()">Sauvegarder</button>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="toast-container" id="toasts"></div>
+  <!-- Modal Travail Supplémentaire -->
+  <div class="modal-overlay" id="modal-ts">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+        <div style="font-size:18px;font-weight:600" id="modal-ts-title">Nouveau Travail Supp.</div>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModal()"><i class="ti ti-x"></i></button>
+      </div>
+      <input type="hidden" id="ts-id" />
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Titre rapide <span class="required">*</span></label>
+        <input type="text" id="ts-titre" class="form-control" placeholder="Ex: Prise supplémentaire cuisine" />
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Description / Notes</label>
+        <textarea id="ts-desc" class="form-control" rows="3" placeholder="Détails de la demande client..."></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:16px">
+        <label>Statut</label>
+        <select id="ts-statut" class="form-control">
+          <option value="Noté">Noté (En attente)</option>
+          <option value="Validé">Validé par le client</option>
+          <option value="Réalisé">Réalisé</option>
+          <option value="Facturé">Facturé</option>
+        </select>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px">
+        <button class="btn btn-ghost" onclick="fermerModal()">Annuler</button>
+        <button class="btn btn-primary" style="background:#ea580c;border-color:#ea580c"
+          onclick="sauvegarderTS()">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
 
-<script src="app.js"></script>
-<script>
-let chantierId = null;
-let chantier = null;
-let taches = [];
+  <div class="toast-container" id="toasts"></div>
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  chantierId = urlParams.get('id');
-  if (!chantierId) { window.location.href = 'chantiers.html'; return; }
-  await chargerChantier();
-});
+  <script src="app.js"></script>
+  <script>
+    let chantierId = null;
+    let chantier = null;
+    let taches = [];
 
-async function chargerChantier() {
-  chantier = await DB.getChantierById(chantierId);
-  if (!chantier) { window.location.href = 'chantiers.html'; return; }
-  
-  const client = await DB.getClientById(chantier.client_id);
-  
-  document.getElementById('c-nom').textContent = chantier.nom;
-  document.getElementById('c-client').innerHTML = `<i class="ti ti-user"></i> ${client ? (client.nom || client.societe) : 'Client inconnu'}`;
-  document.getElementById('c-statut-select').value = chantier.statut || 'En cours';
-  if(chantier.description) document.getElementById('c-desc').textContent = chantier.description;
-  
-  document.getElementById('page-content').style.display = 'block';
-  await chargerTaches();
-  await chargerTS();
-}
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      chantierId = urlParams.get('id');
+      if (!chantierId) { window.location.href = 'chantiers.html'; return; }
+      await chargerChantier();
+    });
 
-async function changerStatutChantier(statut) {
-  try {
-    await DB.updateChantier(chantierId, { statut });
-    toast('Statut mis à jour', 'success');
-  } catch(e) { toast('Erreur', 'error'); }
-}
+    async function chargerChantier() {
+      chantier = await DB.getChantierById(chantierId);
+      if (!chantier) { window.location.href = 'chantiers.html'; return; }
 
-async function chargerTaches() {
-  taches = await DB.getTachesByChantier(chantierId);
-  renderTaches();
-}
+      const client = await DB.getClientById(chantier.client_id);
 
-function renderTaches() {
-  const list = document.getElementById('taches-list');
-  
-  if (!taches.length) {
-    list.innerHTML = `
+      document.getElementById('c-nom').textContent = chantier.nom;
+      document.getElementById('c-client').innerHTML = `<i class="ti ti-user"></i> ${client ? (client.nom || client.societe) : 'Client inconnu'}`;
+      document.getElementById('c-statut-select').value = chantier.statut || 'En cours';
+      if (chantier.description) document.getElementById('c-desc').textContent = chantier.description;
+
+      document.getElementById('page-content').style.display = 'block';
+      await chargerTaches();
+      await chargerTS();
+    }
+
+    async function changerStatutChantier(statut) {
+      try {
+        await DB.updateChantier(chantierId, { statut });
+        toast('Statut mis à jour', 'success');
+      } catch (e) { toast('Erreur', 'error'); }
+    }
+
+    async function chargerTaches() {
+      taches = await DB.getTachesByChantier(chantierId);
+      renderTaches();
+    }
+
+    function renderTaches() {
+      const list = document.getElementById('taches-list');
+
+      if (!taches.length) {
+        list.innerHTML = `
       <div style="padding:40px;text-align:center;color:var(--texte-sec)">
         <i class="ti ti-playlist-add" style="font-size:32px;display:block;margin-bottom:12px"></i>
         Aucune tâche. Ajoutez-en une pour commencer le suivi.
       </div>`;
-    document.getElementById('global-pct').textContent = '0';
-    return;
-  }
+        document.getElementById('global-pct').textContent = '0';
+        return;
+      }
 
-  let html = '';
-  let sumPct = 0;
-  
-  // Grouper par catégorie pour l'affichage (optionnel, ici on affiche juste la catégorie sur chaque ligne)
-  taches.forEach(t => {
-    sumPct += (t.avancement_pct || 0);
-    html += `
+      let html = '';
+      let sumPct = 0;
+
+      // Grouper par catégorie pour l'affichage (optionnel, ici on affiche juste la catégorie sur chaque ligne)
+      taches.forEach(t => {
+        sumPct += (t.avancement_pct || 0);
+        html += `
       <div class="tache-row">
         <div class="t-info">
           <div class="t-cat">${t.categorie}</div>
@@ -268,132 +386,132 @@ function renderTaches() {
         </div>
       </div>
     `;
-  });
-  
-  list.innerHTML = html;
-  document.getElementById('global-pct').textContent = Math.round(sumPct / taches.length);
-}
+      });
 
-// Timeout pour éviter de spammer la BDD quand on glisse le slider
-let sliderTimeout;
-function updatePct(id, pct) {
-  clearTimeout(sliderTimeout);
-  sliderTimeout = setTimeout(async () => {
-    try {
-      await DB.updateTache(id, { avancement_pct: parseInt(pct) });
-      const t = taches.find(x => x.id === id);
-      if (t) t.avancement_pct = parseInt(pct);
-      
-      let sumPct = taches.reduce((acc, curr) => acc + (curr.avancement_pct || 0), 0);
+      list.innerHTML = html;
       document.getElementById('global-pct').textContent = Math.round(sumPct / taches.length);
-      
-      toast('Avancement enregistré', 'success');
-    } catch(e) { toast('Erreur réseau', 'error'); }
-  }, 500);
-}
-
-function ouvrirModalTache() {
-  document.getElementById('modal-tache-title').textContent = 'Nouvelle tâche';
-  document.getElementById('t-id').value = '';
-  document.getElementById('t-cat').value = '';
-  document.getElementById('t-desc').value = '';
-  document.getElementById('modal-tache').classList.add('open');
-}
-
-function editerTache(id) {
-  const t = taches.find(x => x.id === id);
-  if (!t) return;
-  document.getElementById('modal-tache-title').textContent = 'Modifier tâche';
-  document.getElementById('t-id').value = t.id;
-  document.getElementById('t-cat').value = t.categorie;
-  document.getElementById('t-desc').value = t.description;
-  document.getElementById('modal-tache').classList.add('open');
-}
-
-function fermerModal() {
-  document.getElementById('modal-tache').classList.remove('open');
-}
-
-async function sauvegarderTache() {
-  const id = document.getElementById('t-id').value;
-  const categorie = document.getElementById('t-cat').value.trim();
-  const description = document.getElementById('t-desc').value.trim();
-
-  if (!categorie || !description) {
-    toast('Remplissez tous les champs', 'error'); return;
-  }
-
-  try {
-    if (id) {
-      await DB.updateTache(id, { categorie, description });
-      toast('Tâche modifiée', 'success');
-    } else {
-      await DB.addTache({ chantier_id: chantierId, categorie, description, avancement_pct: 0 });
-      toast('Tâche ajoutée', 'success');
     }
-    fermerModal();
-    await chargerTaches();
-  } catch(e) { toast('Erreur', 'error'); }
-}
 
-async function ajouterTachesTypes() {
-  if (!confirm("Voulez-vous ajouter les 5 étapes classiques d'un chantier électrique à ce projet ?")) return;
-  const modeles = [
-    { categorie: 'Gros Œuvre', description: 'Incorporation, saignées et pose des gaines' },
-    { categorie: 'Câblage', description: 'Tirage des câbles (courant fort et faible)' },
-    { categorie: 'Tableau', description: 'Câblage et raccordement du tableau électrique' },
-    { categorie: 'Appareillage', description: 'Pose des prises, interrupteurs et luminaires' },
-    { categorie: 'Finition', description: 'Mise en service, tests de continuité et repérage' }
-  ];
+    // Timeout pour éviter de spammer la BDD quand on glisse le slider
+    let sliderTimeout;
+    function updatePct(id, pct) {
+      clearTimeout(sliderTimeout);
+      sliderTimeout = setTimeout(async () => {
+        try {
+          await DB.updateTache(id, { avancement_pct: parseInt(pct) });
+          const t = taches.find(x => x.id === id);
+          if (t) t.avancement_pct = parseInt(pct);
 
-  try {
-    toast('Ajout des tâches standards...', 'info');
-    for (const t of modeles) {
-      await DB.addTache({ chantier_id: chantierId, categorie: t.categorie, description: t.description, avancement_pct: 0 });
+          let sumPct = taches.reduce((acc, curr) => acc + (curr.avancement_pct || 0), 0);
+          document.getElementById('global-pct').textContent = Math.round(sumPct / taches.length);
+
+          toast('Avancement enregistré', 'success');
+        } catch (e) { toast('Erreur réseau', 'error'); }
+      }, 500);
     }
-    toast('Modèle appliqué avec succès !', 'success');
-    await chargerTaches();
-  } catch (e) {
-    toast("Erreur lors de l'ajout", 'error');
-  }
-}
 
-async function supprimerTache(id) {
-  if (!confirm('Supprimer cette tâche ?')) return;
-  try {
-    await DB.deleteTache(id);
-    await chargerTaches();
-    toast('Tâche supprimée', 'info');
-  } catch(e) { toast('Erreur', 'error'); }
-}
+    function ouvrirModalTache() {
+      document.getElementById('modal-tache-title').textContent = 'Nouvelle tâche';
+      document.getElementById('t-id').value = '';
+      document.getElementById('t-cat').value = '';
+      document.getElementById('t-desc').value = '';
+      document.getElementById('modal-tache').classList.add('open');
+    }
 
-// ── TRAVAUX SUPPLÉMENTAIRES ──
-let listeTS = [];
+    function editerTache(id) {
+      const t = taches.find(x => x.id === id);
+      if (!t) return;
+      document.getElementById('modal-tache-title').textContent = 'Modifier tâche';
+      document.getElementById('t-id').value = t.id;
+      document.getElementById('t-cat').value = t.categorie;
+      document.getElementById('t-desc').value = t.description;
+      document.getElementById('modal-tache').classList.add('open');
+    }
 
-async function chargerTS() {
-  listeTS = await DB.getTravauxSuppByChantier(chantierId);
-  renderTS();
-}
+    function fermerModal() {
+      document.getElementById('modal-tache').classList.remove('open');
+    }
 
-function renderTS() {
-  const list = document.getElementById('ts-list');
-  
-  if (!listeTS.length) {
-    list.innerHTML = `
+    async function sauvegarderTache() {
+      const id = document.getElementById('t-id').value;
+      const categorie = document.getElementById('t-cat').value.trim();
+      const description = document.getElementById('t-desc').value.trim();
+
+      if (!categorie || !description) {
+        toast('Remplissez tous les champs', 'error'); return;
+      }
+
+      try {
+        if (id) {
+          await DB.updateTache(id, { categorie, description });
+          toast('Tâche modifiée', 'success');
+        } else {
+          await DB.addTache({ chantier_id: chantierId, categorie, description, avancement_pct: 0 });
+          toast('Tâche ajoutée', 'success');
+        }
+        fermerModal();
+        await chargerTaches();
+      } catch (e) { toast('Erreur', 'error'); }
+    }
+
+    async function ajouterTachesTypes() {
+      if (!confirm("Voulez-vous ajouter les 5 étapes classiques d'un chantier électrique à ce projet ?")) return;
+      const modeles = [
+        { categorie: 'Gros Œuvre', description: 'Incorporation, saignées et pose des gaines' },
+        { categorie: 'Câblage', description: 'Tirage des câbles (courant fort et faible)' },
+        { categorie: 'Tableau', description: 'Câblage et raccordement du tableau électrique' },
+        { categorie: 'Appareillage', description: 'Pose des prises, interrupteurs et luminaires' },
+        { categorie: 'Finition', description: 'Mise en service, tests de continuité et repérage' }
+      ];
+
+      try {
+        toast('Ajout des tâches standards...', 'info');
+        for (const t of modeles) {
+          await DB.addTache({ chantier_id: chantierId, categorie: t.categorie, description: t.description, avancement_pct: 0 });
+        }
+        toast('Modèle appliqué avec succès !', 'success');
+        await chargerTaches();
+      } catch (e) {
+        toast("Erreur lors de l'ajout", 'error');
+      }
+    }
+
+    async function supprimerTache(id) {
+      if (!confirm('Supprimer cette tâche ?')) return;
+      try {
+        await DB.deleteTache(id);
+        await chargerTaches();
+        toast('Tâche supprimée', 'info');
+      } catch (e) { toast('Erreur', 'error'); }
+    }
+
+    // ── TRAVAUX SUPPLÉMENTAIRES ──
+    let listeTS = [];
+
+    async function chargerTS() {
+      listeTS = await DB.getTravauxSuppByChantier(chantierId);
+      renderTS();
+    }
+
+    function renderTS() {
+      const list = document.getElementById('ts-list');
+
+      if (!listeTS.length) {
+        list.innerHTML = `
       <div style="padding:40px;text-align:center;color:var(--texte-sec)">
         Aucun travail supplémentaire noté.
       </div>`;
-    return;
-  }
+        return;
+      }
 
-  let html = '';
-  listeTS.forEach(t => {
-    let sColor = '#64748b';
-    if(t.statut === 'Validé') sColor = '#3b82f6';
-    if(t.statut === 'Réalisé') sColor = '#10b981';
-    if(t.statut === 'Facturé') sColor = '#8b5cf6';
-    
-    html += `
+      let html = '';
+      listeTS.forEach(t => {
+        let sColor = '#64748b';
+        if (t.statut === 'Validé') sColor = '#3b82f6';
+        if (t.statut === 'Réalisé') sColor = '#10b981';
+        if (t.statut === 'Facturé') sColor = '#8b5cf6';
+
+        html += `
       <div class="tache-row" style="background:#fffcf5">
         <div class="t-info">
           <div class="t-cat" style="color:#ea580c">${t.titre}</div>
@@ -408,82 +526,83 @@ function renderTS() {
         </div>
       </div>
     `;
-  });
-  list.innerHTML = html;
-}
-
-function ouvrirModalTS() {
-  document.getElementById('modal-ts-title').textContent = 'Nouveau Travail Supp.';
-  document.getElementById('ts-id').value = '';
-  document.getElementById('ts-titre').value = '';
-  document.getElementById('ts-desc').value = '';
-  document.getElementById('ts-statut').value = 'Noté';
-  document.getElementById('modal-ts').classList.add('open');
-}
-
-function editerTS(id) {
-  const t = listeTS.find(x => x.id === id);
-  if (!t) return;
-  document.getElementById('modal-ts-title').textContent = 'Modifier Travail Supp.';
-  document.getElementById('ts-id').value = t.id;
-  document.getElementById('ts-titre').value = t.titre;
-  document.getElementById('ts-desc').value = t.description;
-  document.getElementById('ts-statut').value = t.statut || 'Noté';
-  document.getElementById('modal-ts').classList.add('open');
-}
-
-async function sauvegarderTS() {
-  const id = document.getElementById('ts-id').value;
-  const titre = document.getElementById('ts-titre').value.trim();
-  const description = document.getElementById('ts-desc').value.trim();
-  const statut = document.getElementById('ts-statut').value;
-
-  if (!titre) { toast('Le titre est obligatoire', 'error'); return; }
-
-  try {
-    if (id) {
-      await DB.updateTravailSupp(id, { titre, description, statut });
-      toast('Note modifiée', 'success');
-    } else {
-      await DB.addTravailSupp({ chantier_id: chantierId, titre, description, statut });
-      toast('Note ajoutée', 'success');
+      });
+      list.innerHTML = html;
     }
-    fermerModal();
-    await chargerTS();
-  } catch(e) { toast('Erreur', 'error'); }
-}
 
-async function supprimerTS(id) {
-  if (!confirm('Supprimer cette note ?')) return;
-  try {
-    await DB.deleteTravailSupp(id);
-    await chargerTS();
-    toast('Note supprimée', 'info');
-  } catch(e) { toast('Erreur', 'error'); }
-}
+    function ouvrirModalTS() {
+      document.getElementById('modal-ts-title').textContent = 'Nouveau Travail Supp.';
+      document.getElementById('ts-id').value = '';
+      document.getElementById('ts-titre').value = '';
+      document.getElementById('ts-desc').value = '';
+      document.getElementById('ts-statut').value = 'Noté';
+      document.getElementById('modal-ts').classList.add('open');
+    }
 
-async function supprimerChantier() {
-  if (!confirm('ATTENTION : Êtes-vous sûr de vouloir supprimer ce chantier ?\nCette action est irréversible.')) return;
-  if (!confirm('⚠️ CONFIRMATION FINALE ⚠️\n\nConfirmez-vous la suppression définitive du chantier, de TOUTES ses tâches et travaux supplémentaires ?')) return;
-  
-  try {
-    toast('Suppression en cours...', 'info');
-    await DB.deleteChantier(chantierId);
-    toast('Chantier supprimé avec succès', 'success');
-    setTimeout(() => {
-      window.location.href = 'chantiers.html';
-    }, 1500);
-  } catch (e) {
-    console.error(e);
-    toast('Erreur lors de la suppression', 'error');
-  }
-}
+    function editerTS(id) {
+      const t = listeTS.find(x => x.id === id);
+      if (!t) return;
+      document.getElementById('modal-ts-title').textContent = 'Modifier Travail Supp.';
+      document.getElementById('ts-id').value = t.id;
+      document.getElementById('ts-titre').value = t.titre;
+      document.getElementById('ts-desc').value = t.description;
+      document.getElementById('ts-statut').value = t.statut || 'Noté';
+      document.getElementById('modal-ts').classList.add('open');
+    }
 
-function fermerModal() {
-  document.getElementById('modal-tache').classList.remove('open');
-  document.getElementById('modal-ts').classList.remove('open');
-}
-</script>
+    async function sauvegarderTS() {
+      const id = document.getElementById('ts-id').value;
+      const titre = document.getElementById('ts-titre').value.trim();
+      const description = document.getElementById('ts-desc').value.trim();
+      const statut = document.getElementById('ts-statut').value;
+
+      if (!titre) { toast('Le titre est obligatoire', 'error'); return; }
+
+      try {
+        if (id) {
+          await DB.updateTravailSupp(id, { titre, description, statut });
+          toast('Note modifiée', 'success');
+        } else {
+          await DB.addTravailSupp({ chantier_id: chantierId, titre, description, statut });
+          toast('Note ajoutée', 'success');
+        }
+        fermerModal();
+        await chargerTS();
+      } catch (e) { toast('Erreur', 'error'); }
+    }
+
+    async function supprimerTS(id) {
+      if (!confirm('Supprimer cette note ?')) return;
+      try {
+        await DB.deleteTravailSupp(id);
+        await chargerTS();
+        toast('Note supprimée', 'info');
+      } catch (e) { toast('Erreur', 'error'); }
+    }
+
+    async function supprimerChantier() {
+      if (!confirm('ATTENTION : Êtes-vous sûr de vouloir supprimer ce chantier ?\nCette action est irréversible.')) return;
+      if (!confirm('⚠️ CONFIRMATION FINALE ⚠️\n\nConfirmez-vous la suppression définitive du chantier, de TOUTES ses tâches et travaux supplémentaires ?')) return;
+
+      try {
+        toast('Suppression en cours...', 'info');
+        await DB.deleteChantier(chantierId);
+        toast('Chantier supprimé avec succès', 'success');
+        setTimeout(() => {
+          window.location.href = 'chantiers.html';
+        }, 1500);
+      } catch (e) {
+        console.error(e);
+        toast('Erreur lors de la suppression', 'error');
+      }
+    }
+
+    function fermerModal() {
+      document.getElementById('modal-tache').classList.remove('open');
+      document.getElementById('modal-ts').classList.remove('open');
+    }
+  </script>
 
 </body>
+
 </html>

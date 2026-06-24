@@ -203,7 +203,7 @@
       </div>
 
       <!-- Client -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="form-grid-2">
         <div class="form-section">
           <div class="form-section-header"><i class="ti ti-user"></i> Client</div>
           <div class="form-section-body">
@@ -394,24 +394,24 @@ async function renderFactures() {
     const typeLabel  = f.type || (f.titre?.includes('acompte') ? "Acompte" : "Facture");
 
     return `<tr onclick="voirFacture('${f.id}')" style="cursor:pointer">
-      <td onclick="event.stopPropagation()"><input type="checkbox" /></td>
-      <td><span class="td-num">${f.numero||'—'}</span></td>
-      <td>
+      <td onclick="event.stopPropagation()" data-label=""><input type="checkbox" /></td>
+      <td data-label="N° Facture"><span class="td-num">${f.numero||'—'}</span></td>
+      <td data-label="Type">
         <span class="badge ${typeLabel==='Avoir'?'badge-annule':typeLabel.includes('acompte')?'badge-acompte':'badge-cree'}"
           style="font-size:10px">${typeLabel}</span>
       </td>
-      <td>
+      <td data-label="Devis Lié">
         ${f.devis_numero
           ? `<a href="voir.html?id=${f.devis_id}" onclick="event.stopPropagation()"
               style="color:var(--rouge);font-weight:500;text-decoration:none">${f.devis_numero}</a>`
           : '<span style="color:var(--texte-sec)">—</span>'}
       </td>
-      <td class="td-client">${f.client||'—'}</td>
-      <td class="td-produit" title="${f.objet||''}">${(f.objet||f.titre||'').substring(0,45)}${(f.objet||'').length>45?'...':''}</td>
-      <td class="td-sec">${fmtDate(f.date||f.created_at)}</td>
-      <td class="td-sec">${f.date_echeance ? fmtDate(f.date_echeance) : '—'}</td>
-      <td class="td-montant">${fmt(montant)}</td>
-      <td onclick="event.stopPropagation()">
+      <td class="td-client" data-label="Client">${f.client||'—'}</td>
+      <td class="td-produit" title="${f.objet||''}" data-label="Objet">${(f.objet||f.titre||'').substring(0,45)}${(f.objet||'').length>45?'...':''}</td>
+      <td class="td-sec" data-label="Date">${fmtDate(f.date||f.created_at)}</td>
+      <td class="td-sec" data-label="Échéance">${f.date_echeance ? fmtDate(f.date_echeance) : '—'}</td>
+      <td class="td-montant" data-label="Montant HT">${fmt(montant)}</td>
+      <td onclick="event.stopPropagation()" data-label="État">
         <select class="badge badge-select ${badgeClass}"
           onchange="changerStatutFact('${f.id}', this.value, this)">
           ${['Créé','Envoyé','Payé','Payé en partie','Annulé'].map(s =>
@@ -419,7 +419,7 @@ async function renderFactures() {
           ).join('')}
         </select>
       </td>
-      <td onclick="event.stopPropagation()">
+      <td onclick="event.stopPropagation()" data-label="Actions">
         <div class="dropdown">
           <button class="btn btn-ghost btn-icon btn-sm" onclick="toggleDropdown(this)">
             <i class="ti ti-settings"></i>

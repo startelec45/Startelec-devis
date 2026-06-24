@@ -225,7 +225,7 @@
   </style>
   <script>
     // Exécution immédiate avant l'affichage pour éviter le flash
-    if (localStorage.getItem('se_admin_auth') !== 'e4d77ebdb2a32ff8816c4fdf4b1db2b54bc9ea5f458e0a77519cfb3e1dd31fc8') {
+    if (localStorage.getItem('se_admin_auth') !== 'true') {
       document.documentElement.classList.add('public-view');
     }
   </script>
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!devis) { toast('Devis introuvable', 'error'); return; }
 
   // ── SÉCURITÉ & VUE CLIENT PUBLIC ──
-  const isAuth = localStorage.getItem('se_admin_auth') === 'e4d77ebdb2a32ff8816c4fdf4b1db2b54bc9ea5f458e0a77519cfb3e1dd31fc8';
+  const isAuth = localStorage.getItem('se_admin_auth') === 'true';
   if (!isAuth) {
     // On ajoute un bouton simple pour télécharger le PDF
     const btnBar = document.createElement('div');

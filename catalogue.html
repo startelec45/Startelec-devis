@@ -146,8 +146,13 @@
             <input type="text" class="search-input" id="search-cat" placeholder="Rechercher une prestation..."
               oninput="renderCatalogue()" />
           </div>
-          <div class="table-filters" id="cat-filters">
-            <!-- Générés dynamiquement -->
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; width:100%">
+            <div class="table-filters" id="cat-filters" style="flex:1">
+              <!-- Générés dynamiquement -->
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="ouvrirModalCategories()" style="white-space:nowrap">
+              <i class="ti ti-settings"></i> Gérer les catégories
+            </button>
           </div>
         </div>
 
@@ -315,6 +320,18 @@
         <button class="btn btn-primary" id="btn-valider-import" onclick="validerImport()" disabled>
           <i class="ti ti-check"></i> Valider l'import
         </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-categories" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center">
+    <div style="background:var(--blanc);border-radius:var(--radius-lg);width:90%;max-width:500px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--blanc);z-index:10;border-radius:var(--radius-lg) var(--radius-lg) 0 0">
+        <span style="font-size:15px;font-weight:600">Gérer les catégories</span>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModalCategories()"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="padding:20px;overflow-y:auto;" id="list-categories-container">
+        <!-- Dynamique -->
       </div>
     </div>
   </div>
@@ -871,6 +888,81 @@
           btn.innerHTML = '<i class="ti ti-check"></i> Valider l\'import';
         }
       }
+    }
+    let allCurrentCategories = [];
+
+    async function ouvrirModalCategories() {
+      const cfg = await DB.getConfig();
+      allCurrentCategories = cfg.entreprise?.categories || ['Prestations manuelles', "Main d'œuvre", 'Appareillage', 'Éclairage', 'Alimentation', 'Chauffage', 'Réseau', 'Forfaits', 'Autre'];
+      renderModalCategories();
+      document.getElementById('modal-categories').style.display = 'flex';
+    }
+
+    function fermerModalCategories() {
+      document.getElementById('modal-categories').style.display = 'none';
+      renderCatalogue(); // Refresh the list
+    }
+
+    async function renderModalCategories() {
+      const container = document.getElementById('list-categories-container');
+      const allItems = await SB.select('catalogue', '?select=id,categorie');
+      
+      let html = '<div style="display:flex;flex-direction:column;gap:10px">';
+      const fixedCats = ['Prestations manuelles', "Main d'œuvre", 'Autre'];
+      
+      allCurrentCategories.forEach(cat => {
+        const isFixed = fixedCats.includes(cat);
+        const count = allItems.filter(p => (p.categorie || 'Autre') === cat).length;
+        
+        html += `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid var(--border);border-radius:var(--radius-md)">
+            <div>
+              <div style="font-weight:500">${cat}</div>
+              <div style="font-size:12px;color:var(--texte-sec)">${count} prestation(s)</div>
+            </div>
+            <div style="display:flex;gap:4px">
+              ${!isFixed ? `
+                <button class="btn btn-ghost btn-icon btn-sm" onclick="renommerCategorie('${cat.replace(/'/g, "\\'")}')" title="Renommer">
+                  <i class="ti ti-edit"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon btn-sm" style="color:var(--rouge)" onclick="supprimerCategorie('${cat.replace(/'/g, "\\'")}', ${count})" title="Supprimer">
+                  <i class="ti ti-trash"></i>
+                </button>
+              ` : `<span style="font-size:10px;color:var(--texte-sec);padding:4px">Catégorie système</span>`}
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    async function renommerCategorie(oldName) {
+      const newName = prompt(`Nouveau nom pour la catégorie "${oldName}" :`, oldName);
+      if (!newName || newName === oldName) return;
+      
+      document.getElementById('list-categories-container').innerHTML = '<div style="text-align:center;padding:20px"><i class="ti ti-loader" style="font-size:24px;animation:spin 1s linear infinite"></i><p>Renommage en cours...</p></div>';
+      
+      await DB.editCategorie(oldName, newName);
+      
+      const cfg = await DB.getConfig();
+      allCurrentCategories = cfg.entreprise?.categories || [];
+      toast('Catégorie renommée avec succès', 'success');
+      renderModalCategories();
+    }
+
+    async function supprimerCategorie(catName, count) {
+      if (count > 0) {
+        toast("Impossible : Cette catégorie contient des prestations. Veuillez les déplacer d'abord.", 'error');
+        return;
+      }
+      if (!confirm(`Supprimer définitivement la catégorie "${catName}" ?`)) return;
+      
+      await DB.deleteCategorie(catName);
+      const cfg = await DB.getConfig();
+      allCurrentCategories = cfg.entreprise?.categories || [];
+      toast('Catégorie supprimée', 'success');
+      renderModalCategories();
     }
   </script>
 
