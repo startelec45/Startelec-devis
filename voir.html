@@ -534,8 +534,8 @@ async function renderPDF() {
     <!-- TOTAUX + CONDITIONS -->
     <div class="pdf-totaux-wrap">
       <div class="pdf-conditions">
-        <strong>Mise en garde / Conditions :</strong><br/>
-        ${d.infos_spec || 'Forfait global "Prêt à brancher" incluant : câbles, fournitures (boîte d\'encastrement/pot, mécanisme, appareillage), temps de pose. Tableau électrique exclu.'}
+        ${d.infos_spec ? `<strong>Mise en garde / Conditions :</strong><br/>
+        ${d.infos_spec}` : ''}
       </div>
       <div class="pdf-totaux">
         <div class="pdf-tot-row"><label>Total HT</label><span>${fmt(total_ht)}</span></div>
