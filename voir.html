@@ -416,7 +416,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (isAuth) await renderLinkedDocs();
 
   // Action auto
-  if (action === 'pdf')     genererPDF(id);
+  if (action === 'pdf') {
+    setTimeout(() => {
+      telechargerPDFClient().then(() => {
+        if (window.opener) window.close();
+      });
+    }, 600);
+  }
   if (action === 'envoyer') envoyerMail();
 
   // Impression auto si ?print=1 (appelé depuis genererPDF)
@@ -683,7 +689,7 @@ async function telechargerPDFClient() {
     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
   };
 
-  html2pdf().set(opt).from(element).save().then(() => {
+  return html2pdf().set(opt).from(element).save().then(() => {
     toast('PDF téléchargé !', 'success');
   }).catch(e => {
     console.error(e);

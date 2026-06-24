@@ -220,6 +220,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderPDF();
 
   // Actions auto
+  if (action === 'pdf') {
+    setTimeout(() => {
+      telechargerPDF().then(() => {
+        if (window.opener) window.close();
+      });
+    }, 600);
+  }
   if (action === 'envoyer') envoyerMail();
   if (getUrlParam('print') === '1') {
     setTimeout(() => window.print(), 700);
@@ -434,13 +441,14 @@ async function telechargerPDF() {
     jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
   };
 
-  html2pdf().set(opt).from(element).save().then(() => {
+  const promise = html2pdf().set(opt).from(element).save().then(() => {
     toast('PDF téléchargé !', 'success');
   }).catch(e => {
     console.error(e);
     toast('Erreur génération PDF', 'error');
   });
   closeAllDropdowns();
+  return promise;
 }
 
 function envoyerMail() {

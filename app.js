@@ -755,14 +755,19 @@ function copierLienApercu(devis_id) {
   navigator.clipboard.writeText(url).then(() => toast('Lien copié !', 'success')).catch(() => toast('Lien : ' + url, 'info', 6000));
 }
 
-async function genererPDF(devis_id) {
+async function genererPDF(id) {
   try {
-    const devis = await DB.getDevisById(devis_id);
-    if (!devis) { toast('Devis introuvable', 'error'); return; }
-    toast('Ouverture impression PDF...', 'info');
-    // Ouvre la page d'aperçu en mode impression automatique
-    // L'utilisateur peut choisir "Enregistrer en PDF" depuis la boîte d'impression
-    window.open(`voir.html?id=${devis_id}&print=1`, '_blank');
+    let doc = await DB.getDevisById(id);
+    let isFacture = false;
+    if (!doc) {
+      const allFact = await DB.getFactures();
+      doc = allFact.find(f => f.id === id);
+      if (doc) isFacture = true;
+    }
+    if (!doc) { toast('Document introuvable', 'error'); return; }
+    toast('Génération PDF en cours...', 'info');
+    const url = isFacture ? 'voir-facture.html' : 'voir.html';
+    window.open(`${url}?id=${id}&action=pdf`, '_blank');
   } catch (e) {
     console.error(e);
     toast('Erreur PDF — ' + e.message, 'error');
