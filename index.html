@@ -263,7 +263,7 @@ function renderTable(devis) {
 
   document.getElementById('count-shown').textContent = list.length;
   document.getElementById('footer-ht').textContent   = fmt(list.reduce((s,d)=>s+(d.montant_ht||0),0));
-  document.getElementById('footer-ttc').textContent  = fmt(list.reduce((s,d)=>s+(d.montant_ht||0),0)); // TVA 0
+  document.getElementById('footer-ttc').textContent  = fmt(list.reduce((s,d)=>s+(d.montant_ttc||d.montant_ht||0),0));
   document.getElementById('footer-reste').textContent= fmt(list.filter(d=>d.statut==='Accepté').reduce((s,d)=>s+((d.montant_ht||0)-(d.deja_facture||0)),0));
 
   const tbody = document.getElementById('tbody-devis');
@@ -287,7 +287,7 @@ function renderTable(devis) {
       <td onclick="event.stopPropagation()" data-label=""><input type="checkbox" class="row-check" data-id="${d.id}" /></td>
       <td data-label="N°"><span class="td-num">${d.numero||'—'}</span> <small class="td-sec" style="display:block;font-size:10px">${d.type||'Devis'}</small></td>
       <td class="td-montant" data-label="Montant HT">${fmt(d.montant_ht||0)}</td>
-      <td class="td-montant" data-label="Montant TTC">${fmt(d.montant_ht||0)}</td>
+      <td class="td-montant" data-label="Montant TTC">${fmt(d.montant_ttc||d.montant_ht||0)}</td>
       <td class="td-client" data-label="Client">${d.client||'—'}</td>
       <td class="td-sec" data-label="Date Création">${fmtDate(d.date)}</td>
       <td class="td-sec" data-label="Date Paiement">${d.date_paiement ? fmtDate(d.date_paiement) : '—'}</td>

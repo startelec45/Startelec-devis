@@ -627,6 +627,7 @@
       const d = devis;
       const cfgFull = await DB.getConfig();
       const cfg = cfgFull.entreprise;
+      const tvaActive = cfgFull.devis?.tva_active || false;
 
       let regime = 'Standard';
       if (d.notes_privees && d.notes_privees.includes('[[REGIME:SOUS_TRAITANCE]]')) {
@@ -634,10 +635,24 @@
       }
       const tva_msg = regime === 'Sous-traitance' && cfg.tva_msg_st ? cfg.tva_msg_st : (cfg.tva_msg || '');
 
-      const lignesProduit = (d.lignes || []).filter(l => l.type === 'produit' || !l.type);
-      const total_ht = d.montant_ht || 0;
+      const total_avant = (d.lignes || []).filter(l => l.type === 'produit' || !l.type).reduce((s, l) => s + (l.total || 0), 0);
+      const reduction = Math.round(total_avant * (d.reduc_globale || 0) / 100 * 100) / 100;
+      const total_ht = Math.round((total_avant - reduction) * 100) / 100;
+
+      let tva_total = 0;
+      if (tvaActive) {
+        (d.lignes || []).filter(l => l.type === 'produit' || !l.type).forEach(l => {
+          const lineTotal = l.total || 0;
+          const lineTva = parseFloat(l.tva || 0);
+          const lineTotalApresRemise = lineTotal * (1 - (d.reduc_globale || 0) / 100);
+          tva_total += lineTotalApresRemise * lineTva / 100;
+        });
+        tva_total = Math.round(tva_total * 100) / 100;
+      }
+
+      const total_ttc = Math.round((total_ht + tva_total) * 100) / 100;
       const acompte_pct = d.acompte_pct !== undefined && d.acompte_pct !== null ? d.acompte_pct : 30;
-      const acompte = Math.round(total_ht * acompte_pct / 100 * 100) / 100;
+      const acompte = Math.round(total_ttc * acompte_pct / 100 * 100) / 100;
 
       const clientAdresse = [
         escHtml(d.client_adresse),
@@ -645,9 +660,20 @@
         d.client_pays !== 'France' ? escHtml(d.client_pays) : ''
       ].filter(Boolean).join('<br/>');
 
+      const headersHTML = `
+        <tr>
+          <th style="width:30px">N°</th>
+          <th>DÉSIGNATION</th>
+          <th style="width:50px;text-align:center">QTÉ</th>
+          <th style="width:80px;text-align:right">PU HT (€)</th>
+          ${tvaActive ? `<th style="width:50px;text-align:right">TVA</th>` : ''}
+          <th style="width:90px;text-align:right">TOTAL HT (€)</th>
+        </tr>
+      `;
+
       const lignesHTML = (d.lignes || []).map((l, i) => {
-        if (l.type === 'soustotal') return `<tr><td colspan="4" style="font-weight:700;text-align:right;padding:6px 8px;background:#e8e8e8">Sous-total</td><td style="text-align:right;font-weight:700;padding:6px 8px;background:#e8e8e8">${fmt(l.total || 0)}</td></tr>`;
-        if (l.type === 'texte') return `<tr><td colspan="5" style="padding:6px 8px;color:#444;font-style:italic">${escHtml(l.designation || '')}</td></tr>`;
+        if (l.type === 'soustotal') return `<tr><td colspan="${tvaActive ? 5 : 4}" style="font-weight:700;text-align:right;padding:6px 8px;background:#e8e8e8">Sous-total</td><td style="text-align:right;font-weight:700;padding:6px 8px;background:#e8e8e8">${fmt(l.total || 0)}</td></tr>`;
+        if (l.type === 'texte') return `<tr><td colspan="${tvaActive ? 6 : 5}" style="padding:6px 8px;color:#444;font-style:italic">${escHtml(l.designation || '')}</td></tr>`;
         return `<tr>
       <td style="width:30px;text-align:center;color:#666">${i + 1}</td>
       <td>
@@ -656,6 +682,7 @@
       </td>
       <td style="text-align:center;width:50px">${l.qte || ''}</td>
       <td style="text-align:right;width:80px">${fmt(l.pu || 0)}</td>
+      ${tvaActive ? `<td style="text-align:right;width:50px">${l.tva !== undefined ? l.tva + '%' : '0%'}</td>` : ''}
       <td style="text-align:right;width:90px;font-weight:600">${fmt(l.total || 0)}</td>
     </tr>`;
       }).join('');
@@ -711,15 +738,7 @@
     <!-- TABLEAU -->
     <div class="pdf-table-wrap">
       <table class="pdf-table">
-        <thead>
-          <tr>
-            <th style="width:30px">N°</th>
-            <th>DÉSIGNATION</th>
-            <th style="width:50px;text-align:center">QTÉ</th>
-            <th style="width:80px;text-align:right">PU HT (€)</th>
-            <th style="width:90px;text-align:right">TOTAL HT (€)</th>
-          </tr>
-        </thead>
+        <thead>${headersHTML}</tbody>
         <tbody>${lignesHTML}</tbody>
       </table>
     </div>
@@ -731,9 +750,17 @@
         ${d.infos_spec}` : ''}
       </div>
       <div class="pdf-totaux">
-        <div class="pdf-tot-row"><label>Total HT</label><span>${fmt(total_ht)}</span></div>
-        <div class="pdf-tot-row"><label>Réduction</label><span>0,00 €</span></div>
-        <div class="pdf-tot-row final"><label>TOTAL À PAYER</label><span>${fmt(total_ht)}</span></div>
+        ${tvaActive ? `
+          <div class="pdf-tot-row"><label>Total HT avant remise</label><span>${fmt(total_avant)}</span></div>
+          ${reduction > 0 ? `<div class="pdf-tot-row"><label>Réduction (${d.reduc_globale}%)</label><span>-${fmt(reduction)}</span></div>` : ''}
+          <div class="pdf-tot-row"><label>Total HT</label><span>${fmt(total_ht)}</span></div>
+          <div class="pdf-tot-row"><label>Total TVA</label><span>${fmt(tva_total)}</span></div>
+          <div class="pdf-tot-row final"><label>TOTAL À PAYER (TTC)</label><span>${fmt(total_ttc)}</span></div>
+        ` : `
+          <div class="pdf-tot-row"><label>Total HT</label><span>${fmt(total_ht)}</span></div>
+          ${reduction > 0 ? `<div class="pdf-tot-row"><label>Réduction (${d.reduc_globale}%)</label><span>-${fmt(reduction)}</span></div>` : ''}
+          <div class="pdf-tot-row final"><label>TOTAL À PAYER</label><span>${fmt(total_ht)}</span></div>
+        `}
       </div>
     </div>
 

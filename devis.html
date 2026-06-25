@@ -353,6 +353,7 @@
                   <th class="td-qte">Qté <span style="color:var(--rouge)">*</span></th>
                   <th class="td-unite">Unité</th>
                   <th class="td-pu">PU HT <span style="color:var(--rouge)">*</span></th>
+                  <th class="td-tva tva-col" style="display:none">TVA %</th>
                   <th class="td-total-ht">Total HT</th>
                   <th class="td-del"></th>
                 </tr>
@@ -417,10 +418,10 @@
               <span class="val" id="tot-ht-avant">0,00 €</span>
               <span class="val" id="tot-ht-apres">0,00 €</span>
             </div>
-            <div class="totaux-row">
+            <div class="totaux-row tva-display-row" style="display:none">
               <label>Total TVA</label>
-              <span class="val">0,00 €</span>
-              <span class="val">0,00 €</span>
+              <span class="val" id="tot-tva-avant">0,00 €</span>
+              <span class="val" id="tot-tva-apres">0,00 €</span>
             </div>
             <div class="totaux-row">
               <label>Total TTC</label>
@@ -537,11 +538,21 @@
     let lignes = [];
     let showReduction = false;
     let modeEdit = false;
+    let tvaActive = false;
+    let tvaTauxDefaut = 0;
 
     // ══════════════════════════════════════════════
     // INIT
     // ══════════════════════════════════════════════
-    document.addEventListener('DOMContentLoaded', async () => {
+      // Charger la config TVA
+      const cfg = await DB.getConfig();
+      tvaActive = cfg.devis?.tva_active || false;
+      tvaTauxDefaut = cfg.devis?.tva_taux_defaut || 0;
+
+      // Afficher/masquer les colonnes et totaux TVA
+      document.querySelectorAll('.tva-col').forEach(el => el.style.display = tvaActive ? '' : 'none');
+      document.querySelectorAll('.tva-display-row').forEach(el => el.style.display = tvaActive ? 'flex' : 'none');
+
       initForm();
       setupClientSearch();
 
@@ -684,6 +695,7 @@
         unite: data.unite || 'u',
         pu: data.pu ?? '',
         reduc: data.reduc ?? 0,
+        tva: data.tva ?? 0, // Par défaut 0% comme demandé
         total: 0,
       };
       ligne.total = calculerLigne(ligne);
@@ -787,6 +799,11 @@
           value="${l.pu || ''}"
           oninput="updateLigneCalc('${l.id}','pu',this.value)" />
       </td>
+      <td class="td-tva tva-col" style="${tvaActive ? '' : 'display:none'}">
+        <select class="ligne-input" onchange="updateLigneTva('${l.id}', this.value)" style="padding:4px">
+          ${[0, 5.5, 10, 20].map(tx => `<option value="${tx}"${parseFloat(l.tva || 0) === tx ? ' selected' : ''}>${tx}%</option>`).join('')}
+        </select>
+      </td>
       <td class="td-total-ht">
         <span class="ligne-total" id="tot-ligne-${l.id}">${fmt(l.total || 0)}</span>
       </td>
@@ -817,6 +834,14 @@
       if (l) l[key] = value;
     }
 
+    function updateLigneTva(id, value) {
+      const l = lignes.find(x => x.id === id);
+      if (l) {
+        l.tva = parseFloat(value) || 0;
+        recalculer();
+      }
+    }
+
     function updateLigneCalc(id, key, value) {
       const l = lignes.find(x => x.id === id);
       if (!l) return;
@@ -838,14 +863,39 @@
       const total_avant = lignes.filter(l => l.type === 'produit').reduce((s, l) => s + (l.total || 0), 0);
       const remise = Math.round(total_avant * reduc_globale / 100 * 100) / 100;
       const total_apres = Math.round((total_avant - remise) * 100) / 100;
-      const acompte = Math.round(total_apres * acompte_pct / 100 * 100) / 100;
+
+      // Calculer la TVA par ligne
+      let tva_total_avant = 0;
+      let tva_total_apres = 0;
+
+      if (tvaActive) {
+        lignes.filter(l => l.type === 'produit').forEach(l => {
+          const lineTotal = l.total || 0;
+          const lineTva = parseFloat(l.tva || 0);
+          
+          tva_total_avant += lineTotal * lineTva / 100;
+          
+          const lineTotalApresRemise = lineTotal * (1 - reduc_globale / 100);
+          tva_total_apres += lineTotalApresRemise * lineTva / 100;
+        });
+      }
+
+      tva_total_avant = Math.round(tva_total_avant * 100) / 100;
+      tva_total_apres = Math.round(tva_total_apres * 100) / 100;
+
+      const total_ttc_avant = Math.round((total_avant + tva_total_avant) * 100) / 100;
+      const total_ttc_apres = Math.round((total_apres + tva_total_apres) * 100) / 100;
+
+      const acompte = Math.round(total_ttc_apres * acompte_pct / 100 * 100) / 100;
 
       document.getElementById('tot-ht-avant').textContent = fmt(total_avant);
       document.getElementById('tot-ht-apres').textContent = fmt(total_apres);
-      document.getElementById('tot-ttc-avant').textContent = fmt(total_avant);
-      document.getElementById('tot-ttc-apres').textContent = fmt(total_apres);
+      document.getElementById('tot-tva-avant').textContent = fmt(tva_total_avant);
+      document.getElementById('tot-tva-apres').textContent = fmt(tva_total_apres);
+      document.getElementById('tot-ttc-avant').textContent = fmt(total_ttc_avant);
+      document.getElementById('tot-ttc-apres').textContent = fmt(total_ttc_apres);
       document.getElementById('tot-remise').textContent = fmt(remise);
-      document.getElementById('tot-final').textContent = fmt(total_apres);
+      document.getElementById('tot-final').textContent = fmt(total_ttc_apres);
       document.getElementById('tot-acompte').textContent = fmt(acompte);
     }
 
@@ -951,6 +1001,19 @@
       const reduc_globale = parseFloat(document.getElementById('f-reduc-globale').value) || 0;
       const remise = Math.round(total_avant * reduc_globale / 100 * 100) / 100;
       const total_ht = Math.round((total_avant - remise) * 100) / 100;
+      
+      let tva_total_apres = 0;
+      if (tvaActive) {
+        lignesFiltrees.filter(l => l.type === 'produit').forEach(l => {
+          const lineTotal = l.total || 0;
+          const lineTva = parseFloat(l.tva || 0);
+          const lineTotalApresRemise = lineTotal * (1 - reduc_globale / 100);
+          tva_total_apres += lineTotalApresRemise * lineTva / 100;
+        });
+      }
+      tva_total_apres = Math.round(tva_total_apres * 100) / 100;
+      const total_ttc = Math.round((total_ht + tva_total_apres) * 100) / 100;
+      
       const acompteVal = parseFloat(document.getElementById('f-acompte').value);
       const acompte_pct = isNaN(acompteVal) ? 30 : acompteVal;
 
@@ -993,7 +1056,7 @@
         client_pays: document.getElementById('f-pays').value,
         lignes: lignesFiltrees,
         montant_ht: total_ht,
-        montant_ttc: total_ht,
+        montant_ttc: total_ttc,
         statut: document.getElementById('statut-badge').textContent || 'Créé',
       };
     }

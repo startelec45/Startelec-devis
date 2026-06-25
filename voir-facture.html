@@ -208,6 +208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     facture = clientFacturesList.find(f => f.id === id) || null;
   }
   cfg = cfgFull.entreprise;
+  window.appConfigFull = cfgFull;
 
   if (!facture) { toast('Facture introuvable', 'error'); return; }
 
@@ -255,6 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 function renderPDF() {
   const f = facture;
   const e = cfg;
+  const tvaActive = window.appConfigFull?.devis?.tva_active || false;
 
   let regime = 'Standard';
   if (f.notes && f.notes.includes('[[REGIME:SOUS_TRAITANCE]]')) {
@@ -262,10 +264,28 @@ function renderPDF() {
   }
   const tva_msg = regime === 'Sous-traitance' && e.tva_msg_st ? e.tva_msg_st : (e.tva_msg || 'TVA non applicable, art. 293B du CGI');
 
-  const montant_ht = parseFloat(f.montant_ht || f.montant || 0);
-  const acompte    = f.type?.includes('acompte') && f.acompte_pct
-                       ? Math.round(montant_ht * (f.acompte_pct / 100) * 100) / 100
-                       : null;
+  // Calculate totals dynamically from lines
+  let total_ht = 0;
+  let tva_total = 0;
+  
+  if (f.lignes && f.lignes.length > 0) {
+    f.lignes.forEach(l => {
+      if (l.type === 'produit' || !l.type) {
+        const lineTotal = parseFloat(l.total || 0);
+        total_ht += lineTotal;
+        if (tvaActive) {
+          const lineTva = parseFloat(l.tva || 0);
+          tva_total += lineTotal * lineTva / 100;
+        }
+      }
+    });
+    total_ht = Math.round(total_ht * 100) / 100;
+    tva_total = Math.round(tva_total * 100) / 100;
+  } else {
+    total_ht = parseFloat(f.montant_ht || f.montant || 0);
+    tva_total = 0;
+  }
+  const total_ttc = Math.round((total_ht + tva_total) * 100) / 100;
 
   // Titre du document
   let titreDoc = 'FACTURE';
@@ -278,10 +298,23 @@ function renderPDF() {
     (f.client_cp || f.client_ville) ? escHtml(`${f.client_cp || ''} ${f.client_ville || ''}`.trim()) : '',
   ].filter(Boolean).join('<br/>');
 
+  // Headers
+  const headersHTML = `
+    <tr>
+      <th style="width:28px">N°</th>
+      <th>DÉSIGNATION</th>
+      <th style="width:50px;text-align:center">QTÉ</th>
+      <th style="width:50px;text-align:right">UNITÉ</th>
+      <th style="width:80px;text-align:right">PU HT (€)</th>
+      ${tvaActive ? `<th style="width:50px;text-align:right">TVA</th>` : ''}
+      <th style="width:90px;text-align:right">TOTAL HT (€)</th>
+    </tr>
+  `;
+
   // Lignes
   const lignesHTML = (f.lignes || []).map((l, i) => {
-    if (l.type === 'soustotal') return `<tr><td colspan="5" style="font-weight:700;text-align:right;padding:6px 8px;background:#e8e8e8">Sous-total</td><td style="text-align:right;font-weight:700;padding:6px 8px;background:#e8e8e8">${fmt(l.total||0)}</td></tr>`;
-    if (l.type === 'texte')    return `<tr><td colspan="6" style="padding:6px 8px;color:#444;font-style:italic">${escHtml(l.designation||'')}</td></tr>`;
+    if (l.type === 'soustotal') return `<tr><td colspan="${tvaActive ? 6 : 5}" style="font-weight:700;text-align:right;padding:6px 8px;background:#e8e8e8">Sous-total</td><td style="text-align:right;font-weight:700;padding:6px 8px;background:#e8e8e8">${fmt(l.total||0)}</td></tr>`;
+    if (l.type === 'texte')    return `<tr><td colspan="${tvaActive ? 7 : 6}" style="padding:6px 8px;color:#444;font-style:italic">${escHtml(l.designation||'')}</td></tr>`;
     return `
       <tr>
         <td style="width:28px;text-align:center;color:#888">${i+1}</td>
@@ -292,6 +325,7 @@ function renderPDF() {
         <td style="text-align:center;width:50px">${l.qte ?? ''}</td>
         <td style="text-align:right;width:50px">${l.unite || 'u'}</td>
         <td style="text-align:right;width:80px">${fmt(l.pu || 0)}</td>
+        ${tvaActive ? `<td style="text-align:right;width:50px">${l.tva !== undefined ? l.tva + '%' : '0%'}</td>` : ''}
         <td style="text-align:right;width:90px;font-weight:600">${fmt(l.total || 0)}</td>
       </tr>`;
   }).join('');
@@ -334,7 +368,7 @@ function renderPDF() {
     <!-- ÉMETTEUR / CLIENT -->
     <div class="pdf-parties">
       <div class="pdf-partie">
-        <div class="pdf-partie-header">Émetteur</div>
+        <div class="pdf-partie-header">Vendeur</div>
         <div class="pdf-partie-body">
           <strong>${e.nom || ''}</strong><br/>
           ${e.adresse || ''}<br/>
@@ -362,18 +396,9 @@ function renderPDF() {
     <!-- TABLEAU DES PRESTATIONS -->
     <div class="pdf-table-wrap">
       <table class="pdf-table">
-        <thead>
-          <tr>
-            <th style="width:28px">N°</th>
-            <th>DÉSIGNATION</th>
-            <th style="width:50px;text-align:center">QTÉ</th>
-            <th style="width:50px;text-align:right">UNITÉ</th>
-            <th style="width:80px;text-align:right">PU HT (€)</th>
-            <th style="width:90px;text-align:right">TOTAL HT (€)</th>
-          </tr>
-        </thead>
+        <thead>${headersHTML}</thead>
         <tbody>
-          ${lignesHTML || `<tr><td colspan="6" style="text-align:center;padding:16px;color:#999">Aucune prestation renseignée</td></tr>`}
+          ${lignesHTML || `<tr><td colspan="${tvaActive ? 7 : 6}" style="text-align:center;padding:16px;color:#999">Aucune prestation renseignée</td></tr>`}
         </tbody>
       </table>
     </div>
@@ -389,17 +414,21 @@ function renderPDF() {
       <div class="pdf-totaux">
         <div class="pdf-tot-row">
           <label>Total HT</label>
-          <span>${fmt(montant_ht)}</span>
+          <span>${fmt(total_ht)}</span>
         </div>
-        ${acompte !== null ? `
+        ${tvaActive ? `
         <div class="pdf-tot-row">
-          <label>Acompte (${f.acompte_pct}%)</label>
-          <span>${fmt(acompte)}</span>
-        </div>` : ''}
+          <label>Total TVA</label>
+          <span>${fmt(tva_total)}</span>
+        </div>
+        <div class="pdf-tot-row final">
+          <label>TOTAL À PAYER (TTC)</label>
+          <span>${fmt(total_ttc)}</span>
+        </div>` : `
         <div class="pdf-tot-row final">
           <label>TOTAL À PAYER</label>
-          <span>${fmt(acompte !== null ? acompte : montant_ht)}</span>
-        </div>
+          <span>${fmt(total_ht)}</span>
+        </div>`}
       </div>
     </div>
 

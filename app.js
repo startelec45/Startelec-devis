@@ -470,6 +470,7 @@ const CONFIG = {
     validite_jours: 30, acompte_pct: 30,
     taux_horaire_mo: 46.00, marge_sonepar: 30,
     prefix_devis: 'D', prefix_facture: 'F', prefix_acompte: 'FA',
+    tva_active: false, tva_taux_defaut: 20,
   }
 };
 
@@ -713,14 +714,107 @@ async function creerFactureDepuisDevis(devis_id, type = 'solde') {
   const cfg = await DB.getConfig();
   const today = new Date().toISOString().split('T')[0];
   const numero = await DB.getNextNumero(type === 'acompte' ? 'acompte' : 'facture');
+  const tvaActive = cfg.devis?.tva_active || false;
 
-  let montant, titre;
+  let lines = [];
+  let montant_ht = 0;
+  let montant_ttc = 0;
+  let titre = '';
+
   if (type === 'acompte') {
-    montant = Math.round(devis.montant_ht * (cfg.devis.acompte_pct / 100) * 100) / 100;
-    titre = `Facture d'acompte (${cfg.devis.acompte_pct}%) — ${devis.numero}`;
+    const acompte_pct = devis.acompte_pct !== undefined && devis.acompte_pct !== null ? devis.acompte_pct : (cfg.devis.acompte_pct || 30);
+    montant_ht = Math.round(devis.montant_ht * (acompte_pct / 100) * 100) / 100;
+    titre = `Facture d'acompte (${acompte_pct}%) — ${devis.numero}`;
+    
+    // Determine VAT rate from devis lines or config
+    let tvaRate = cfg.devis?.tva_taux_defaut || 20;
+    const firstProductWithTva = (devis.lignes || []).find(l => (l.type === 'produit' || !l.type) && l.tva !== undefined);
+    if (firstProductWithTva) {
+      tvaRate = parseFloat(firstProductWithTva.tva) || 0;
+    }
+    if (!tvaActive) tvaRate = 0;
+
+    lines = [{
+      id: genId(),
+      designation: `Acompte ${acompte_pct}% — ${devis.objet || devis.numero}`,
+      description: `Acompte sur devis ${devis.numero}`,
+      qte: 1,
+      pu: montant_ht,
+      total: montant_ht,
+      unite: 'forfait',
+      tva: tvaRate
+    }];
+    montant_ttc = Math.round(montant_ht * (1 + tvaRate / 100) * 100) / 100;
   } else {
-    montant = Math.round((devis.montant_ht - (devis.deja_facture || 0)) * 100) / 100;
     titre = `Facture de solde — ${devis.numero}`;
+    
+    // Import lines and apply line discounts & global discounts directly to line prices
+    lines = (devis.lignes || []).map(l => {
+      if (l.type === 'soustotal' || l.type === 'texte') {
+        return { ...l, id: l.id || genId() };
+      }
+      let pu = parseFloat(l.pu) || 0;
+      if (l.reduc) {
+        pu = pu * (1 - parseFloat(l.reduc) / 100);
+      }
+      if (devis.reduc_globale) {
+        pu = pu * (1 - parseFloat(devis.reduc_globale) / 100);
+      }
+      pu = Math.round(pu * 100) / 100;
+      const total = Math.round((parseFloat(l.qte) || 1) * pu * 100) / 100;
+      return {
+        ...l,
+        id: l.id || genId(),
+        pu,
+        total,
+        reduc: 0,
+        tva: l.tva !== undefined ? parseFloat(l.tva) : (tvaActive ? (cfg.devis?.tva_taux_defaut || 20) : 0)
+      };
+    });
+
+    // Find paid deposit invoices to deduct
+    try {
+      const factures = await DB.getFacturesByDevis(devis_id);
+      const acomptesPayes = factures.filter(f => 
+        (f.type === "Facture d'acompte" || f.titre?.includes("acompte")) && 
+        f.statut === "Payé"
+      );
+
+      acomptesPayes.forEach(acompte => {
+        const acompteHT = acompte.montant_ht || acompte.montant || 0;
+        let acompteTvaRate = 0;
+        if (acompte.lignes && acompte.lignes.length > 0) {
+          acompteTvaRate = parseFloat(acompte.lignes[0].tva) || 0;
+        }
+        lines.push({
+          id: genId(),
+          designation: `Déduction acompte — Facture N° ${acompte.numero}`,
+          description: `Acompte déjà réglé sur devis ${devis.numero}`,
+          qte: 1,
+          pu: -acompteHT,
+          total: -acompteHT,
+          unite: 'forfait',
+          tva: acompteTvaRate
+        });
+      });
+    } catch (err) {
+      console.error("Erreur lors de la recherche des acomptes dans app.js:", err);
+    }
+
+    // Calculate final totals
+    montant_ht = lines.reduce((s, l) => s + (l.type === 'soustotal' || l.type === 'texte' ? 0 : (l.total || 0)), 0);
+    montant_ht = Math.round(montant_ht * 100) / 100;
+
+    let tvaTotal = 0;
+    if (tvaActive) {
+      lines.forEach(l => {
+        if (l.type !== 'soustotal' && l.type !== 'texte') {
+          tvaTotal += (l.total || 0) * (parseFloat(l.tva) || 0) / 100;
+        }
+      });
+    }
+    tvaTotal = Math.round(tvaTotal * 100) / 100;
+    montant_ttc = Math.round((montant_ht + tvaTotal) * 100) / 100;
   }
 
   // Conserver le régime fiscal (Sous-traitance) et les conditions du devis
@@ -735,12 +829,8 @@ async function creerFactureDepuisDevis(devis_id, type = 'solde') {
     client: devis.client, client_adresse: devis.client_adresse,
     client_email: devis.client_email, client_tel: devis.client_tel,
     objet: devis.objet,
-    lignes: type === 'acompte' ? [{
-      designation: `Acompte ${cfg.devis.acompte_pct}% — ${devis.objet}`,
-      description: `Acompte sur devis ${devis.numero}`,
-      qte: 1, pu: montant, total: montant, unite: 'forfait'
-    }] : devis.lignes,
-    montant_ht: montant, montant: montant,
+    lignes: lines,
+    montant_ht: montant_ht, montant: montant_ht, montant_ttc: montant_ttc,
     statut: 'Créé', date: today,
     date_echeance: addDays(today, 30),
     mode_reglement: devis.mode_reglement || 'Virement bancaire',

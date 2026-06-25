@@ -280,6 +280,7 @@
               <th style="width:70px">Qté</th>
               <th style="width:80px">Unité</th>
               <th style="width:100px">PU HT</th>
+              <th class="tva-col" style="width:80px; display:none">TVA</th>
               <th style="width:100px">Total HT</th>
               <th style="width:36px"></th>
             </tr>
@@ -299,6 +300,14 @@
           <div class="totaux-row">
             <label>Total HT</label>
             <span class="val" id="mf-tot-ht">0,00 €</span>
+          </div>
+          <div class="totaux-row tva-display-row" style="display:none">
+            <label>Total TVA</label>
+            <span class="val" id="mf-tot-tva">0,00 €</span>
+          </div>
+          <div class="totaux-row tva-display-row" style="display:none">
+            <label>Total TTC</label>
+            <span class="val" id="mf-tot-ttc">0,00 €</span>
           </div>
           <div class="totaux-row total-final">
             <label>TOTAL À PAYER</label>
@@ -333,8 +342,18 @@
 let filterStatut = '';
 let lignesFact   = [];
 let editFactId   = null;
+let tvaActive    = false;
+let tvaTauxDefaut= 0;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const cfg = await DB.getConfig();
+  tvaActive = cfg.devis?.tva_active || false;
+  tvaTauxDefaut = cfg.devis?.tva_taux_defaut || 0;
+
+  // Afficher/masquer les en-têtes et totaux TVA dans le modal
+  document.querySelectorAll('.tva-col').forEach(el => el.style.display = tvaActive ? '' : 'none');
+  document.querySelectorAll('.tva-display-row').forEach(el => el.style.display = tvaActive ? 'flex' : 'none');
+
   await renderFactures();
   
   const editId = getUrlParam('edit');
@@ -398,6 +417,20 @@ async function renderFactures() {
     const badgeClass = getBadgeClass(f.statut);
     const typeLabel  = f.type || (f.titre?.includes('acompte') ? "Acompte" : "Facture");
 
+    let retardBadge = '';
+    if (f.date_echeance && (f.statut === 'Créé' || f.statut === 'Envoyé' || f.statut === 'Payé en partie')) {
+      const echeance = new Date(f.date_echeance);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      echeance.setHours(0, 0, 0, 0);
+      
+      if (today > echeance) {
+        const diffTime = Math.abs(today - echeance);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        retardBadge = `<br/><span class="badge badge-annule" style="font-size:9px;margin-top:4px;background:#ffebeb;color:#d32f2f;border:1px solid #ffcdd2;display:inline-flex;align-items:center;gap:3px"><i class="ti ti-alert-triangle" style="font-size:10px"></i>En retard de ${diffDays} j.</span>`;
+      }
+    }
+
     return `<tr onclick="voirFacture('${f.id}')" style="cursor:pointer">
       <td onclick="event.stopPropagation()" data-label=""><input type="checkbox" /></td>
       <td data-label="N° Facture"><span class="td-num">${f.numero||'—'}</span></td>
@@ -414,7 +447,7 @@ async function renderFactures() {
       <td class="td-client" data-label="Client">${f.client||'—'}</td>
       <td class="td-produit" title="${f.objet||''}" data-label="Objet">${(f.objet||f.titre||'').substring(0,45)}${(f.objet||'').length>45?'...':''}</td>
       <td class="td-sec" data-label="Date">${fmtDate(f.date||f.created_at)}</td>
-      <td class="td-sec" data-label="Échéance">${f.date_echeance ? fmtDate(f.date_echeance) : '—'}</td>
+      <td class="td-sec" data-label="Échéance">${f.date_echeance ? fmtDate(f.date_echeance) : '—'}${retardBadge}</td>
       <td class="td-montant" data-label="Montant HT">${fmt(montant)}</td>
       <td onclick="event.stopPropagation()" data-label="État">
         <select class="badge badge-select ${badgeClass}"
@@ -434,6 +467,7 @@ async function renderFactures() {
             <div class="dropdown-item" onclick="editerFacture('${f.id}')"><i class="ti ti-edit"></i> Modifier</div>
             <div class="dropdown-item" onclick="genererPDF('${f.id}')"><i class="ti ti-download"></i> Télécharger PDF</div>
             <div class="dropdown-item" onclick="envoyerFacture('${f.id}')"><i class="ti ti-mail"></i> Envoyer</div>
+            ${(f.statut === 'Créé' || f.statut === 'Envoyé' || f.statut === 'Payé en partie') ? `<div class="dropdown-item" onclick="relancerClient('${f.id}')" style="color:var(--rouge);font-weight:500"><i class="ti ti-bell-ringing"></i> Relancer</div>` : ''}
             <div class="dropdown-separator"></div>
             <div class="dropdown-item danger" onclick="supprimerFacture('${f.id}')"><i class="ti ti-trash"></i> Supprimer</div>
           </div>
@@ -578,13 +612,73 @@ async function remplirDepuisDevis() {
   if (type === "Facture d'acompte") {
     const acompte_pct = (d.acompte_pct !== undefined && d.acompte_pct !== null) ? d.acompte_pct : 30;
     const montant     = Math.round(d.montant_ht * acompte_pct / 100 * 100) / 100;
+    
+    // Determine VAT rate from devis lines or config
+    let tvaRate = tvaActive ? tvaTauxDefaut : 0;
+    const firstProductWithTva = (d.lignes || []).find(l => (l.type === 'produit' || !l.type) && l.tva !== undefined);
+    if (firstProductWithTva && tvaActive) {
+      tvaRate = parseFloat(firstProductWithTva.tva) || 0;
+    }
+
     lignesFact = [{
       id: genId(), designation: `Acompte ${acompte_pct}% — ${d.objet||d.numero}`,
       description: `Acompte sur devis ${d.numero}`,
-      qte: 1, pu: montant, unite: 'forfait', total: montant
+      qte: 1, pu: montant, unite: 'forfait', total: montant,
+      tva: tvaRate
     }];
   } else {
-    lignesFact = (d.lignes||[]).map(l => ({...l, id: l.id||genId()}));
+    // Import lines and apply line discounts & global discounts directly to line prices
+    lignesFact = (d.lignes||[]).map(l => {
+      if (l.type === 'soustotal' || l.type === 'texte') {
+        return { ...l, id: l.id || genId() };
+      }
+      let pu = parseFloat(l.pu) || 0;
+      if (l.reduc) {
+        pu = pu * (1 - parseFloat(l.reduc) / 100);
+      }
+      if (d.reduc_globale) {
+        pu = pu * (1 - parseFloat(d.reduc_globale) / 100);
+      }
+      pu = Math.round(pu * 100) / 100;
+      const total = Math.round((parseFloat(l.qte) || 1) * pu * 100) / 100;
+      return {
+        ...l,
+        id: l.id || genId(),
+        pu,
+        total,
+        reduc: 0,
+        tva: l.tva !== undefined ? parseFloat(l.tva) : (tvaActive ? tvaTauxDefaut : 0)
+      };
+    });
+
+    // Search for paid deposit invoices and add negative lines
+    try {
+      const factures = await DB.getFacturesByDevis(devisId);
+      const acomptesPayes = factures.filter(f => 
+        (f.type === "Facture d'acompte" || f.titre?.includes("acompte")) && 
+        f.statut === "Payé"
+      );
+
+      acomptesPayes.forEach(acompte => {
+        const acompteHT = acompte.montant_ht || acompte.montant || 0;
+        let acompteTvaRate = 0;
+        if (acompte.lignes && acompte.lignes.length > 0) {
+          acompteTvaRate = parseFloat(acompte.lignes[0].tva) || 0;
+        }
+        lignesFact.push({
+          id: genId(),
+          designation: `Déduction acompte — Facture N° ${acompte.numero}`,
+          description: `Acompte déjà réglé sur devis ${d.numero}`,
+          qte: 1,
+          pu: -acompteHT,
+          total: -acompteHT,
+          unite: 'forfait',
+          tva: acompteTvaRate
+        });
+      });
+    } catch (err) {
+      console.error("Erreur lors de la recherche des acomptes dans remplirDepuisDevis:", err);
+    }
   }
 
   if (!lignesFact.length) ajouterLigneFact();
@@ -602,6 +696,7 @@ function ajouterLigneFact(data = {}) {
     qte:         data.qte || 1,
     pu:          data.pu || 0,
     unite:       data.unite || 'u',
+    tva:         data.tva !== undefined ? data.tva : (tvaActive ? tvaTauxDefaut : 0),
     total:       (data.qte||1) * (data.pu||0),
   });
   renderLignesFact();
@@ -628,8 +723,13 @@ function renderLignesFact() {
           ${['u','h','m','m²','forfait','lot'].map(u=>`<option value="${u}"${u===l.unite?' selected':''}>${u}</option>`).join('')}
         </select>
       </td>
-      <td><input type="number" class="ligne-input" value="${l.pu||''}" min="0" step="0.01" placeholder="0,00"
+      <td><input type="number" class="ligne-input" value="${l.pu||''}" step="0.01" placeholder="0,00"
         oninput="updateLFCalc('${l.id}','pu',this.value)" /></td>
+      <td class="tva-col" style="${tvaActive ? '' : 'display:none'}">
+        <select class="ligne-input" onchange="updateLFTva('${l.id}', this.value)" style="padding:4px">
+          ${[0, 5.5, 10, 20].map(tx => `<option value="${tx}"${parseFloat(l.tva || 0) === tx ? ' selected' : ''}>${tx}%</option>`).join('')}
+        </select>
+      </td>
       <td><span style="font-weight:600;display:block;padding:8px 4px" id="totlf-${l.id}">${fmt(l.total||0)}</span></td>
       <td>
         <button class="btn-del-ligne" onclick="supprimerLF('${l.id}')"><i class="ti ti-x"></i></button>
@@ -660,6 +760,14 @@ function updateLF(id, key, val) {
   if (l) l[key] = val;
 }
 
+function updateLFTva(id, value) {
+  const l = lignesFact.find(x => x.id === id);
+  if (l) {
+    l.tva = parseFloat(value) || 0;
+    recalculerFact();
+  }
+}
+
 function updateLFCalc(id, key, val) {
   const l = lignesFact.find(x=>x.id===id);
   if (!l) return;
@@ -677,9 +785,21 @@ function supprimerLF(id) {
 }
 
 function recalculerFact() {
-  const total = lignesFact.reduce((s,l)=>s+(l.total||0),0);
-  document.getElementById('mf-tot-ht').textContent    = fmt(total);
-  document.getElementById('mf-tot-final').textContent = fmt(total);
+  const total_ht = lignesFact.reduce((s,l)=>s+(l.total||0),0);
+  
+  let tva_total = 0;
+  if (tvaActive) {
+    lignesFact.forEach(l => {
+      tva_total += (l.total || 0) * (parseFloat(l.tva) || 0) / 100;
+    });
+  }
+  tva_total = Math.round(tva_total * 100) / 100;
+  const total_ttc = Math.round((total_ht + tva_total) * 100) / 100;
+
+  document.getElementById('mf-tot-ht').textContent    = fmt(total_ht);
+  document.getElementById('mf-tot-tva').textContent   = fmt(tva_total);
+  document.getElementById('mf-tot-ttc').textContent   = fmt(total_ttc);
+  document.getElementById('mf-tot-final').textContent = fmt(total_ttc);
 }
 
 // ── Sauvegarder facture ──
@@ -690,7 +810,16 @@ async function sauvegarderFacture(genPDF = false) {
     toast('Ajoutez au moins une ligne', 'error'); return;
   }
 
-  const total  = lignesFact.reduce((s,l)=>s+(l.total||0),0);
+  const total_ht = lignesFact.reduce((s,l)=>s+(l.total||0),0);
+  let tva_total = 0;
+  if (tvaActive) {
+    lignesFact.forEach(l => {
+      tva_total += (l.total || 0) * (parseFloat(l.tva) || 0) / 100;
+    });
+  }
+  tva_total = Math.round(tva_total * 100) / 100;
+  const total_ttc = Math.round((total_ht + tva_total) * 100) / 100;
+
   const devisId = document.getElementById('mf-devis-lie').value || null;
   const devis   = devisId ? await DB.getDevisById(devisId) : null;
   
@@ -719,8 +848,9 @@ async function sauvegarderFacture(genPDF = false) {
     mode_reglement: document.getElementById('mf-mode').value,
     notes:          notes,
     lignes:         lignesFact,
-    montant_ht:     total,
-    montant:        total,
+    montant_ht:     total_ht,
+    montant:        total_ht,
+    montant_ttc:    total_ttc,
     statut:         'Créé',
   };
 
@@ -770,6 +900,39 @@ async function envoyerFacture(id) {
   if (!email) { toast('Aucun email client renseigné', 'error'); return; }
   const sujet = encodeURIComponent(`Facture ${f.numero} — StarElec`);
   window.location.href = `mailto:${email}?subject=${sujet}`;
+  closeAllDropdowns();
+}
+
+async function relancerClient(id) {
+  const allFact = await DB.getFactures();
+  const f = allFact.find(x=>x.id===id);
+  if (!f) return;
+  const email = f.client_email || '';
+  if (!email) { toast('Aucun email client renseigné', 'error'); return; }
+
+  // Calculate totals dynamically to get the accurate TTC amount
+  let total_ht = 0;
+  let tva_total = 0;
+  (f.lignes || []).forEach(l => {
+    if (l.type === 'produit' || !l.type) {
+      const lineTotal = parseFloat(l.total || 0);
+      total_ht += lineTotal;
+      if (tvaActive) {
+        const lineTva = parseFloat(l.tva || 0);
+        tva_total += lineTotal * lineTva / 100;
+      }
+    }
+  });
+  total_ht = Math.round(total_ht * 100) / 100;
+  tva_total = Math.round(tva_total * 100) / 100;
+  const total_ttc = Math.round((total_ht + tva_total) * 100) / 100;
+
+  const montantRemind = fmt(total_ttc);
+  const sujet = encodeURIComponent(`Rappel : Facture ${f.numero} en attente de règlement — StarElec`);
+  const corps = encodeURIComponent(
+    `Bonjour ${f.client},\n\nSauf erreur ou omission de notre part, nous n'avons pas reçu le règlement de la facture ${f.numero} d'un montant de ${montantRemind}, qui était attendu pour le ${fmtDate(f.date_echeance || f.date)}.\n\nNous vous prions de bien vouloir procéder à son règlement dans les plus brefs délais par virement bancaire.\n\nNous restons à votre entière disposition pour toute question.\n\nCordialement,\nFlorian Fernandes\nStarElec`
+  );
+  window.location.href = `mailto:${email}?subject=${sujet}&body=${corps}`;
   closeAllDropdowns();
 }
 

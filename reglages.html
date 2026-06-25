@@ -251,6 +251,31 @@
                 <span style="color:var(--texte-sec);font-size:13px">2026/001</span>
               </div>
             </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Activer la gestion de la TVA</div>
+                <div class="settings-sub">Affiche la colonne TVA sur les lignes et calcule les taxes</div>
+              </div>
+              <div class="settings-control">
+                <input type="checkbox" id="s-tva-active" style="width:20px;height:20px;cursor:pointer" />
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Taux de TVA par défaut (%)</div>
+                <div class="settings-sub">Appliqué automatiquement si la TVA est activée</div>
+              </div>
+              <div class="settings-control">
+                <select class="form-control" id="s-tva-taux-defaut" style="max-width:140px">
+                  <option value="0">0% (Exonéré/Franchise)</option>
+                  <option value="5.5">5.5% (Taux réduit RGE)</option>
+                  <option value="10">10% (Rénovation)</option>
+                  <option value="20">20% (Standard / Neuf)</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <!-- ── IA ── -->
@@ -481,6 +506,8 @@
       document.getElementById('s-prefix-devis').value = d.prefix_devis || 'D';
       document.getElementById('s-prefix-facture').value = d.prefix_facture || 'F';
       document.getElementById('s-prefix-acompte').value = d.prefix_acompte || 'FA';
+      document.getElementById('s-tva-active').checked = d.tva_active || false;
+      document.getElementById('s-tva-taux-defaut').value = (d.tva_taux_defaut !== undefined) ? d.tva_taux_defaut : 0;
 
       // IA — provider, modèle, clé
       const provider = localStorage.getItem('se_ai_provider') || 'anthropic';
@@ -525,6 +552,8 @@
           prefix_devis: document.getElementById('s-prefix-devis').value.trim() || 'D',
           prefix_facture: document.getElementById('s-prefix-facture').value.trim() || 'F',
           prefix_acompte: document.getElementById('s-prefix-acompte').value.trim() || 'FA',
+          tva_active: document.getElementById('s-tva-active').checked,
+          tva_taux_defaut: parseFloat(document.getElementById('s-tva-taux-defaut').value) || 0,
         }
       };
 
