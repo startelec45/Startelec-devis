@@ -566,6 +566,7 @@ async function remplirDepuisDevis() {
   document.getElementById('mf-tel').value     = d.client_tel || '';
   document.getElementById('mf-objet').value   = d.objet || '';
   document.getElementById('mf-mode').value    = d.mode_reglement || 'Virement bancaire';
+  document.getElementById('mf-notes').value   = d.infos_spec || '';
 
   let regime = 'Standard';
   if (d.notes_privees && d.notes_privees.includes('[[REGIME:SOUS_TRAITANCE]]')) {
@@ -575,7 +576,7 @@ async function remplirDepuisDevis() {
 
   const type = document.getElementById('mf-type').value;
   if (type === "Facture d'acompte") {
-    const acompte_pct = d.acompte_pct || 30;
+    const acompte_pct = (d.acompte_pct !== undefined && d.acompte_pct !== null) ? d.acompte_pct : 30;
     const montant     = Math.round(d.montant_ht * acompte_pct / 100 * 100) / 100;
     lignesFact = [{
       id: genId(), designation: `Acompte ${acompte_pct}% — ${d.objet||d.numero}`,

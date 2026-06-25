@@ -818,7 +818,7 @@
       try {
         let finalClient = null;
         if (typeof SB !== 'undefined') {
-          const queryRes = await SB.select('clients', `?token=eq.${token}`);
+          const queryRes = await SB.query('rpc/get_client_by_token', 'POST', { client_token: token });
           if (queryRes && queryRes.length > 0) finalClient = queryRes[0];
         }
 
@@ -854,8 +854,9 @@
     }
 
     async function chargerDonneesClient() {
+      const token = localStorage.getItem('se_client_token');
       // 1. Charger tous les chantiers et stocker les datas
-      const chantiers = await DB.getChantiersByClient(currentClient.id);
+      const chantiers = await SB.query('rpc/get_chantiers_by_token', 'POST', { client_token: token });
       const summaryGrid = document.getElementById('chantiers-summary-grid');
       tousChantiersData = [];
 
@@ -904,14 +905,11 @@
         }
       }
 
-      // 2. Charger les devis et les factures (basés sur le nom du client)
-      const [tousDevis, toutesFactures] = await Promise.all([
-        DB.getDevis(),
-        DB.getFactures()
+      // 2. Charger les devis et les factures (basés sur le nom du client) via RPC sécurisé
+      const [devis, factures] = await Promise.all([
+        SB.query('rpc/get_devis_by_token', 'POST', { client_token: token }),
+        SB.query('rpc/get_factures_by_token', 'POST', { client_token: token })
       ]);
-
-      const devis = tousDevis.filter(d => d.client_id === currentClient.id || (currentClient.nom && d.client === currentClient.nom) || (currentClient.societe && d.client === currentClient.societe));
-      const factures = toutesFactures.filter(f => f.client_id === currentClient.id || (currentClient.nom && f.client === currentClient.nom) || (currentClient.societe && f.client === currentClient.societe));
 
       // Fusionner et trier par date décroissante
       const documents = [

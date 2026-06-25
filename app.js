@@ -31,7 +31,7 @@ const SB = {
       method,
       headers: {
         'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Authorization': `Bearer ${localStorage.getItem('sb_token') || SUPABASE_KEY}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation',
       },
@@ -415,13 +415,28 @@ const DB = {
   async updateFacture(id, data) {
     try {
       const res = await SB.update('factures', id, data);
-      return res[0];
+      const f = res[0];
+      if (f && f.devis_id) {
+        const factures = await this.getFacturesByDevis(f.devis_id);
+        const total = factures.reduce((s, x) => s + (x.montant_ht || x.montant || 0), 0);
+        await this.updateDevis(f.devis_id, { deja_facture: total });
+      }
+      return f;
     } catch (e) { console.error('updateFacture:', e); throw e; }
   },
 
   async deleteFacture(id) {
     try {
+      const allFact = await this.getFactures();
+      const f = allFact.find(x => x.id === id);
+      
       await SB.delete('factures', id);
+      
+      if (f && f.devis_id) {
+        const factures = await this.getFacturesByDevis(f.devis_id);
+        const total = factures.reduce((s, x) => s + (x.montant_ht || x.montant || 0), 0);
+        await this.updateDevis(f.devis_id, { deja_facture: total });
+      }
     } catch (e) { console.error('deleteFacture:', e); throw e; }
   },
 };
@@ -695,6 +710,12 @@ async function creerFactureDepuisDevis(devis_id, type = 'solde') {
     titre = `Facture de solde — ${devis.numero}`;
   }
 
+  // Conserver le régime fiscal (Sous-traitance) et les conditions du devis
+  let notes = devis.infos_spec || '';
+  if (devis.notes_privees && devis.notes_privees.includes('[[REGIME:SOUS_TRAITANCE]]')) {
+    notes = (notes ? notes + '\n' : '') + '[[REGIME:SOUS_TRAITANCE]]';
+  }
+
   return await DB.addFacture({
     numero, type: type === 'acompte' ? "Facture d'acompte" : 'Facture',
     titre, devis_id, devis_numero: devis.numero,
@@ -710,6 +731,7 @@ async function creerFactureDepuisDevis(devis_id, type = 'solde') {
     statut: 'Créé', date: today,
     date_echeance: addDays(today, 30),
     mode_reglement: devis.mode_reglement || 'Virement bancaire',
+    notes,
   });
 }
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,18 +17,20 @@
       padding: 24px;
       border-radius: var(--radius-lg);
     }
+
     .pdf-page {
       background: #fff;
       width: 100%;
       max-width: 794px;
       margin: 0 auto;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
       font-family: Helvetica, Arial, sans-serif;
       font-size: 11px;
       color: #1A1A1A;
       padding: 0;
       overflow: hidden;
     }
+
     /* Bandeau */
     .pdf-header {
       display: flex;
@@ -36,30 +39,66 @@
       padding: 18px 20px;
       background: #fff;
     }
-    .pdf-header-logo img { height: 50px; width: auto; }
+
+    .pdf-header-logo img {
+      height: 50px;
+      width: auto;
+    }
+
     .pdf-header-logo .logo-placeholder {
-      font-size: 20px; font-weight: 700; color: #0F1820;
+      font-size: 20px;
+      font-weight: 700;
+      color: #0F1820;
       letter-spacing: 1px;
     }
-    .pdf-header-right { text-align: right; }
-    .pdf-titre { font-size: 26px; font-weight: 700; color: #0F1820; line-height: 1; }
-    .pdf-num   { font-size: 11px; color: #666; margin-top: 4px; }
-    .pdf-rouge-line { height: 3px; background: #961414; }
+
+    .pdf-header-right {
+      text-align: right;
+    }
+
+    .pdf-titre {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0F1820;
+      line-height: 1;
+    }
+
+    .pdf-num {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .pdf-rouge-line {
+      height: 3px;
+      background: #961414;
+    }
+
     /* Bande infos */
     .pdf-info-band {
       display: grid;
-      grid-template-columns: repeat(4,1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 0;
       background: #F2F2F2;
       border-bottom: 1px solid #D0D0D0;
     }
+
     .pdf-info-cell {
       padding: 7px 10px;
       font-size: 9px;
       border-right: 1px solid #D0D0D0;
     }
-    .pdf-info-cell:last-child { border-right: none; }
-    .pdf-info-cell strong { display: block; color: #1A1A1A; font-size: 9.5px; }
+
+    .pdf-info-cell:last-child {
+      border-right: none;
+    }
+
+    .pdf-info-cell strong {
+      display: block;
+      color: #1A1A1A;
+      font-size: 9.5px;
+    }
+
     /* Vendeur / Acheteur */
     .pdf-parties {
       display: grid;
@@ -67,7 +106,13 @@
       gap: 16px;
       padding: 14px 20px;
     }
-    .pdf-partie { border: 1px solid #D0D0D0; overflow: hidden; border-radius: 4px; }
+
+    .pdf-partie {
+      border: 1px solid #D0D0D0;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+
     .pdf-partie-header {
       background: #4A4A4A;
       color: #fff;
@@ -78,10 +123,26 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    .pdf-partie-body { padding: 8px; background: #F2F2F2; font-size: 10px; line-height: 1.7; }
-    .pdf-partie-body strong { font-size: 10.5px; }
+
+    .pdf-partie-body {
+      padding: 8px;
+      background: #F2F2F2;
+      font-size: 10px;
+      line-height: 1.7;
+    }
+
+    .pdf-partie-body strong {
+      font-size: 10.5px;
+    }
+
     /* Fiscal */
-    .pdf-fiscal { padding: 4px 20px; font-size: 8.5px; color: #666; font-style: italic; }
+    .pdf-fiscal {
+      padding: 4px 20px;
+      font-size: 8.5px;
+      color: #666;
+      font-style: italic;
+    }
+
     /* Objet */
     .pdf-objet {
       margin: 0 20px 10px;
@@ -91,9 +152,18 @@
       padding: 6px 10px;
       font-size: 10px;
     }
+
     /* Tableau */
-    .pdf-table-wrap { padding: 0 20px 14px; }
-    .pdf-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    .pdf-table-wrap {
+      padding: 0 20px 14px;
+    }
+
+    .pdf-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+
     .pdf-table thead th {
       background: #4A4A4A;
       color: #fff;
@@ -103,14 +173,37 @@
       font-weight: 700;
       border-bottom: 2px solid #961414;
     }
+
     .pdf-table thead th:last-child,
-    .pdf-table thead th:nth-last-child(2) { text-align: right; }
-    .pdf-table tbody tr:nth-child(odd)  { background: #fff; }
-    .pdf-table tbody tr:nth-child(even) { background: #F2F2F2; }
-    .pdf-table tbody td { padding: 6px 8px; border-bottom: 1px solid #D0D0D0; vertical-align: top; }
+    .pdf-table thead th:nth-last-child(2) {
+      text-align: right;
+    }
+
+    .pdf-table tbody tr:nth-child(odd) {
+      background: #fff;
+    }
+
+    .pdf-table tbody tr:nth-child(even) {
+      background: #F2F2F2;
+    }
+
+    .pdf-table tbody td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #D0D0D0;
+      vertical-align: top;
+    }
+
     .pdf-table tbody td:last-child,
-    .pdf-table tbody td:nth-last-child(2) { text-align: right; }
-    .pdf-table .td-desc { font-size: 9px; color: #666; margin-top: 2px; }
+    .pdf-table tbody td:nth-last-child(2) {
+      text-align: right;
+    }
+
+    .pdf-table .td-desc {
+      font-size: 9px;
+      color: #666;
+      margin-top: 2px;
+    }
+
     /* Total */
     .pdf-totaux-wrap {
       display: flex;
@@ -119,9 +212,25 @@
       gap: 16px;
       align-items: start;
     }
-    .pdf-conditions { flex: 1; font-size: 9px; color: #444; line-height: 1.6; }
-    .pdf-conditions strong { color: #961414; font-size: 9.5px; }
-    .pdf-totaux { min-width: 240px; border: 1px solid #D0D0D0; overflow: hidden; }
+
+    .pdf-conditions {
+      flex: 1;
+      font-size: 9px;
+      color: #444;
+      line-height: 1.6;
+    }
+
+    .pdf-conditions strong {
+      color: #961414;
+      font-size: 9.5px;
+    }
+
+    .pdf-totaux {
+      min-width: 240px;
+      border: 1px solid #D0D0D0;
+      overflow: hidden;
+    }
+
     .pdf-tot-row {
       display: flex;
       justify-content: space-between;
@@ -129,7 +238,11 @@
       font-size: 10px;
       border-bottom: 1px solid #D0D0D0;
     }
-    .pdf-tot-row:last-child { border-bottom: none; }
+
+    .pdf-tot-row:last-child {
+      border-bottom: none;
+    }
+
     .pdf-tot-row.final {
       background: #0F1820;
       color: #fff;
@@ -137,7 +250,11 @@
       font-size: 11px;
       border-top: 2px solid #961414;
     }
-    .pdf-tot-row label { color: inherit; }
+
+    .pdf-tot-row label {
+      color: inherit;
+    }
+
     /* Règlement + signatures */
     .pdf-reglement {
       display: grid;
@@ -146,8 +263,17 @@
       border: 1px solid #D0D0D0;
       overflow: hidden;
     }
-    .pdf-reglement-cell { padding: 8px 10px; font-size: 9.5px; line-height: 1.7; }
-    .pdf-reglement-cell:first-child { border-right: 1px solid #D0D0D0; }
+
+    .pdf-reglement-cell {
+      padding: 8px 10px;
+      font-size: 9.5px;
+      line-height: 1.7;
+    }
+
+    .pdf-reglement-cell:first-child {
+      border-right: 1px solid #D0D0D0;
+    }
+
     .pdf-reglement-header {
       background: #F2F2F2;
       font-weight: 700;
@@ -156,6 +282,7 @@
       border-bottom: 2px solid #961414;
       text-transform: uppercase;
     }
+
     .pdf-signatures {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -164,11 +291,31 @@
       border-top: 2px solid #961414;
       overflow: hidden;
     }
-    .pdf-sign-cell { padding: 12px 10px 30px; font-size: 9.5px; line-height: 1.7; }
-    .pdf-sign-cell:first-child { border-right: 1px solid #D0D0D0; }
+
+    .pdf-sign-cell {
+      padding: 12px 10px 30px;
+      font-size: 9.5px;
+      line-height: 1.7;
+    }
+
+    .pdf-sign-cell:first-child {
+      border-right: 1px solid #D0D0D0;
+    }
+
     /* Footer */
-    .pdf-footer-line { height: 2px; background: #961414; margin: 0 20px; }
-    .pdf-footer-text { padding: 6px 20px 12px; font-size: 7.5px; color: #666; text-align: center; }
+    .pdf-footer-line {
+      height: 2px;
+      background: #961414;
+      margin: 0 20px;
+    }
+
+    .pdf-footer-text {
+      padding: 6px 20px 12px;
+      font-size: 7.5px;
+      color: #666;
+      text-align: center;
+    }
+
     /* Factures liées */
     .linked-docs {
       background: #fff;
@@ -177,6 +324,7 @@
       overflow: hidden;
       margin-bottom: 16px;
     }
+
     .linked-docs-header {
       padding: 10px 16px;
       background: var(--gris-clair);
@@ -189,12 +337,22 @@
 
     /* ══ IMPRESSION / PDF ══ */
     @media print {
+
       /* Masquer toute l'interface */
-      .sidebar, .topbar, .action-bar, .linked-docs,
-      .toast-container, #overlay { display: none !important; }
+      .sidebar,
+      .topbar,
+      .action-bar,
+      .linked-docs,
+      .toast-container,
+      #overlay {
+        display: none !important;
+      }
 
       /* Supprimer le fond gris et les paddings de layout */
-      body, .app-layout, .main-content, .page-content {
+      body,
+      .app-layout,
+      .main-content,
+      .page-content {
         background: #fff !important;
         padding: 0 !important;
         margin: 0 !important;
@@ -216,12 +374,19 @@
         page-break-after: always;
       }
     }
-    
+
     /* Vue publique */
     html.public-view .sidebar,
     html.public-view .topbar,
-    html.public-view .action-bar { display: none !important; }
-    html.public-view .main-content { margin: 0 auto; max-width: 900px; background: #fff; }
+    html.public-view .action-bar {
+      display: none !important;
+    }
+
+    html.public-view .main-content {
+      margin: 0 auto;
+      max-width: 900px;
+      background: #fff;
+    }
   </style>
   <script>
     // Exécution immédiate avant l'affichage pour éviter le flash
@@ -230,257 +395,266 @@
     }
   </script>
 </head>
+
 <body>
 
-<div class="app-layout">
+  <div class="app-layout">
 
-  <!-- ══ SIDEBAR ══ -->
-  <aside class="sidebar">
-    <a href="index.html" class="sidebar-logo">
-      <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
-      <div>
-        <span>StarElec</span>
-        <span class="logo-sub">Devis & Factures</span>
-      </div>
-    </a>
-    <div class="nav-section">Principal</div>
-    <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
-    <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
-    <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
-    <div class="nav-section">Gestion</div>
-    <a href="liste.html" class="nav-item active"><i class="ti ti-file-text"></i> Tous les devis</a>
-    <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
-    <a href="catalogue.html" class="nav-item"><i class="ti ti-list-check"></i> Catalogue</a>
-    <div class="nav-section">Compte</div>
-    <a href="reglages.html" class="nav-item"><i class="ti ti-settings"></i> Réglages</a>
-    <div class="sidebar-bottom">
-      <a href="reglages.html" class="sidebar-user">
-        <div class="avatar" id="sidebar-avatar">SE</div>
+    <!-- ══ SIDEBAR ══ -->
+    <aside class="sidebar">
+      <a href="index.html" class="sidebar-logo">
+        <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
         <div>
-          <div class="sidebar-user-name" id="sidebar-nom">StarElec</div>
-          <div class="sidebar-user-role" id="sidebar-ville">Chargement...</div>
+          <span>StarElec</span>
+          <span class="logo-sub">Devis & Factures</span>
         </div>
       </a>
-    </div>
-  </aside>
-
-  <!-- ══ MAIN ══ -->
-  <div class="main-content">
-
-    <!-- Topbar -->
-    <div class="topbar">
-      <div class="topbar-left">
-        <a href="index.html" class="btn btn-ghost btn-sm"><i class="ti ti-arrow-left"></i> Retour</a>
-        <span class="topbar-breadcrumb">Revenus / <span id="topbar-num">—</span></span>
+      <div class="nav-section">Principal</div>
+      <a href="index.html" class="nav-item"><i class="ti ti-layout-dashboard"></i> Dashboard</a>
+      <a href="devis.html" class="nav-item"><i class="ti ti-plus"></i> Nouveau devis</a>
+      <a href="clients.html" class="nav-item"><i class="ti ti-users"></i> Clients</a>
+      <div class="nav-section">Gestion</div>
+      <a href="liste.html" class="nav-item active"><i class="ti ti-file-text"></i> Tous les devis</a>
+      <a href="factures.html" class="nav-item"><i class="ti ti-receipt"></i> Factures</a>
+      <a href="catalogue.html" class="nav-item"><i class="ti ti-list-check"></i> Catalogue</a>
+      <div class="nav-section">Compte</div>
+      <a href="reglages.html" class="nav-item"><i class="ti ti-settings"></i> Réglages</a>
+      <div class="sidebar-bottom">
+        <a href="reglages.html" class="sidebar-user">
+          <div class="avatar" id="sidebar-avatar">SE</div>
+          <div>
+            <div class="sidebar-user-name" id="sidebar-nom">StarElec</div>
+            <div class="sidebar-user-role" id="sidebar-ville">Chargement...</div>
+          </div>
+        </a>
       </div>
-      <div class="topbar-right">
-        <button class="btn btn-ghost btn-icon btn-sm" onclick="naviguer(-1)" title="Précédent">
-          <i class="ti ti-chevron-left"></i>
-        </button>
-        <button class="btn btn-ghost btn-icon btn-sm" onclick="naviguer(1)" title="Suivant">
-          <i class="ti ti-chevron-right"></i>
-        </button>
-        <select class="badge badge-select" id="statut-select" onchange="changerStatut(this.value, this)">
-          <option value="Créé">Créé</option>
-          <option value="Envoyé">Envoyé</option>
-          <option value="Accepté">Accepté</option>
-          <option value="Rejeté">Rejeté</option>
-          <option value="Payé">Payé</option>
-          <option value="Payé en partie">Payé en partie</option>
-          <option value="Annulé">Annulé</option>
-        </select>
-      </div>
-    </div>
+    </aside>
 
-    <!-- Barre d'actions -->
-    <div class="action-bar">
-      <a class="btn btn-ghost btn-sm" id="btn-modifier" href="#"><i class="ti ti-edit"></i> Modifier</a>
-      <button class="btn btn-ghost btn-sm" onclick="envoyerMail()"><i class="ti ti-mail"></i> Envoyer</button>
+    <!-- ══ MAIN ══ -->
+    <div class="main-content">
 
-      <div class="dropdown">
-        <button class="btn btn-ghost btn-sm" onclick="toggleDropdown(this)">
-          <i class="ti ti-printer"></i> Imprimer <i class="ti ti-chevron-down"></i>
-        </button>
-        <div class="dropdown-menu">
-          <div class="dropdown-item" onclick="imprimerPage()"><i class="ti ti-printer"></i> Imprimer</div>
-          <div class="dropdown-item" onclick="telechargerPDFClient()"><i class="ti ti-file-type-pdf"></i> Télécharger PDF</div>
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <a href="index.html" class="btn btn-ghost btn-sm"><i class="ti ti-arrow-left"></i> Retour</a>
+          <span class="topbar-breadcrumb">Revenus / <span id="topbar-num">—</span></span>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="naviguer(-1)" title="Précédent">
+            <i class="ti ti-chevron-left"></i>
+          </button>
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="naviguer(1)" title="Suivant">
+            <i class="ti ti-chevron-right"></i>
+          </button>
+          <select class="badge badge-select" id="statut-select" onchange="changerStatut(this.value, this)">
+            <option value="Créé">Créé</option>
+            <option value="Envoyé">Envoyé</option>
+            <option value="Accepté">Accepté</option>
+            <option value="Rejeté">Rejeté</option>
+            <option value="Payé">Payé</option>
+            <option value="Payé en partie">Payé en partie</option>
+            <option value="Annulé">Annulé</option>
+          </select>
         </div>
       </div>
 
-      <div class="dropdown">
-        <button class="btn btn-ghost btn-sm" onclick="toggleDropdown(this)">
-          <i class="ti ti-download"></i> Exporter <i class="ti ti-chevron-down"></i>
+      <!-- Barre d'actions -->
+      <div class="action-bar">
+        <a class="btn btn-ghost btn-sm" id="btn-modifier" href="#"><i class="ti ti-edit"></i> Modifier</a>
+        <button class="btn btn-ghost btn-sm" onclick="envoyerMail()"><i class="ti ti-mail"></i> Envoyer</button>
+
+        <div class="dropdown">
+          <button class="btn btn-ghost btn-sm" onclick="toggleDropdown(this)">
+            <i class="ti ti-printer"></i> Imprimer <i class="ti ti-chevron-down"></i>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-item" onclick="imprimerPage()"><i class="ti ti-printer"></i> Imprimer</div>
+            <div class="dropdown-item" onclick="telechargerPDFClient()"><i class="ti ti-file-type-pdf"></i> Télécharger
+              PDF</div>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-ghost btn-sm" onclick="toggleDropdown(this)">
+            <i class="ti ti-download"></i> Exporter <i class="ti ti-chevron-down"></i>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-item" onclick="copierLienApercu(devisId)"><i class="ti ti-link"></i> Lien vers aperçu
+            </div>
+            <div class="dropdown-item" onclick="telechargerPDFClient()"><i class="ti ti-file-type-pdf"></i> Télécharger
+              en PDF</div>
+            <div class="dropdown-separator"></div>
+            <div class="dropdown-item" onclick="exporterXML(devisId)"><i class="ti ti-code"></i> Télécharger en XML
+            </div>
+            <div class="dropdown-item" onclick="exporterJSON(devisId)"><i class="ti ti-braces"></i> Télécharger en JSON
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-ghost btn-sm" onclick="facturer()">
+          <i class="ti ti-receipt"></i> Facturer
         </button>
-        <div class="dropdown-menu">
-          <div class="dropdown-item" onclick="copierLienApercu(devisId)"><i class="ti ti-link"></i> Lien vers aperçu</div>
-          <div class="dropdown-item" onclick="telechargerPDFClient()"><i class="ti ti-file-type-pdf"></i> Télécharger en PDF</div>
-          <div class="dropdown-separator"></div>
-          <div class="dropdown-item" onclick="exporterXML(devisId)"><i class="ti ti-code"></i> Télécharger en XML</div>
-          <div class="dropdown-item" onclick="exporterJSON(devisId)"><i class="ti ti-braces"></i> Télécharger en JSON</div>
+
+        <div class="dropdown">
+          <button class="btn btn-ghost btn-sm" onclick="toggleDropdown(this)">
+            <i class="ti ti-plus"></i> Créer / Plus <i class="ti ti-chevron-down"></i>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-item" onclick="creerSimilaire()"><i class="ti ti-copy"></i> Créer un document similaire
+            </div>
+            <a class="dropdown-item" href="devis.html"><i class="ti ti-file-plus"></i> Créer un nouveau doc.</a>
+            <div class="dropdown-separator"></div>
+            <div class="dropdown-item" onclick="creerAcompte()"><i class="ti ti-receipt-2"></i> Créer une facture
+              d'acompte</div>
+            <div class="dropdown-separator"></div>
+            <div class="dropdown-item danger" onclick="annulerDevis()"><i class="ti ti-ban"></i> Annuler (sans
+              supprimer)</div>
+          </div>
         </div>
-      </div>
 
-      <button class="btn btn-ghost btn-sm" onclick="facturer()">
-        <i class="ti ti-receipt"></i> Facturer
-      </button>
-
-      <div class="dropdown">
-        <button class="btn btn-ghost btn-sm" onclick="toggleDropdown(this)">
-          <i class="ti ti-plus"></i> Créer / Plus <i class="ti ti-chevron-down"></i>
+        <div class="separator"></div>
+        <button class="btn btn-ghost btn-sm danger" onclick="supprimerDevis()">
+          <i class="ti ti-trash"></i> Supprimer
         </button>
-        <div class="dropdown-menu">
-          <div class="dropdown-item" onclick="creerSimilaire()"><i class="ti ti-copy"></i> Créer un document similaire</div>
-          <a class="dropdown-item" href="devis.html"><i class="ti ti-file-plus"></i> Créer un nouveau doc.</a>
-          <div class="dropdown-separator"></div>
-          <div class="dropdown-item" onclick="creerAcompte()"><i class="ti ti-receipt-2"></i> Créer une facture d'acompte</div>
-          <div class="dropdown-separator"></div>
-          <div class="dropdown-item danger" onclick="annulerDevis()"><i class="ti ti-ban"></i> Annuler (sans supprimer)</div>
+      </div>
+
+      <!-- Contenu -->
+      <div class="page-content">
+
+        <!-- Factures liées -->
+        <div class="linked-docs" id="linked-docs" style="display:none">
+          <div class="linked-docs-header"><i class="ti ti-link"></i> Documents liés</div>
+          <div id="linked-docs-body" style="padding:10px 16px"></div>
         </div>
-      </div>
 
-      <div class="separator"></div>
-      <button class="btn btn-ghost btn-sm danger" onclick="supprimerDevis()">
-        <i class="ti ti-trash"></i> Supprimer
-      </button>
-    </div>
-
-    <!-- Contenu -->
-    <div class="page-content">
-
-      <!-- Factures liées -->
-      <div class="linked-docs" id="linked-docs" style="display:none">
-        <div class="linked-docs-header"><i class="ti ti-link"></i> Documents liés</div>
-        <div id="linked-docs-body" style="padding:10px 16px"></div>
-      </div>
-
-      <!-- Aperçu PDF -->
-      <div class="pdf-wrap">
-        <div class="pdf-page" id="pdf-page">
-          <!-- Généré dynamiquement -->
+        <!-- Aperçu PDF -->
+        <div class="pdf-wrap">
+          <div class="pdf-page" id="pdf-page">
+            <!-- Généré dynamiquement -->
+          </div>
         </div>
-      </div>
 
+      </div>
     </div>
   </div>
-</div>
 
-<div class="toast-container" id="toasts"></div>
-<div id="overlay" style="display:none;position:fixed;inset:0;z-index:199;" onclick="closeAllDropdowns()"></div>
+  <div class="toast-container" id="toasts"></div>
+  <div id="overlay" style="display:none;position:fixed;inset:0;z-index:199;" onclick="closeAllDropdowns()"></div>
 
-<script src="app.js"></script>
-<script>
-let devisId = null;
-let devis   = null;
-let allIds  = [];
+  <script src="app.js"></script>
+  <script>
+    let devisId = null;
+    let devis = null;
+    let allIds = [];
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const id     = getUrlParam('id');
-  const action = getUrlParam('action');
+    document.addEventListener('DOMContentLoaded', async () => {
+      const id = getUrlParam('id');
+      const action = getUrlParam('action');
 
-  if (!id) { window.location.href = 'index.html'; return; }
+      if (!id) { window.location.href = 'index.html'; return; }
 
-  devisId = id;
-  devis   = await DB.getDevisById(id);
-  const devisList = await DB.getDevis();
-  allIds  = devisList.map(d => d.id);
+      devisId = id;
+      devis = await DB.getDevisById(id);
+      const devisList = await DB.getDevis();
+      allIds = devisList.map(d => d.id);
 
-  if (!devis) { toast('Devis introuvable', 'error'); return; }
+      if (!devis) { toast('Devis introuvable', 'error'); return; }
 
-  // ── SÉCURITÉ & VUE CLIENT PUBLIC ──
-  const isAuth = localStorage.getItem('se_admin_auth') === 'true';
-  if (!isAuth) {
-    // On ajoute un bouton simple pour télécharger le PDF
-    const btnBar = document.createElement('div');
-    btnBar.innerHTML = '<div style="padding:20px;text-align:center;background:#fff;border-bottom:1px solid var(--border);margin-bottom:20px"><button class="btn btn-primary" onclick="telechargerPDFClient()"><i class="ti ti-download"></i> Télécharger le PDF</button></div>';
-    document.querySelector('.page-content').prepend(btnBar);
-  } else {
-    // ── VUE ADMIN (On initialise les boutons admin) ──
-    document.getElementById('topbar-num').textContent = devis.numero;
-    document.getElementById('btn-modifier').href      = `devis.html?id=${id}`;
+      // ── SÉCURITÉ & VUE CLIENT PUBLIC ──
+      const isAuth = localStorage.getItem('se_admin_auth') === 'true';
+      if (!isAuth) {
+        // On ajoute un bouton simple pour télécharger le PDF
+        const btnBar = document.createElement('div');
+        btnBar.innerHTML = '<div style="padding:20px;text-align:center;background:#fff;border-bottom:1px solid var(--border);margin-bottom:20px"><button class="btn btn-primary" onclick="telechargerPDFClient()"><i class="ti ti-download"></i> Télécharger le PDF</button></div>';
+        document.querySelector('.page-content').prepend(btnBar);
+      } else {
+        // ── VUE ADMIN (On initialise les boutons admin) ──
+        document.getElementById('topbar-num').textContent = devis.numero;
+        document.getElementById('btn-modifier').href = `devis.html?id=${id}`;
 
-    const sel = document.getElementById('statut-select');
-    sel.value = devis.statut;
-    sel.className = `badge badge-select ${getBadgeClass(devis.statut)}`;
+        const sel = document.getElementById('statut-select');
+        sel.value = devis.statut;
+        sel.className = `badge badge-select ${getBadgeClass(devis.statut)}`;
 
-    const cfgSidebar = await DB.getConfig();
-    const e = cfgSidebar.entreprise;
-    const nomEntreprise = e.nom || 'StarElec';
-    const initiales = nomEntreprise.replace(/[^A-Z]/g, '').slice(0, 2) || nomEntreprise.slice(0, 2).toUpperCase();
-    document.getElementById('sidebar-avatar').textContent = initiales;
-    document.getElementById('sidebar-nom').textContent    = nomEntreprise;
-    document.getElementById('sidebar-ville').textContent  = e.ville ? `${nomEntreprise} — ${e.ville}` : nomEntreprise;
-  }
+        const cfgSidebar = await DB.getConfig();
+        const e = cfgSidebar.entreprise;
+        const nomEntreprise = e.nom || 'StarElec';
+        const initiales = nomEntreprise.replace(/[^A-Z]/g, '').slice(0, 2) || nomEntreprise.slice(0, 2).toUpperCase();
+        document.getElementById('sidebar-avatar').textContent = initiales;
+        document.getElementById('sidebar-nom').textContent = nomEntreprise;
+        document.getElementById('sidebar-ville').textContent = e.ville ? `${nomEntreprise} — ${e.ville}` : nomEntreprise;
+      }
 
-  // Render
-  await renderPDF();
-  if (isAuth) await renderLinkedDocs();
+      // Render
+      await renderPDF();
+      if (isAuth) await renderLinkedDocs();
 
-  // Action auto
-  if (action === 'pdf') {
-    setTimeout(() => {
-      telechargerPDFClient().then(() => {
-        if (window.opener) window.close();
-      });
-    }, 600);
-  }
-  if (action === 'envoyer') envoyerMail();
+      // Action auto
+      if (action === 'pdf') {
+        setTimeout(() => {
+          telechargerPDFClient().then(() => {
+            if (window.opener) window.close();
+          });
+        }, 600);
+      }
+      if (action === 'envoyer') envoyerMail();
 
-  // Impression auto si ?print=1 (appelé depuis genererPDF)
-  if (getUrlParam('print') === '1') {
-    // Laisser le temps au DOM de se rendre (fonts, images)
-    setTimeout(() => {
-      window.print();
-    }, 600);
-  }
-});
+      // Impression auto si ?print=1 (appelé depuis genererPDF)
+      if (getUrlParam('print') === '1') {
+        // Laisser le temps au DOM de se rendre (fonts, images)
+        setTimeout(() => {
+          window.print();
+        }, 600);
+      }
+    });
 
-// ══ RENDER PDF APERÇU ══
-async function renderPDF() {
-  const d   = devis;
-  const cfgFull = await DB.getConfig();
-  const cfg = cfgFull.entreprise;
+    // ══ RENDER PDF APERÇU ══
+    async function renderPDF() {
+      const d = devis;
+      const cfgFull = await DB.getConfig();
+      const cfg = cfgFull.entreprise;
 
-  let regime = 'Standard';
-  if (d.notes_privees && d.notes_privees.includes('[[REGIME:SOUS_TRAITANCE]]')) {
-    regime = 'Sous-traitance';
-  }
-  const tva_msg = regime === 'Sous-traitance' && cfg.tva_msg_st ? cfg.tva_msg_st : (cfg.tva_msg || '');
+      let regime = 'Standard';
+      if (d.notes_privees && d.notes_privees.includes('[[REGIME:SOUS_TRAITANCE]]')) {
+        regime = 'Sous-traitance';
+      }
+      const tva_msg = regime === 'Sous-traitance' && cfg.tva_msg_st ? cfg.tva_msg_st : (cfg.tva_msg || '');
 
-  const lignesProduit = (d.lignes||[]).filter(l => l.type === 'produit' || !l.type);
-  const total_ht      = d.montant_ht || 0;
-  const acompte_pct   = d.acompte_pct || 30;
-  const acompte       = Math.round(total_ht * acompte_pct / 100 * 100) / 100;
+      const lignesProduit = (d.lignes || []).filter(l => l.type === 'produit' || !l.type);
+      const total_ht = d.montant_ht || 0;
+      const acompte_pct = d.acompte_pct !== undefined && d.acompte_pct !== null ? d.acompte_pct : 30;
+      const acompte = Math.round(total_ht * acompte_pct / 100 * 100) / 100;
 
-  const clientAdresse = [
-    d.client_adresse,
-    d.client_cp && d.client_ville ? `${d.client_cp} ${d.client_ville}` : (d.client_cp || d.client_ville),
-    d.client_pays !== 'France' ? d.client_pays : ''
-  ].filter(Boolean).join('<br/>');
+      const clientAdresse = [
+        d.client_adresse,
+        d.client_cp && d.client_ville ? `${d.client_cp} ${d.client_ville}` : (d.client_cp || d.client_ville),
+        d.client_pays !== 'France' ? d.client_pays : ''
+      ].filter(Boolean).join('<br/>');
 
-  const lignesHTML = (d.lignes||[]).map((l, i) => {
-    if (l.type === 'soustotal') return `<tr><td colspan="4" style="font-weight:700;text-align:right;padding:6px 8px;background:#e8e8e8">Sous-total</td><td style="text-align:right;font-weight:700;padding:6px 8px;background:#e8e8e8">${fmt(l.total||0)}</td></tr>`;
-    if (l.type === 'texte')    return `<tr><td colspan="5" style="padding:6px 8px;color:#444;font-style:italic">${l.designation||''}</td></tr>`;
-    return `<tr>
-      <td style="width:30px;text-align:center;color:#666">${i+1}</td>
+      const lignesHTML = (d.lignes || []).map((l, i) => {
+        if (l.type === 'soustotal') return `<tr><td colspan="4" style="font-weight:700;text-align:right;padding:6px 8px;background:#e8e8e8">Sous-total</td><td style="text-align:right;font-weight:700;padding:6px 8px;background:#e8e8e8">${fmt(l.total || 0)}</td></tr>`;
+        if (l.type === 'texte') return `<tr><td colspan="5" style="padding:6px 8px;color:#444;font-style:italic">${l.designation || ''}</td></tr>`;
+        return `<tr>
+      <td style="width:30px;text-align:center;color:#666">${i + 1}</td>
       <td>
-        <strong>${l.designation||''}</strong>
+        <strong>${l.designation || ''}</strong>
         ${l.description ? `<div class="td-desc">${l.description}</div>` : ''}
       </td>
-      <td style="text-align:center;width:50px">${l.qte||''}</td>
-      <td style="text-align:right;width:80px">${fmt(l.pu||0)}</td>
-      <td style="text-align:right;width:90px;font-weight:600">${fmt(l.total||0)}</td>
+      <td style="text-align:center;width:50px">${l.qte || ''}</td>
+      <td style="text-align:right;width:80px">${fmt(l.pu || 0)}</td>
+      <td style="text-align:right;width:90px;font-weight:600">${fmt(l.total || 0)}</td>
     </tr>`;
-  }).join('');
+      }).join('');
 
-  document.getElementById('pdf-page').innerHTML = `
+      document.getElementById('pdf-page').innerHTML = `
     <!-- BANDEAU -->
     <div class="pdf-header">
       <div class="pdf-header-logo">
         <img src="assets/logo.png" alt="StarElec" onerror="this.outerHTML='<div class=\\'logo-placeholder\\'>START★ELEC</div>'" />
       </div>
       <div class="pdf-header-right">
-        <div class="pdf-titre">${d.type||'DEVIS'}</div>
-        <div class="pdf-num">N° ${d.numero||''}</div>
+        <div class="pdf-titre">${d.type || 'DEVIS'}</div>
+        <div class="pdf-num">N° ${d.numero || ''}</div>
       </div>
     </div>
     <div class="pdf-rouge-line"></div>
@@ -489,8 +663,8 @@ async function renderPDF() {
     <div class="pdf-info-band">
       <div class="pdf-info-cell"><span style="color:#666">Date de création :</span><strong>${fmtDate(d.date)}</strong></div>
       <div class="pdf-info-cell"><span style="color:#666">Date de validité :</span><strong>${fmtDate(d.date_validite)}</strong></div>
-      <div class="pdf-info-cell"><span style="color:#666">Lieu de création :</span><strong>${d.lieu||cfg.lieu}</strong></div>
-      <div class="pdf-info-cell"><span style="color:#666">Vendeur :</span><strong>${d.vendeur_nom||cfg.vendeur}</strong></div>
+      <div class="pdf-info-cell"><span style="color:#666">Lieu de création :</span><strong>${d.lieu || cfg.lieu}</strong></div>
+      <div class="pdf-info-cell"><span style="color:#666">Vendeur :</span><strong>${d.vendeur_nom || cfg.vendeur}</strong></div>
     </div>
 
     <!-- VENDEUR / ACHETEUR -->
@@ -501,14 +675,13 @@ async function renderPDF() {
           <strong>${cfg.nom}</strong><br/>
           ${cfg.adresse}<br/>
           ${cfg.cp} ${cfg.ville}, ${cfg.pays}<br/>
-          SIRET ${cfg.siret}<br/>
-          ${cfg.iban} ${cfg.banque}
+          SIRET ${cfg.siret}
         </div>
       </div>
       <div class="pdf-partie">
         <div class="pdf-partie-header">Acheteur</div>
         <div class="pdf-partie-body">
-          <strong>${d.client||''}</strong><br/>
+          <strong>${d.client || ''}</strong><br/>
           ${clientAdresse}
           ${d.client_email ? `<br/>${d.client_email}` : ''}
         </div>
@@ -555,10 +728,10 @@ async function renderPDF() {
       <div>
         <div class="pdf-reglement-header">Modalités de règlement</div>
         <div class="pdf-reglement-cell">
-          Acompte à verser à la commande (${acompte_pct}%) : <strong>${fmt(acompte)}</strong><br/>
+          ${acompte_pct > 0 ? `Acompte à verser à la commande (${acompte_pct}%) : <strong>${fmt(acompte)}</strong><br/>` : ''}
           Solde à la fin des travaux.<br/>
           Date limite de règlement : ${fmtDate(d.date_validite)}.<br/>
-          Mode de règlement : ${d.mode_reglement||'Virement bancaire'}
+          Mode de règlement : ${d.mode_reglement || 'Virement bancaire'}
         </div>
       </div>
       <div>
@@ -574,7 +747,7 @@ async function renderPDF() {
     <!-- SIGNATURES -->
     <div class="pdf-signatures">
       <div class="pdf-sign-cell">
-        <strong>Pour le vendeur : ${d.vendeur_nom||cfg.vendeur}</strong><br/><br/>
+        <strong>Pour le vendeur : ${d.vendeur_nom || cfg.vendeur}</strong><br/><br/>
         Signature électronique :
       </div>
       <div class="pdf-sign-cell">
@@ -592,116 +765,117 @@ async function renderPDF() {
       ${cfg.nom} — ${cfg.adresse}, ${cfg.cp} ${cfg.ville} — SIRET ${cfg.siret} — ${cfg.email} — ${cfg.tel} — TVA non applicable, art. 293B du CGI
     </div>
   `;
-}
+    }
 
-// ══ DOCUMENTS LIÉS ══
-async function renderLinkedDocs() {
-  const factures = await DB.getFacturesByDevis(devisId);
-  if (!factures.length) return;
+    // ══ DOCUMENTS LIÉS ══
+    async function renderLinkedDocs() {
+      const factures = await DB.getFacturesByDevis(devisId);
+      if (!factures.length) return;
 
-  document.getElementById('linked-docs').style.display = 'block';
-  document.getElementById('linked-docs-body').innerHTML = factures.map(f => `
+      document.getElementById('linked-docs').style.display = 'block';
+      document.getElementById('linked-docs-body').innerHTML = factures.map(f => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
       <div>
         <span style="color:var(--rouge);font-weight:600">${f.numero}</span>
         <span style="color:var(--texte-sec);margin-left:8px">${f.titre}</span>
       </div>
       <div style="display:flex;align-items:center;gap:12px">
-        <span style="font-weight:600">${fmt(f.montant_ht||f.montant||0)}</span>
+        <span style="font-weight:600">${fmt(f.montant_ht || f.montant || 0)}</span>
         <span class="badge ${getBadgeClass(f.statut)}">${f.statut}</span>
         <a href="factures.html" class="btn btn-ghost btn-sm"><i class="ti ti-eye"></i></a>
       </div>
     </div>
   `).join('');
-}
+    }
 
-// ══ ACTIONS ══
-async function changerStatut(statut, sel) {
-  await DB.updateStatut(devisId, statut);
-  sel.className = `badge badge-select ${getBadgeClass(statut)}`;
-  devis.statut  = statut;
-  toast(`Statut : ${statut}`, 'success');
-}
+    // ══ ACTIONS ══
+    async function changerStatut(statut, sel) {
+      await DB.updateStatut(devisId, statut);
+      sel.className = `badge badge-select ${getBadgeClass(statut)}`;
+      devis.statut = statut;
+      toast(`Statut : ${statut}`, 'success');
+    }
 
-function envoyerMail() {
-  envoyerDevisParMail(devisId);
-  document.getElementById('statut-select').value = 'Envoyé';
-  document.getElementById('statut-select').className = 'badge badge-select badge-envoye';
-}
+    function envoyerMail() {
+      envoyerDevisParMail(devisId);
+      document.getElementById('statut-select').value = 'Envoyé';
+      document.getElementById('statut-select').className = 'badge badge-select badge-envoye';
+    }
 
-function imprimerPage() {
-  window.print();
-  closeAllDropdowns();
-}
+    function imprimerPage() {
+      window.print();
+      closeAllDropdowns();
+    }
 
-async function facturer() {
-  if (!confirm('Convertir ce devis en facture (solde total) ?')) return;
-  const f = await creerFactureDepuisDevis(devisId, 'solde');
-  if (f) { await renderLinkedDocs(); toast(`Facture ${f.numero} créée`, 'success'); }
-}
+    async function facturer() {
+      if (!confirm('Convertir ce devis en facture (solde total) ?')) return;
+      const f = await creerFactureDepuisDevis(devisId, 'solde');
+      if (f) { await renderLinkedDocs(); toast(`Facture ${f.numero} créée`, 'success'); }
+    }
 
-async function creerAcompte() {
-  const f = await creerFactureDepuisDevis(devisId, 'acompte');
-  if (f) { await renderLinkedDocs(); toast(`Facture d'acompte ${f.numero} créée`, 'success'); }
-  closeAllDropdowns();
-}
+    async function creerAcompte() {
+      const f = await creerFactureDepuisDevis(devisId, 'acompte');
+      if (f) { await renderLinkedDocs(); toast(`Facture d'acompte ${f.numero} créée`, 'success'); }
+      closeAllDropdowns();
+    }
 
-async function creerSimilaire() {
-  const clone = await clonerDevis(devisId);
-  if (clone) window.location.href = `devis.html?id=${clone.id}`;
-  closeAllDropdowns();
-}
+    async function creerSimilaire() {
+      const clone = await clonerDevis(devisId);
+      if (clone) window.location.href = `devis.html?id=${clone.id}`;
+      closeAllDropdowns();
+    }
 
-async function annulerDevis() {
-  if (!confirm('Annuler ce devis ?')) return;
-  await DB.updateStatut(devisId, 'Annulé');
-  devis.statut = 'Annulé';
-  const sel = document.getElementById('statut-select');
-  sel.value     = 'Annulé';
-  sel.className = 'badge badge-select badge-annule';
-  toast('Devis annulé', 'info');
-  closeAllDropdowns();
-}
+    async function annulerDevis() {
+      if (!confirm('Annuler ce devis ?')) return;
+      await DB.updateStatut(devisId, 'Annulé');
+      devis.statut = 'Annulé';
+      const sel = document.getElementById('statut-select');
+      sel.value = 'Annulé';
+      sel.className = 'badge badge-select badge-annule';
+      toast('Devis annulé', 'info');
+      closeAllDropdowns();
+    }
 
-async function supprimerDevis() {
-  if (!confirm(`Supprimer définitivement le devis ${devis?.numero} ?`)) return;
-  await DB.deleteDevis(devisId);
-  toast('Devis supprimé', 'info');
-  setTimeout(() => window.location.href = 'index.html', 800);
-}
+    async function supprimerDevis() {
+      if (!confirm(`Supprimer définitivement le devis ${devis?.numero} ?`)) return;
+      await DB.deleteDevis(devisId);
+      toast('Devis supprimé', 'info');
+      setTimeout(() => window.location.href = 'index.html', 800);
+    }
 
-function naviguer(dir) {
-  const idx = allIds.indexOf(devisId);
-  const next = allIds[idx + dir];
-  if (next) window.location.href = `voir.html?id=${next}`;
-}
+    function naviguer(dir) {
+      const idx = allIds.indexOf(devisId);
+      const next = allIds[idx + dir];
+      if (next) window.location.href = `voir.html?id=${next}`;
+    }
 
-async function telechargerPDFClient() {
-  toast('Génération du PDF en cours...', 'info');
-  const element = document.getElementById('pdf-page');
-  const filename = `${(devis.numero || 'devis').replace(/\//g, '-')}.pdf`;
-  
-  const opt = {
-    margin:       [0, 0, 0, 0],
-    filename:     filename,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
-    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-  };
+    async function telechargerPDFClient() {
+      toast('Génération du PDF en cours...', 'info');
+      const element = document.getElementById('pdf-page');
+      const filename = `${(devis.numero || 'devis').replace(/\//g, '-')}.pdf`;
 
-  return html2pdf().set(opt).from(element).save().then(() => {
-    toast('PDF téléchargé !', 'success');
-  }).catch(e => {
-    console.error(e);
-    toast('Erreur génération PDF', 'error');
-  });
-}
+      const opt = {
+        margin: [0, 0, 0, 0],
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
 
-function getBadgeClass(s) {
-  const m = {'Créé':'badge-cree','Envoyé':'badge-envoye','Accepté':'badge-accepte','Rejeté':'badge-rejete','Payé':'badge-paye','Payé en partie':'badge-partiel','Annulé':'badge-annule'};
-  return m[s]||'badge-cree';
-}
-</script>
+      return html2pdf().set(opt).from(element).save().then(() => {
+        toast('PDF téléchargé !', 'success');
+      }).catch(e => {
+        console.error(e);
+        toast('Erreur génération PDF', 'error');
+      });
+    }
+
+    function getBadgeClass(s) {
+      const m = { 'Créé': 'badge-cree', 'Envoyé': 'badge-envoye', 'Accepté': 'badge-accepte', 'Rejeté': 'badge-rejete', 'Payé': 'badge-paye', 'Payé en partie': 'badge-partiel', 'Annulé': 'badge-annule' };
+      return m[s] || 'badge-cree';
+    }
+  </script>
 
 </body>
+
 </html>

@@ -323,9 +323,7 @@ function renderPDF() {
           <strong>${e.nom || ''}</strong><br/>
           ${e.adresse || ''}<br/>
           ${e.cp || ''} ${e.ville || ''}, ${e.pays || 'France'}<br/>
-          ${e.siret ? `SIRET ${e.siret}<br/>` : ''}
-          ${e.iban ? `IBAN : ${e.iban}` : ''}
-          ${e.banque ? ` — ${e.banque}` : ''}
+          ${e.siret ? `SIRET ${e.siret}` : ''}
         </div>
       </div>
       <div class="pdf-partie">
@@ -367,7 +365,10 @@ function renderPDF() {
     <!-- TOTAUX -->
     <div class="pdf-totaux-wrap">
       <div class="pdf-conditions">
-        ${f.notes ? `<strong>Notes :</strong><br/>${f.notes}` : ''}
+        ${(() => {
+          const cleanNotes = (f.notes || '').replace('[[REGIME:SOUS_TRAITANCE]]', '').trim();
+          return cleanNotes ? `<strong>Notes / Conditions :</strong><br/>${cleanNotes.replace(/\n/g, '<br/>')}` : '';
+        })()}
       </div>
       <div class="pdf-totaux">
         <div class="pdf-tot-row">

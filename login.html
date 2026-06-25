@@ -91,40 +91,51 @@
 
   <form id="login-form">
     <div class="input-group">
+      <label for="email">Adresse email</label>
+      <input type="email" id="email" placeholder="Votre adresse email..." required />
+    </div>
+    <div class="input-group">
       <label for="password">Mot de passe</label>
       <input type="password" id="password" placeholder="Votre mot de passe..." required />
     </div>
     <button type="submit" class="btn-login">Se connecter</button>
-    <div id="error-msg" class="error-msg">Mot de passe incorrect.</div>
+    <div id="error-msg" class="error-msg">Identifiants incorrects.</div>
   </form>
 </div>
 
+<script src="app.js"></script>
 <script>
-  // Fonction utilitaire pour hasher le mot de passe (SHA-256)
-  async function hashPassword(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-
   document.getElementById('login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const pwd = document.getElementById('password').value;
-    
-    // Hash attendu (ici c'est le hash de "startelecadmin")
-    // Pour générer un nouveau hash, tapez dans la console de votre navigateur : 
-    // crypto.subtle.digest('SHA-256', new TextEncoder().encode('TON_NOUVEAU_MOT_DE_PASSE')).then(b => console.log(Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('')))
-    const expectedHash = 'bad929d9c915d72561a3ccdb5fadb520f07ab2422bb9f2aa0ab2aa0956521269';
-    
-    const inputHash = await hashPassword(pwd);
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const errorEl = document.getElementById('error-msg');
+    errorEl.style.display = 'none';
 
-    if (inputHash === expectedHash) {
-      localStorage.setItem('se_admin_auth', 'true');
-      window.location.href = 'index.html';
-    } else {
-      document.getElementById('error-msg').style.display = 'block';
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        // Sauvegarder le token de session JWT et l'état de connexion admin
+        localStorage.setItem('sb_token', data.access_token);
+        localStorage.setItem('se_admin_auth', 'true');
+        window.location.href = 'index.html';
+      } else {
+        errorEl.textContent = "Identifiants incorrects.";
+        errorEl.style.display = 'block';
+      }
+    } catch (err) {
+      console.error(err);
+      errorEl.textContent = "Impossible de se connecter au serveur.";
+      errorEl.style.display = 'block';
     }
   });
 </script>

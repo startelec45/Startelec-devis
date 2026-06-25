@@ -575,7 +575,6 @@
       document.getElementById('vendeur-display').innerHTML =
         `<strong>${e.nom}</strong><br/>
      SIRET ${e.siret}<br/>
-     ${e.iban} ${e.banque}<br/>
      ${e.adresse}<br/>
      ${e.cp} ${e.ville}`;
      
@@ -627,8 +626,8 @@
       document.getElementById('f-date-add').value = d.date_validite || '';
       document.getElementById('f-objet').value = d.objet || '';
       document.getElementById('f-mode-reglement').value = d.mode_reglement || 'Virement bancaire';
-      document.getElementById('f-acompte').value = d.acompte_pct || 30;
-      document.getElementById('acompte-pct').textContent = d.acompte_pct || 30;
+      document.getElementById('f-acompte').value = (d.acompte_pct !== undefined && d.acompte_pct !== null) ? d.acompte_pct : 30;
+      document.getElementById('acompte-pct').textContent = (d.acompte_pct !== undefined && d.acompte_pct !== null) ? d.acompte_pct : 30;
       document.getElementById('f-infos-spec').value = d.infos_spec || '';
       
       let notes = d.notes_privees || '';
@@ -833,7 +832,8 @@
     // ══════════════════════════════════════════════
     function recalculer() {
       const reduc_globale = parseFloat(document.getElementById('f-reduc-globale')?.value) || 0;
-      const acompte_pct = parseFloat(document.getElementById('f-acompte')?.value) || 30;
+      const acompteVal = parseFloat(document.getElementById('f-acompte')?.value);
+      const acompte_pct = isNaN(acompteVal) ? 30 : acompteVal;
 
       const total_avant = lignes.filter(l => l.type === 'produit').reduce((s, l) => s + (l.total || 0), 0);
       const remise = Math.round(total_avant * reduc_globale / 100 * 100) / 100;
@@ -951,7 +951,8 @@
       const reduc_globale = parseFloat(document.getElementById('f-reduc-globale').value) || 0;
       const remise = Math.round(total_avant * reduc_globale / 100 * 100) / 100;
       const total_ht = Math.round((total_avant - remise) * 100) / 100;
-      const acompte_pct = parseFloat(document.getElementById('f-acompte').value) || 30;
+      const acompteVal = parseFloat(document.getElementById('f-acompte').value);
+      const acompte_pct = isNaN(acompteVal) ? 30 : acompteVal;
 
       const regime = document.getElementById('f-regime-fiscal').value;
       if (!regime) {

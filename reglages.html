@@ -475,7 +475,7 @@
 
       // Devis
       document.getElementById('s-taux-mo').value = d.taux_horaire_mo || 46;
-      document.getElementById('s-acompte').value = d.acompte_pct || 30;
+      document.getElementById('s-acompte').value = (d.acompte_pct !== undefined && d.acompte_pct !== null) ? d.acompte_pct : 30;
       document.getElementById('s-validite').value = d.validite_jours || 30;
       document.getElementById('s-lieu').value = e.lieu || 'Orléans';
       document.getElementById('s-prefix-devis').value = d.prefix_devis || 'D';
@@ -517,7 +517,10 @@
         devis: {
           ...cfg.devis,
           taux_horaire_mo: parseFloat(document.getElementById('s-taux-mo').value) || 46,
-          acompte_pct: parseFloat(document.getElementById('s-acompte').value) || 30,
+          acompte_pct: (() => {
+            const val = parseFloat(document.getElementById('s-acompte').value);
+            return isNaN(val) ? 30 : val;
+          })(),
           validite_jours: parseInt(document.getElementById('s-validite').value) || 30,
           prefix_devis: document.getElementById('s-prefix-devis').value.trim() || 'D',
           prefix_facture: document.getElementById('s-prefix-facture').value.trim() || 'F',
