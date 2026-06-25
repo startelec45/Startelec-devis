@@ -336,6 +336,11 @@ let editFactId   = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await renderFactures();
+  
+  const editId = getUrlParam('edit');
+  if (editId) {
+    editerFacture(editId);
+  }
 });
 
 // ══ RENDER ══

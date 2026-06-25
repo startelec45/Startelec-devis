@@ -904,25 +904,57 @@
         }
       }
 
-      // 2. Charger les devis (basés sur le nom du client)
-      const tousDevis = await DB.getDevis();
+      // 2. Charger les devis et les factures (basés sur le nom du client)
+      const [tousDevis, toutesFactures] = await Promise.all([
+        DB.getDevis(),
+        DB.getFactures()
+      ]);
+
       const devis = tousDevis.filter(d => d.client_id === currentClient.id || (currentClient.nom && d.client === currentClient.nom) || (currentClient.societe && d.client === currentClient.societe));
+      const factures = toutesFactures.filter(f => f.client_id === currentClient.id || (currentClient.nom && f.client === currentClient.nom) || (currentClient.societe && f.client === currentClient.societe));
+
+      // Fusionner et trier par date décroissante
+      const documents = [
+        ...devis.map(d => ({ ...d, docType: 'devis' })),
+        ...factures.map(f => ({ ...f, docType: 'facture' }))
+      ].sort((a, b) => new Date(b.date || b.created_at) - new Date(a.date || a.created_at));
 
       const docsContainer = document.getElementById('docs-container');
 
-      if (!devis.length) {
+      if (!documents.length) {
         docsContainer.innerHTML = '<div style="grid-column:1/-1;color:var(--text-muted);font-style:italic">Aucun document validé pour le moment.</div>';
       } else {
-        docsContainer.innerHTML = devis.map(d => `
-        <a href="voir.html?id=${d.id}" target="_blank" class="doc-card">
-          <div class="doc-icon"><i class="ti ti-file-invoice"></i></div>
-          <div class="doc-info">
-            <div class="doc-type">Devis ${d.statut === 'Accepté' ? '<span style="color:#10b981">(Accepté)</span>' : ''}</div>
-            <div class="doc-num">${d.numero}</div>
-          </div>
-          <div class="doc-montant">${fmt(d.montant_ht)}</div>
-        </a>
-      `).join('');
+        docsContainer.innerHTML = documents.map(doc => {
+          if (doc.docType === 'devis') {
+            return `
+            <a href="voir.html?id=${doc.id}" target="_blank" class="doc-card">
+              <div class="doc-icon"><i class="ti ti-file-text"></i></div>
+              <div class="doc-info">
+                <div class="doc-type">Devis ${doc.statut === 'Accepté' ? '<span style="color:#10b981">(Accepté)</span>' : ''}</div>
+                <div class="doc-num">${doc.numero}</div>
+              </div>
+              <div class="doc-montant">${fmt(doc.montant_ht)}</div>
+            </a>
+          `;
+          } else {
+            let badgeReglement = '';
+            if (doc.statut === 'Payé') {
+              badgeReglement = '<span style="color:#10b981">(Payée)</span>';
+            } else if (doc.statut === 'Envoyé') {
+              badgeReglement = '<span style="color:#3b82f6">(Envoyée)</span>';
+            }
+            return `
+            <a href="voir-facture.html?id=${doc.id}" target="_blank" class="doc-card" style="border-left: 4px solid #ef4444;">
+              <div class="doc-icon"><i class="ti ti-file-invoice" style="color:#ef4444"></i></div>
+              <div class="doc-info">
+                <div class="doc-type">${doc.type || 'Facture'} ${badgeReglement}</div>
+                <div class="doc-num">${doc.numero}</div>
+              </div>
+              <div class="doc-montant">${fmt(doc.montant_ht || doc.montant)}</div>
+            </a>
+          `;
+          }
+        }).join('');
       }
     }
 

@@ -139,6 +139,7 @@
 
     <!-- Barre d'actions -->
     <div class="action-bar">
+      <a class="btn btn-ghost btn-sm" id="btn-modifier" href="#"><i class="ti ti-edit"></i> Modifier</a>
       <button class="btn btn-ghost btn-sm" onclick="envoyerMail()"><i class="ti ti-mail"></i> Envoyer</button>
 
       <div class="dropdown">
@@ -201,6 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else {
     document.getElementById('topbar-num').textContent = facture.numero || '—';
     document.title = `StarElec — ${facture.numero || 'Facture'}`;
+    document.getElementById('btn-modifier').href = `factures.html?edit=${id}`;
 
     // Statut select
     const sel = document.getElementById('statut-select');
