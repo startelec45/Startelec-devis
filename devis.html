@@ -544,6 +544,7 @@
     // ══════════════════════════════════════════════
     // INIT
     // ══════════════════════════════════════════════
+    document.addEventListener('DOMContentLoaded', async () => {
       // Charger la config TVA
       const cfg = await DB.getConfig();
       tvaActive = cfg.devis?.tva_active || false;
