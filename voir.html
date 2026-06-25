@@ -626,19 +626,19 @@
       const acompte = Math.round(total_ht * acompte_pct / 100 * 100) / 100;
 
       const clientAdresse = [
-        d.client_adresse,
-        d.client_cp && d.client_ville ? `${d.client_cp} ${d.client_ville}` : (d.client_cp || d.client_ville),
-        d.client_pays !== 'France' ? d.client_pays : ''
+        escHtml(d.client_adresse),
+        d.client_cp && d.client_ville ? escHtml(`${d.client_cp} ${d.client_ville}`) : escHtml(d.client_cp || d.client_ville),
+        d.client_pays !== 'France' ? escHtml(d.client_pays) : ''
       ].filter(Boolean).join('<br/>');
 
       const lignesHTML = (d.lignes || []).map((l, i) => {
         if (l.type === 'soustotal') return `<tr><td colspan="4" style="font-weight:700;text-align:right;padding:6px 8px;background:#e8e8e8">Sous-total</td><td style="text-align:right;font-weight:700;padding:6px 8px;background:#e8e8e8">${fmt(l.total || 0)}</td></tr>`;
-        if (l.type === 'texte') return `<tr><td colspan="5" style="padding:6px 8px;color:#444;font-style:italic">${l.designation || ''}</td></tr>`;
+        if (l.type === 'texte') return `<tr><td colspan="5" style="padding:6px 8px;color:#444;font-style:italic">${escHtml(l.designation || '')}</td></tr>`;
         return `<tr>
       <td style="width:30px;text-align:center;color:#666">${i + 1}</td>
       <td>
-        <strong>${l.designation || ''}</strong>
-        ${l.description ? `<div class="td-desc">${l.description}</div>` : ''}
+        <strong>${escHtml(l.designation || '')}</strong>
+        ${l.description ? `<div class="td-desc">${escHtml(l.description)}</div>` : ''}
       </td>
       <td style="text-align:center;width:50px">${l.qte || ''}</td>
       <td style="text-align:right;width:80px">${fmt(l.pu || 0)}</td>
@@ -873,6 +873,16 @@
     function getBadgeClass(s) {
       const m = { 'Créé': 'badge-cree', 'Envoyé': 'badge-envoye', 'Accepté': 'badge-accepte', 'Rejeté': 'badge-rejete', 'Payé': 'badge-paye', 'Payé en partie': 'badge-partiel', 'Annulé': 'badge-annule' };
       return m[s] || 'badge-cree';
+    }
+
+    function escHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
   </script>
 
