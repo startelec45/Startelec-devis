@@ -868,7 +868,7 @@ async function sauvegarderFacture(genPDF = false) {
     await renderFactures();
   } catch (err) {
     console.error('Erreur sauvegarde facture:', err);
-    toast('Erreur lors de la sauvegarde', 'error');
+    toast('Erreur lors de la sauvegarde : ' + (err.message || err), 'error');
   }
 }
 

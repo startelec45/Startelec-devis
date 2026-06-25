@@ -1138,14 +1138,34 @@
     async function facturer() {
       if (!devisId) { toast('Sauvegardez d\'abord le devis', 'error'); return; }
       if (!confirm('Convertir ce devis en facture (solde total) ?')) return;
-      const f = await creerFactureDepuisDevis(devisId, 'solde');
-      if (f) window.location.href = `factures.html`;
+      try {
+        const f = await creerFactureDepuisDevis(devisId, 'solde');
+        if (f) {
+          toast(`Facture ${f.numero} créée`, 'success');
+          setTimeout(() => { window.location.href = `factures.html`; }, 1000);
+        } else {
+          toast('Impossible de créer la facture (devis introuvable).', 'error');
+        }
+      } catch (err) {
+        console.error('Erreur conversion facture:', err);
+        toast(`Erreur : ${err.message || err}`, 'error');
+      }
     }
 
     async function creerAcompte() {
       if (!devisId) { sauvegarder(); return; }
-      const f = await creerFactureDepuisDevis(devisId, 'acompte');
-      if (f) { toast(`Facture d'acompte ${f.numero} créée`, 'success'); window.location.href = 'factures.html'; }
+      try {
+        const f = await creerFactureDepuisDevis(devisId, 'acompte');
+        if (f) {
+          toast(`Facture d'acompte ${f.numero} créée`, 'success');
+          setTimeout(() => { window.location.href = 'factures.html'; }, 1000);
+        } else {
+          toast("Impossible de créer la facture d'acompte (devis introuvable).", 'error');
+        }
+      } catch (err) {
+        console.error('Erreur création acompte:', err);
+        toast(`Erreur : ${err.message || err}`, 'error');
+      }
       closeAllDropdowns();
     }
 
