@@ -83,6 +83,17 @@
 
     <div class="page-content">
 
+      <!-- Bannière des suggestions clients (si non lues) -->
+      <div id="suggestions-alert-banner" style="display:none; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <i class="ti ti-bulb" style="color: #f59e0b; font-size: 24px;"></i>
+          <span style="font-size: 14px; color: var(--texte-sec); font-weight: 500;">
+            Vous avez <strong id="unread-suggestions-count" style="color:#f59e0b">0</strong> nouvelle(s) suggestion(s) d'amélioration de la part de vos clients.
+          </span>
+        </div>
+        <button class="btn btn-sm btn-ghost" onclick="openSuggestionsModal()" style="color:#f59e0b; border:1px solid rgba(245,158,11,0.3); padding:6px 12px; font-size:12px; cursor:pointer;">Voir les suggestions</button>
+      </div>
+
       <div class="stats-grid" id="stats-grid">
         <div class="stat-card accent">
           <div class="stat-card-label">Devis ce mois</div>
@@ -193,6 +204,9 @@ async function renderDashboard() {
 
   // Récupération asynchrone des devis depuis Supabase
   allDevis = await DB.getDevis();
+
+  // Charger les suggestions clients
+  await chargerSuggestions();
 
   // Badge sidebar
   document.getElementById('badge-total').textContent = allDevis.length;
@@ -395,7 +409,97 @@ function getBadgeClass(statut) {
 const styleEl = document.createElement('style');
 styleEl.textContent = '@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }';
 document.head.appendChild(styleEl);
+
+// ── GESTION DES SUGGESTIONS CLIENTS ──
+let allSuggestions = [];
+
+async function chargerSuggestions() {
+  try {
+    allSuggestions = await DB.getSuggestions();
+    const unread = allSuggestions.filter(s => !s.lu);
+    const banner = document.getElementById('suggestions-alert-banner');
+    
+    if (unread.length > 0) {
+      document.getElementById('unread-suggestions-count').textContent = unread.length;
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  } catch (e) {
+    console.error('Erreur chargerSuggestions:', e);
+  }
+}
+
+function openSuggestionsModal() {
+  const modal = document.getElementById('admin-suggestions-modal');
+  modal.style.display = 'flex';
+  renderSuggestionsList();
+}
+
+function closeSuggestionsModal() {
+  document.getElementById('admin-suggestions-modal').style.display = 'none';
+  chargerSuggestions();
+}
+
+function renderSuggestionsList() {
+  const container = document.getElementById('suggestions-list-container');
+  if (!allSuggestions.length) {
+    container.innerHTML = '<div style="text-align:center; color:#64748b; padding:20px; font-style:italic">Aucune suggestion pour le moment.</div>';
+    return;
+  }
+  
+  container.innerHTML = allSuggestions.map(s => `
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px; position:relative; text-align:left; ${!s.lu ? 'border-left: 4px solid #f59e0b;' : ''}">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <strong style="font-size:14px; color:#1e293b;">${escHtml(s.client_nom)}</strong>
+        <span style="font-size:11px; color:#64748b;">${new Date(s.created_at).toLocaleString('fr-FR')}</span>
+      </div>
+      <p style="margin:0 0 10px 0; font-size:13px; color:#334155; line-height:1.4;">${escHtml(s.suggestion)}</p>
+      ${!s.lu ? `
+        <button class="btn btn-sm" onclick="markAsRead('${s.id}')" style="font-size:11px; padding:4px 8px; color:#f59e0b; border:1px solid rgba(245,158,11,0.3); background:none; cursor:pointer;">
+          <i class="ti ti-check"></i> Marquer comme lu
+        </button>
+      ` : '<span style="font-size:11px; color:#10b981; font-weight:600;"><i class="ti ti-checks"></i> Lu</span>'}
+    </div>
+  `).join('');
+}
+
+async function markAsRead(id) {
+  try {
+    await DB.markSuggestionRead(id);
+    const s = allSuggestions.find(x => x.id === id);
+    if (s) s.lu = true;
+    renderSuggestionsList();
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 </script>
 
+  <!-- Modal Admin Suggestions -->
+  <div id="admin-suggestions-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#fff; color:#1e293b; border-radius:16px; max-width:600px; width:100%; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.15); position:relative; max-height:80vh; display:flex; flex-direction:column;">
+      <button onclick="closeSuggestionsModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#64748b; cursor:pointer; font-size:20px;"><i class="ti ti-x"></i></button>
+      <h3 style="margin-top:0; margin-bottom:16px; font-size:18px; font-weight:600; display:flex; align-items:center; gap:8px;">
+        <i class="ti ti-bulb" style="color:#f59e0b"></i> Suggestions d'améliorations clients
+      </h3>
+      <div id="suggestions-list-container" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding-right:4px;">
+        <!-- Rendu dynamique -->
+      </div>
+      <div style="text-align:right;">
+        <button class="btn btn-secondary btn-sm" onclick="closeSuggestionsModal()" style="cursor:pointer; padding:6px 12px; font-size:12px;">Fermer</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

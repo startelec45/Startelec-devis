@@ -439,6 +439,19 @@ const DB = {
       }
     } catch (e) { console.error('deleteFacture:', e); throw e; }
   },
+
+  // ── SUGGESTIONS CLIENTS ──
+  async getSuggestions() {
+    try {
+      return await SB.select('suggestions_client', '?order=created_at.desc');
+    } catch (e) { return []; }
+  },
+
+  async markSuggestionRead(id) {
+    try {
+      await SB.update('suggestions_client', id, { lu: true });
+    } catch (e) { console.error('markSuggestionRead:', e); }
+  },
 };
 
 // ══════════════════════════════════════════════

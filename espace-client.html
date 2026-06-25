@@ -738,6 +738,21 @@
       </div>
     </div>
 
+    <!-- Suggestion d'amélioration -->
+    <div class="suggestion-banner fade-in delay-1" id="page-suggestion-box" style="background: rgba(59, 130, 246, 0.05); border: 1px dashed rgba(59, 130, 246, 0.2); border-radius: 16px; padding: 20px; margin-bottom: 30px;">
+      <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+        <i class="ti ti-bulb" style="color: #3b82f6; font-size: 22px; flex-shrink: 0; margin-top: 2px;"></i>
+        <div>
+          <strong style="color: #fff; font-size: 15px;">Une idée ou une fonctionnalité manquante dans cet espace ?</strong> 
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 300;">Dites-nous ce qui vous changerait la vie ! Nous l'ajouterons pour vous.</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <input type="text" id="page-feedback-text" placeholder="Ex: Pouvoir signer en ligne, voir les photos de l'avancement..." style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 14px; outline: none;" />
+        <button class="btn btn-primary" onclick="submitFeedbackFromPage()" style="padding: 10px 16px; font-size: 14px; background: #3b82f6; border: none; cursor:pointer;">Envoyer</button>
+      </div>
+    </div>
+
     <h2 class="section-title fade-in delay-1" id="titre-chantiers"><i class="ti ti-activity-heartbeat"></i> Vos
       Chantiers en cours</h2>
 
@@ -853,6 +868,7 @@
           }
 
           await chargerDonneesClient();
+          checkSuggestionModal();
         } else {
           localStorage.removeItem('se_client_token');
           document.getElementById('login-view').style.display = 'block';
@@ -1072,11 +1088,106 @@
       document.getElementById('titre-chantiers').style.display = 'flex';
     }
 
+    // ── GESTION DES SUGGESTIONS CLIENTS ──
+    async function submitFeedbackFromPage() {
+      const text = document.getElementById('page-feedback-text').value.trim();
+      if (!text) return;
+      
+      const token = localStorage.getItem('se_client_token');
+      try {
+        await SB.query('rpc/add_client_suggestion', 'POST', { client_token: token, text_suggestion: text });
+        localStorage.setItem('se_client_feedback_answered', 'true');
+        document.getElementById('page-feedback-text').value = '';
+        
+        document.getElementById('page-suggestion-box').innerHTML = `
+          <div style="display:flex; align-items:center; gap:12px; color:#10b981; font-size:14px;">
+            <i class="ti ti-check" style="font-size:22px;"></i>
+            <strong>Merci pour votre suggestion ! Nous l'étudions avec attention.</strong>
+          </div>
+        `;
+      } catch (e) {
+        console.error(e);
+        alert('Erreur lors de l\'envoi.');
+      }
+    }
+
+    function checkSuggestionModal() {
+      const answered = localStorage.getItem('se_client_feedback_answered') === 'true';
+      if (answered) return;
+
+      let visits = parseInt(localStorage.getItem('se_client_visits')) || 0;
+      visits++;
+      localStorage.setItem('se_client_visits', visits);
+
+      if (visits >= 2) {
+        setTimeout(() => {
+          const modal = document.getElementById('suggestion-modal');
+          if (modal) {
+            modal.style.display = 'flex';
+          }
+        }, 1500);
+      }
+    }
+
+    function closeSuggestionModal(saveDecision = false) {
+      document.getElementById('suggestion-modal').style.display = 'none';
+      if (saveDecision) {
+        localStorage.setItem('se_client_feedback_answered', 'true');
+      }
+    }
+
+    async function submitFeedbackFromModal() {
+      const text = document.getElementById('modal-feedback-text').value.trim();
+      if (!text) return;
+
+      const token = localStorage.getItem('se_client_token');
+      try {
+        await SB.query('rpc/add_client_suggestion', 'POST', { client_token: token, text_suggestion: text });
+        closeSuggestionModal(true);
+        
+        const box = document.getElementById('page-suggestion-box');
+        if (box) {
+          box.innerHTML = `
+            <div style="display:flex; align-items:center; gap:12px; color:#10b981; font-size:14px;">
+              <i class="ti ti-check" style="font-size:22px;"></i>
+              <strong>Merci pour votre suggestion ! Nous l'étudions avec attention.</strong>
+            </div>
+          `;
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Erreur lors de l\'envoi.');
+      }
+    }
+
+    function declineFeedbackFromModal() {
+      closeSuggestionModal(true);
+    }
+
     function fmt(n) {
       if (isNaN(n) || n === null) return '0,00 €';
       return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n);
     }
   </script>
+
+  <!-- Modal de suggestion client -->
+  <div id="suggestion-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%); border:1px solid rgba(255, 255, 255, 0.1); border-radius:24px; max-width:480px; width:100%; padding:32px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.8); position:relative;" class="fade-in">
+      <button onclick="closeSuggestionModal(false)" style="position:absolute; top:20px; right:20px; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:20px;"><i class="ti ti-x"></i></button>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <div style="width:40px; height:40px; border-radius:50%; background:rgba(59, 130, 246, 0.1); color:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:22px;"><i class="ti ti-bulb"></i></div>
+        <h3 style="margin:0; color:#fff; font-size:20px; font-weight:700;">Votre avis nous intéresse !</h3>
+      </div>
+      <p style="color:#cbd5e1; font-size:14px; line-height:1.5; margin-bottom:20px; font-weight:300;">
+        Pourriez-vous nous aider à améliorer votre espace client ? Y a-t-il une fonctionnalité ou une information manquante que vous aimeriez y trouver ?
+      </p>
+      <textarea id="modal-feedback-text" placeholder="Écrivez votre suggestion ici..." style="width:100%; height:100px; background:rgba(0,0,0,0.2); border:1px solid var(--border-glass); border-radius:12px; padding:12px; color:#fff; font-family:inherit; font-size:14px; resize:none; outline:none; margin-bottom:20px; box-sizing:border-box;"></textarea>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="btn btn-primary" onclick="submitFeedbackFromModal()" style="width:100%; padding:12px; font-size:14px; background:var(--grad-primary); border:none; cursor:pointer;">Envoyer ma suggestion</button>
+        <button class="btn btn-ghost" onclick="declineFeedbackFromModal()" style="width:100%; padding:12px; font-size:14px; color:var(--text-muted); cursor:pointer;">Non, aucune amélioration</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
