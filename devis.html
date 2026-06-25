@@ -1135,16 +1135,16 @@
       closeAllDropdowns();
     }
 
-    function facturer() {
+    async function facturer() {
       if (!devisId) { toast('Sauvegardez d\'abord le devis', 'error'); return; }
       if (!confirm('Convertir ce devis en facture (solde total) ?')) return;
-      const f = creerFactureDepuisDevis(devisId, 'solde');
+      const f = await creerFactureDepuisDevis(devisId, 'solde');
       if (f) window.location.href = `factures.html`;
     }
 
-    function creerAcompte() {
+    async function creerAcompte() {
       if (!devisId) { sauvegarder(); return; }
-      const f = creerFactureDepuisDevis(devisId, 'acompte');
+      const f = await creerFactureDepuisDevis(devisId, 'acompte');
       if (f) { toast(`Facture d'acompte ${f.numero} créée`, 'success'); window.location.href = 'factures.html'; }
       closeAllDropdowns();
     }
