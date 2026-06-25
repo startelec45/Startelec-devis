@@ -187,14 +187,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   factureId = id;
 
-  // Chargement en parallèle depuis Supabase
-  const [allFact, cfgFull] = await Promise.all([DB.getFactures(), DB.getConfig()]);
-  facture = allFact.find(f => f.id === id) || null;
-  cfg     = cfgFull.entreprise;
+  const isAuth = localStorage.getItem('se_admin_auth') === 'true';
+  let cfgFull;
+
+  if (isAuth) {
+    // Chargement en parallèle depuis Supabase pour l'admin
+    const [allFact, cfgRes] = await Promise.all([DB.getFactures(), DB.getConfig()]);
+    facture = allFact.find(f => f.id === id) || null;
+    cfgFull = cfgRes;
+  } else {
+    // Mode client public : charger uniquement cette facture si elle correspond au token client
+    const clientToken = localStorage.getItem('se_client_token');
+    const promises = [DB.getConfig()];
+    if (clientToken) {
+      promises.push(SB.query('rpc/get_factures_by_token', 'POST', { client_token: clientToken }));
+    }
+    const results = await Promise.all(promises);
+    cfgFull = results[0];
+    const clientFacturesList = results[1] || [];
+    facture = clientFacturesList.find(f => f.id === id) || null;
+  }
+  cfg = cfgFull.entreprise;
 
   if (!facture) { toast('Facture introuvable', 'error'); return; }
 
-  const isAuth = localStorage.getItem('se_admin_auth') === 'true';
   if (!isAuth) {
     const btnBar = document.createElement('div');
     btnBar.innerHTML = '<div style="padding:20px;text-align:center;background:#fff;border-bottom:1px solid var(--border);margin-bottom:20px"><button class="btn btn-primary" onclick="telechargerPDFClient()"><i class="ti ti-download"></i> Télécharger la facture</button></div>';

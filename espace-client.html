@@ -860,7 +860,10 @@
         }
       } catch (e) {
         console.error(e);
-        document.getElementById('login-view').innerHTML = '<h3 style="color:#ef4444">Erreur de connexion</h3><p style="color:var(--text-muted)">Impossible de se connecter au serveur sécurisé.</p>';
+        document.getElementById('client-header').style.display = 'none';
+        document.getElementById('main-view').style.display = 'none';
+        document.getElementById('login-view').style.display = 'block';
+        document.getElementById('login-view').innerHTML = '<h3 style="color:#ef4444">Erreur de connexion</h3><p style="color:var(--text-muted)">Impossible de se connecter au serveur sécurisé.</p><button class="btn btn-primary" style="margin-top:20px" onclick="window.location.reload()">Réessayer</button>';
       }
     }
 
@@ -877,8 +880,8 @@
         let summaryHtml = '';
 
         for (const chantier of chantiers) {
-          const taches = await DB.getTachesByChantier(chantier.id);
-          const tsList = await DB.getTravauxSuppByChantier(chantier.id);
+          const taches = await SB.query('rpc/get_taches_by_token', 'POST', { client_token: token, target_chantier_id: chantier.id });
+          const tsList = await SB.query('rpc/get_travaux_supp_by_token', 'POST', { client_token: token, target_chantier_id: chantier.id });
 
           let avancementTotal = 0;
           if (taches.length > 0) {

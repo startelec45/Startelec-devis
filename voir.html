@@ -554,14 +554,28 @@
       if (!id) { window.location.href = 'index.html'; return; }
 
       devisId = id;
-      devis = await DB.getDevisById(id);
-      const devisList = await DB.getDevis();
-      allIds = devisList.map(d => d.id);
+      
+      const isAuth = localStorage.getItem('se_admin_auth') === 'true';
+      if (isAuth) {
+        devis = await DB.getDevisById(id);
+        const devisList = await DB.getDevis();
+        allIds = devisList.map(d => d.id);
+      } else {
+        const clientToken = localStorage.getItem('se_client_token');
+        if (clientToken) {
+          try {
+            const clientDevisList = await SB.query('rpc/get_devis_by_token', 'POST', { client_token: clientToken });
+            devis = clientDevisList.find(d => d.id === id) || null;
+            allIds = [id];
+          } catch(e) {
+            console.error('Erreur chargement devis par token:', e);
+          }
+        }
+      }
 
       if (!devis) { toast('Devis introuvable', 'error'); return; }
 
       // ── SÉCURITÉ & VUE CLIENT PUBLIC ──
-      const isAuth = localStorage.getItem('se_admin_auth') === 'true';
       if (!isAuth) {
         // On ajoute un bouton simple pour télécharger le PDF
         const btnBar = document.createElement('div');
