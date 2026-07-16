@@ -575,6 +575,12 @@
         document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
         document.getElementById('f-date-add').value = addDays(new Date(), 30);
         ajouterLigne(); // Une ligne vide au départ
+
+        const clientParam = getUrlParam('client');
+        if (clientParam) {
+          const c = await DB.getClientById(clientParam);
+          if (c) remplirClient(c);
+        }
       }
 
       await afficherVendeur();
