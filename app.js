@@ -440,6 +440,20 @@ const DB = {
     } catch (e) { console.error('deleteFacture:', e); throw e; }
   },
 
+  async updateDevisChantier(id, chantier_id) {
+    try {
+      const res = await SB.update('devis', id, { chantier_id });
+      return res[0];
+    } catch (e) { console.error('updateDevisChantier:', e); throw e; }
+  },
+
+  async updateFactureChantier(id, chantier_id) {
+    try {
+      const res = await SB.update('factures', id, { chantier_id });
+      return res[0];
+    } catch (e) { console.error('updateFactureChantier:', e); throw e; }
+  },
+
   // ── SUGGESTIONS CLIENTS ──
   async getSuggestions() {
     try {

@@ -241,6 +241,22 @@
           </div>
         </div>
 
+        <!-- Section Documents Associés -->
+        <div class="taches-container" style="margin-top:24px">
+          <div class="taches-header" style="background:#f0f9ff">
+            <div class="taches-title" style="color:#0369a1"><i class="ti ti-file-text"></i> Documents Associés (Devis & Factures)</div>
+            <button class="btn btn-secondary btn-sm" onclick="ouvrirModalAssocierDoc()"
+              style="background:#0284c7;color:#fff;border:none">
+              <i class="ti ti-link"></i> Associer un document
+            </button>
+          </div>
+          <div id="docs-list">
+            <div style="padding:40px;text-align:center;color:var(--texte-sec)">
+              <i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -306,7 +322,26 @@
       </div>
     </div>
   </div>
+  <!-- Modal Associer Document -->
+  <div class="modal-overlay" id="modal-associer-doc">
+    <div class="modal" style="max-width: 600px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+        <div style="font-size:18px;font-weight:600">Associer un devis ou une facture</div>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModalDoc()"><i class="ti ti-x"></i></button>
+      </div>
+      <p style="color:var(--texte-sec); font-size:14px; margin-bottom:16px;">Sélectionnez les documents de ce client que vous souhaitez lier au chantier.</p>
+      
+      <div id="docs-a-associer-list" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px;">
+        <div style="padding:40px;text-align:center;color:var(--texte-sec)">
+          <i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i>
+        </div>
+      </div>
 
+      <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px">
+        <button class="btn btn-ghost" onclick="fermerModalDoc()">Fermer</button>
+      </div>
+    </div>
+  </div>
   <div class="toast-container" id="toasts"></div>
 
   <script src="app.js"></script>
@@ -336,6 +371,7 @@
       document.getElementById('page-content').style.display = 'block';
       await chargerTaches();
       await chargerTS();
+      await chargerDocsAssocies();
     }
 
     async function changerStatutChantier(statut) {
@@ -598,8 +634,143 @@
     }
 
     function fermerModal() {
-      document.getElementById('modal-tache').classList.remove('open');
-      document.getElementById('modal-ts').classList.remove('open');
+      document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('open'));
+    }
+
+    function fermerModalDoc() {
+      document.getElementById('modal-associer-doc').classList.remove('open');
+    }
+
+    function fmt(n) {
+      if (isNaN(n) || n === null) return '0,00 €';
+      return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n);
+    }
+
+    let tousDevis = [];
+    let toutesFactures = [];
+
+    async function chargerDocsAssocies() {
+      tousDevis = await DB.getDevis();
+      toutesFactures = await DB.getFactures();
+
+      const devisChantier = tousDevis.filter(d => d.chantier_id === chantierId);
+      const facturesChantier = toutesFactures.filter(f => f.chantier_id === chantierId);
+
+      const list = document.getElementById('docs-list');
+      if (!devisChantier.length && !facturesChantier.length) {
+        list.innerHTML = `
+        <div style="padding:40px;text-align:center;color:var(--texte-sec)">
+          <i class="ti ti-link" style="font-size:32px;display:block;margin-bottom:12px"></i>
+          Aucun document associé. Cliquez sur "Associer un document" pour lier des devis ou factures à ce chantier.
+        </div>`;
+        return;
+      }
+
+      let html = '';
+      devisChantier.forEach(d => {
+        html += `
+        <div class="tache-row" style="background:#f8fafc">
+          <div class="t-info">
+            <div class="t-cat" style="color:#0ea5e9"><i class="ti ti-file-text"></i> Devis ${d.numero}</div>
+            <div class="t-desc" style="font-size:13px;color:#64748b">${d.objet || 'Sans objet'} - ${fmt(d.montant_ttc || d.montant_ht)}</div>
+          </div>
+          <div style="width:120px;text-align:right">
+            <span style="font-size:12px;font-weight:600;padding:4px 8px;border-radius:4px;color:#fff;background:${d.statut === 'Accepté' ? '#10b981' : '#64748b'}">${d.statut || 'Créé'}</span>
+          </div>
+          <div class="t-actions" style="margin-left:20px">
+             <button class="btn btn-ghost btn-icon btn-sm" onclick="window.open('voir.html?id=${d.id}', '_blank')"><i class="ti ti-eye"></i></button>
+             <button class="btn btn-ghost btn-icon btn-sm" style="color:#e74c3c" onclick="dissocierDoc('devis', '${d.id}')" title="Dissocier"><i class="ti ti-unlink"></i></button>
+          </div>
+        </div>`;
+      });
+      facturesChantier.forEach(f => {
+        html += `
+        <div class="tache-row" style="background:#fef2f2">
+          <div class="t-info">
+            <div class="t-cat" style="color:#ef4444"><i class="ti ti-file-invoice"></i> Facture ${f.numero}</div>
+            <div class="t-desc" style="font-size:13px;color:#64748b">${f.objet || 'Sans objet'} - ${fmt(f.montant_ttc || f.montant_ht || f.montant)}</div>
+          </div>
+          <div style="width:120px;text-align:right">
+            <span style="font-size:12px;font-weight:600;padding:4px 8px;border-radius:4px;color:#fff;background:${f.statut === 'Payé' ? '#10b981' : '#ef4444'}">${f.statut || 'Créée'}</span>
+          </div>
+          <div class="t-actions" style="margin-left:20px">
+             <button class="btn btn-ghost btn-icon btn-sm" onclick="window.open('voir-facture.html?id=${f.id}', '_blank')"><i class="ti ti-eye"></i></button>
+             <button class="btn btn-ghost btn-icon btn-sm" style="color:#e74c3c" onclick="dissocierDoc('facture', '${f.id}')" title="Dissocier"><i class="ti ti-unlink"></i></button>
+          </div>
+        </div>`;
+      });
+      list.innerHTML = html;
+    }
+
+    async function ouvrirModalAssocierDoc() {
+      document.getElementById('modal-associer-doc').classList.add('open');
+      const list = document.getElementById('docs-a-associer-list');
+      list.innerHTML = '<div style="padding:40px;text-align:center;color:var(--texte-sec)"><i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i></div>';
+
+      const c = await DB.getClientById(chantier.client_id);
+      if (!c) {
+        list.innerHTML = 'Erreur client.';
+        return;
+      }
+      
+      const clientNom = c.type === 'Professionnel' ? (c.societe || c.nom) : [c.civilite, c.prenom, c.nom_famille || c.nom].filter(Boolean).join(' ').trim();
+      
+      const devisClient = tousDevis.filter(d => 
+        (d.client === clientNom || (d.client_societe && d.client_societe === c.societe)) && 
+        d.chantier_id !== chantierId
+      );
+      const facturesClient = toutesFactures.filter(f => 
+        (f.client === clientNom || (f.client_societe && f.client_societe === c.societe)) && 
+        f.chantier_id !== chantierId
+      );
+
+      if (!devisClient.length && !facturesClient.length) {
+        list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--texte-sec)">Aucun autre document disponible pour ce client.</div>';
+        return;
+      }
+
+      let html = '';
+      devisClient.forEach(d => {
+        html += \`
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-weight:600; font-size:14px; color:#0ea5e9"><i class="ti ti-file-text"></i> Devis \${d.numero}</div>
+            <div style="font-size:12px; color:var(--texte-sec)">\${d.objet || 'Sans objet'} - \${fmt(d.montant_ttc || d.montant_ht)}</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="associerDoc('devis', '\${d.id}')">Lier</button>
+        </div>\`;
+      });
+      facturesClient.forEach(f => {
+        html += \`
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-weight:600; font-size:14px; color:#ef4444"><i class="ti ti-file-invoice"></i> Facture \${f.numero}</div>
+            <div style="font-size:12px; color:var(--texte-sec)">\${f.objet || 'Sans objet'} - \${fmt(f.montant_ttc || f.montant_ht || f.montant)}</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="associerDoc('facture', '\${f.id}')">Lier</button>
+        </div>\`;
+      });
+      list.innerHTML = html;
+    }
+
+    async function associerDoc(type, id) {
+      toast('Association...', 'info');
+      if (type === 'devis') await DB.updateDevisChantier(id, chantierId);
+      else await DB.updateFactureChantier(id, chantierId);
+      
+      toast('Document associé', 'success');
+      await chargerDocsAssocies();
+      ouvrirModalAssocierDoc();
+    }
+
+    async function dissocierDoc(type, id) {
+      if (!confirm('Voulez-vous dissocier ce document du chantier ?')) return;
+      toast('Dissociation...', 'info');
+      if (type === 'devis') await DB.updateDevisChantier(id, null);
+      else await DB.updateFactureChantier(id, null);
+      
+      toast('Document dissocié', 'success');
+      await chargerDocsAssocies();
     }
   </script>
 
