@@ -8,6 +8,14 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body.hide-amounts .stat-card-value { filter: blur(6px); opacity: 0.7; transition: filter 0.3s ease; }
+    body.hide-amounts .stat-card-sub { filter: blur(4px); opacity: 0.7; transition: filter 0.3s ease; }
+    body.hide-amounts #footer-ht, body.hide-amounts #footer-ttc, body.hide-amounts #footer-reste { filter: blur(5px); opacity: 0.7; transition: filter 0.3s ease; }
+    body.hide-amounts .data-table td:nth-child(3), body.hide-amounts .data-table td:nth-child(4), body.hide-amounts .data-table td:nth-child(10) { filter: blur(5px); opacity: 0.8; transition: filter 0.3s ease; }
+    
+    .stat-card-value, .stat-card-sub, #footer-ht, #footer-ttc, #footer-reste, .data-table td { transition: filter 0.3s ease; }
+  </style>
 </head>
 <body>
 
@@ -67,8 +75,11 @@
   <div class="main-content">
 
     <div class="topbar">
-      <div class="topbar-left">
-        <h1 class="topbar-title">Dashboard</h1>
+      <div class="topbar-left" style="display:flex; align-items:center; gap: 16px;">
+        <h1 class="topbar-title" style="margin:0;">Dashboard</h1>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="toggleAmounts()" id="btn-toggle-amounts" title="Masquer/Afficher les montants">
+          <i class="ti ti-eye"></i>
+        </button>
       </div>
       <div class="topbar-right">
         <div class="search-input-wrap">
@@ -192,7 +203,27 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDashboard();
   setupFilters();
   setupSearch();
+  
+  // Restaurer l'état du mode confidentiel si enregistré
+  if (localStorage.getItem('se_hide_amounts') === 'true') {
+    document.body.classList.add('hide-amounts');
+    const btn = document.getElementById('btn-toggle-amounts');
+    if (btn) btn.innerHTML = '<i class="ti ti-eye-off"></i>';
+  }
 });
+
+function toggleAmounts() {
+  const isHidden = document.body.classList.toggle('hide-amounts');
+  const btn = document.getElementById('btn-toggle-amounts');
+  
+  if (isHidden) {
+    btn.innerHTML = '<i class="ti ti-eye-off"></i>';
+    localStorage.setItem('se_hide_amounts', 'true');
+  } else {
+    btn.innerHTML = '<i class="ti ti-eye"></i>';
+    localStorage.setItem('se_hide_amounts', 'false');
+  }
+}
 
 let currentFilter = '';
 let currentSort   = { key: 'date', dir: -1 };
