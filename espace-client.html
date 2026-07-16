@@ -1074,31 +1074,31 @@
         <div class="docs-grid" style="margin-top:16px;">
           ${chantierDocs.map(doc => {
             if (doc.docType === 'devis') {
-              return \`
-              <a href="voir.html?id=\${doc.id}" target="_blank" class="doc-card" style="margin-bottom:0">
+              return `
+              <a href="voir.html?id=${doc.id}" target="_blank" class="doc-card" style="margin-bottom:0">
                 <div class="doc-icon"><i class="ti ti-file-text"></i></div>
                 <div class="doc-info">
-                  <div class="doc-type">Devis \${doc.statut === 'Accepté' ? '<span style="color:#10b981">(Accepté)</span>' : ''}</div>
-                  <div class="doc-num">\${doc.numero}</div>
+                  <div class="doc-type">Devis ${doc.statut === 'Accepté' ? '<span style="color:#10b981">(Accepté)</span>' : ''}</div>
+                  <div class="doc-num">${doc.numero}</div>
                 </div>
-                <div class="doc-montant">\${fmt(doc.montant_ht)}</div>
+                <div class="doc-montant">${fmt(doc.montant_ht)}</div>
               </a>
-              \`;
+              `;
             } else {
               let badgeReglement = '';
               if (doc.statut === 'Payé') badgeReglement = '<span style="color:#10b981">(Payée)</span>';
               else if (doc.statut === 'Envoyé') badgeReglement = '<span style="color:#3b82f6">(Envoyée)</span>';
               
-              return \`
-              <a href="voir-facture.html?id=\${doc.id}" target="_blank" class="doc-card" style="border-left: 4px solid #ef4444; margin-bottom:0">
+              return `
+              <a href="voir-facture.html?id=${doc.id}" target="_blank" class="doc-card" style="border-left: 4px solid #ef4444; margin-bottom:0">
                 <div class="doc-icon"><i class="ti ti-file-invoice" style="color:#ef4444"></i></div>
                 <div class="doc-info">
-                  <div class="doc-type">\${doc.type || 'Facture'} \${badgeReglement}</div>
-                  <div class="doc-num">\${doc.numero}</div>
+                  <div class="doc-type">${doc.type || 'Facture'} ${badgeReglement}</div>
+                  <div class="doc-num">${doc.numero}</div>
                 </div>
-                <div class="doc-montant">\${fmt(doc.montant_ht || doc.montant)}</div>
+                <div class="doc-montant">${fmt(doc.montant_ht || doc.montant)}</div>
               </a>
-              \`;
+              `;
             }
           }).join('')}
         </div>` : ''}
