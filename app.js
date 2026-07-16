@@ -29,6 +29,7 @@ const SB = {
     const url = `${SUPABASE_URL}/rest/v1/${table}${params}`;
     const opts = {
       method,
+      cache: 'no-store',
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${localStorage.getItem('sb_token') || SUPABASE_KEY}`,
