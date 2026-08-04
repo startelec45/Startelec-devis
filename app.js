@@ -5,11 +5,11 @@
 
 // ── SÉCURITÉ ADMIN ──
 // Vérifie si on est connecté, sauf sur les pages publiques
-(function() {
+(function () {
   const publicPages = ['login', 'espace-client', 'voir', 'voir-facture'];
   let currentPage = window.location.pathname.split('/').pop() || 'index';
   currentPage = currentPage.replace(/\.html$/, '');
-  
+
   if (!publicPages.includes(currentPage)) {
     const isAuth = localStorage.getItem('se_admin_auth');
     if (!isAuth) {
@@ -301,7 +301,7 @@ const DB = {
 
       while (currentWords.length > 0 && results.length === 0 && attempts < maxAttempts) {
         attempts++;
-        
+
         // On construit une requête où TOUS les mots restants doivent être présents (AND)
         // On cherche le mot soit dans la désignation, soit dans la catégorie, soit dans la description
         const andArray = currentWords.map(w => `or(designation.ilike.*${w}*,categorie.ilike.*${w}*,description.ilike.*${w}*)`);
@@ -377,7 +377,7 @@ const DB = {
     }
     try {
       await SB.query('catalogue', 'PATCH', { categorie: newName }, `?categorie=eq.${encodeURIComponent(oldName)}`);
-    } catch(e) { console.error('editCategorie catalogue update:', e); }
+    } catch (e) { console.error('editCategorie catalogue update:', e); }
   },
 
   async deleteCategorie(catName) {
@@ -430,9 +430,9 @@ const DB = {
     try {
       const allFact = await this.getFactures();
       const f = allFact.find(x => x.id === id);
-      
+
       await SB.delete('factures', id);
-      
+
       if (f && f.devis_id) {
         const factures = await this.getFacturesByDevis(f.devis_id);
         const total = factures.reduce((s, x) => s + (x.montant_ht || x.montant || 0), 0);
@@ -740,7 +740,7 @@ async function creerFactureDepuisDevis(devis_id, type = 'solde') {
     const acompte_pct = devis.acompte_pct !== undefined && devis.acompte_pct !== null ? devis.acompte_pct : (cfg.devis.acompte_pct || 30);
     montant_ht = Math.round(devis.montant_ht * (acompte_pct / 100) * 100) / 100;
     titre = `Facture d'acompte (${acompte_pct}%) — ${devis.numero}`;
-    
+
     // Determine VAT rate from devis lines or config
     let tvaRate = cfg.devis?.tva_taux_defaut || 20;
     const firstProductWithTva = (devis.lignes || []).find(l => (l.type === 'produit' || !l.type) && l.tva !== undefined);
@@ -762,7 +762,7 @@ async function creerFactureDepuisDevis(devis_id, type = 'solde') {
     montant_ttc = Math.round(montant_ht * (1 + tvaRate / 100) * 100) / 100;
   } else {
     titre = `Facture de solde — ${devis.numero}`;
-    
+
     // Import lines and apply line discounts & global discounts directly to line prices
     lines = (devis.lignes || []).map(l => {
       if (l.type === 'soustotal' || l.type === 'texte') {
@@ -790,8 +790,8 @@ async function creerFactureDepuisDevis(devis_id, type = 'solde') {
     // Find paid deposit invoices to deduct
     try {
       const factures = await DB.getFacturesByDevis(devis_id);
-      const acomptesPayes = factures.filter(f => 
-        (f.type === "Facture d'acompte" || f.titre?.includes("acompte")) && 
+      const acomptesPayes = factures.filter(f =>
+        (f.type === "Facture d'acompte" || f.titre?.includes("acompte")) &&
         f.statut === "Payé"
       );
 
@@ -841,7 +841,12 @@ async function creerFactureDepuisDevis(devis_id, type = 'solde') {
   return await DB.addFacture({
     numero, type: type === 'acompte' ? "Facture d'acompte" : 'Facture',
     titre, devis_id, devis_numero: devis.numero,
-    client: devis.client, client_adresse: devis.client_adresse,
+    client: devis.client,
+    client_adresse: [
+      devis.client_adresse,
+      [devis.client_cp, devis.client_ville].filter(Boolean).join(' '),
+      devis.client_pays && devis.client_pays !== 'France' ? devis.client_pays : ''
+    ].filter(Boolean).join('\n'),
     client_email: devis.client_email, client_tel: devis.client_tel,
     objet: devis.objet,
     lignes: lines,

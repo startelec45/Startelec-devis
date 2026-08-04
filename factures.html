@@ -595,7 +595,11 @@ async function remplirDepuisDevis() {
   if (!d) return;
 
   document.getElementById('mf-client').value  = d.client || '';
-  document.getElementById('mf-adresse').value = d.client_adresse || '';
+  document.getElementById('mf-adresse').value = [
+    d.client_adresse,
+    [d.client_cp, d.client_ville].filter(Boolean).join(' '),
+    d.client_pays && d.client_pays !== 'France' ? d.client_pays : ''
+  ].filter(Boolean).join('\n');
   document.getElementById('mf-email').value   = d.client_email || '';
   document.getElementById('mf-tel').value     = d.client_tel || '';
   document.getElementById('mf-objet').value   = d.objet || '';

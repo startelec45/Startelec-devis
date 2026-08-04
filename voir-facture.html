@@ -294,7 +294,7 @@ function renderPDF() {
 
   // Adresse client
   const clientAdresse = [
-    escHtml(f.client_adresse),
+    escHtml(f.client_adresse).replace(/\r?\n/g, '<br/>'),
     (f.client_cp || f.client_ville) ? escHtml(`${f.client_cp || ''} ${f.client_ville || ''}`.trim()) : '',
   ].filter(Boolean).join('<br/>');
 
