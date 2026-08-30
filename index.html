@@ -430,7 +430,14 @@ function renderTable(devis) {
       <td class="td-montant" data-label="Montant TTC">${fmt(d.montant_ttc||d.montant_ht||0)}</td>
       <td class="td-client" data-label="Client">${d.client||'—'}</td>
       <td class="td-sec" data-label="Date Création">${fmtDate(d.date)}</td>
-      <td class="td-sec" data-label="Date Paiement">${d.date_paiement ? fmtDate(d.date_paiement) : '—'}</td>
+      <td class="td-sec" data-label="Date Paiement" onclick="event.stopPropagation()">
+        <input type="date" value="${d.date_paiement ? d.date_paiement.split('T')[0] : ''}"
+          onchange="changerDatePaiement('${d.id}', this.value)"
+          title="Cliquer pour renseigner ou modifier la date de paiement"
+          style="border:1px solid transparent; background:transparent; font-size:12px; color:var(--texte-sec); cursor:pointer; font-family:inherit; padding:2px 4px; border-radius:4px; max-width:125px;"
+          onmouseover="this.style.borderColor='var(--border)'"
+          onmouseout="this.style.borderColor='transparent'" />
+      </td>
       <td class="td-produit" data-label="Produits" title="${lignes.map(l=>l.designation).join(', ')}">${produitApercu||'—'}</td>
       <td onclick="event.stopPropagation()" data-label="État">
         <select class="badge badge-select ${badgeClass}" onchange="changerStatut('${d.id}', this.value, this)">
@@ -488,15 +495,45 @@ function sortBy(key) {
 }
 
 async function changerStatut(id, statut, selectEl) {
-  // Appel async vers Supabase
-  await DB.updateStatut(id, statut);
+  const d = allDevis.find(x => x.id === id);
+  const updatePayload = { statut };
+
+  // Si on passe à Payé et qu'aucune date de paiement n'est enregistrée, mettre la date du jour
+  if (statut === 'Payé' && (!d || !d.date_paiement)) {
+    const today = new Date().toISOString().split('T')[0];
+    updatePayload.date_paiement = today;
+    if (d) d.date_paiement = today;
+  }
+
+  await DB.updateDevis(id, updatePayload);
   selectEl.className = `badge badge-select ${getBadgeClass(statut)}`;
-  
-  // Met à jour la ligne correspondante en mémoire locale pour éviter un rechargement complet
-  const d = allDevis.find(x=>x.id===id);
   if (d) d.statut = statut;
   
   toast(`Statut mis à jour : ${statut}`, 'success');
+  recalculerStatsPeriode();
+  renderTable(allDevis);
+}
+
+async function changerDatePaiement(id, newDate) {
+  try {
+    const d = allDevis.find(x => x.id === id);
+    const updatePayload = { date_paiement: newDate || null };
+    
+    // Si l'utilisateur saisit une date de paiement sur un devis non payé, proposer ou basculer en Payé
+    if (newDate && d && (d.statut === 'Créé' || d.statut === 'Envoyé' || d.statut === 'Accepté')) {
+      updatePayload.statut = 'Payé';
+      if (d) d.statut = 'Payé';
+    }
+
+    await DB.updateDevis(id, updatePayload);
+    if (d) d.date_paiement = newDate || null;
+    toast('Date de paiement enregistrée', 'success');
+    recalculerStatsPeriode();
+    renderTable(allDevis);
+  } catch (err) {
+    console.error('Erreur mise à jour date paiement:', err);
+    toast('Erreur mise à jour date de paiement', 'error');
+  }
 }
 
 async function supprimerDevis(id) {

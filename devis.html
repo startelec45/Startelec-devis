@@ -641,7 +641,16 @@
       document.getElementById('f-numero').value = d.numero || '';
       document.getElementById('f-date').value = d.date || '';
       document.getElementById('f-lieu').value = d.lieu || 'Orléans';
-      document.getElementById('f-date-add').value = d.date_validite || '';
+      if (d.date_paiement) {
+        document.getElementById('f-date-add-type').value = 'paiement';
+        document.getElementById('f-date-add').value = d.date_paiement.split('T')[0];
+      } else if (d.date_envoi) {
+        document.getElementById('f-date-add-type').value = 'envoi';
+        document.getElementById('f-date-add').value = d.date_envoi.split('T')[0];
+      } else {
+        document.getElementById('f-date-add-type').value = 'validite';
+        document.getElementById('f-date-add').value = d.date_validite ? d.date_validite.split('T')[0] : '';
+      }
       document.getElementById('f-objet').value = d.objet || '';
       document.getElementById('f-num-commande').value = d.num_commande || '';
       document.getElementById('f-mode-reglement').value = d.mode_reglement || 'Virement bancaire';
@@ -1036,12 +1045,21 @@
         notes = (notes ? notes + '\n' : '') + '[[REGIME:SOUS_TRAITANCE]]';
       }
 
+      const addDateType = document.getElementById('f-date-add-type').value;
+      const addDateVal = document.getElementById('f-date-add').value || null;
+
+      let date_validite = addDateType === 'validite' ? addDateVal : null;
+      let date_paiement = addDateType === 'paiement' ? addDateVal : null;
+      let date_envoi = addDateType === 'envoi' ? addDateVal : null;
+
       return {
         type: document.getElementById('f-type').value,
         numero: document.getElementById('f-numero').value,
         date: document.getElementById('f-date').value,
         lieu: document.getElementById('f-lieu').value,
-        date_validite: document.getElementById('f-date-add').value,
+        date_validite,
+        date_paiement,
+        date_envoi,
         mode_reglement: document.getElementById('f-mode-reglement').value,
         acompte_pct,
         objet: document.getElementById('f-objet').value,
