@@ -149,7 +149,7 @@
     async function renderStats() {
       const all = await DB.getDevis();
       const attente = all.filter(d => d.statut === 'Créé' || d.statut === 'Envoyé');
-      const acceptes = all.filter(d => d.statut === 'Accepté');
+      const acceptes = all.filter(d => ['Accepté', 'Payé en partie', 'Payé'].includes(d.statut));
       const caTotal = acceptes.reduce((sum, d) => sum + (d.montant_ht || 0), 0);
 
       document.getElementById('stat-total').textContent = all.length;

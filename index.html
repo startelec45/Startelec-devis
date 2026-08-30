@@ -233,8 +233,16 @@ async function renderDashboard() {
   // Affiche un état de chargement pendant l'appel réseau
   document.getElementById('tbody-devis').innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--texte-sec)"><i class="ti ti-loader-2" style="animation:spin 1s linear infinite; display:inline-block;"></i> Chargement des données...</td></tr>';
 
-  // Récupération asynchrone des devis depuis Supabase
+  // Récupération asynchrone des devis et factures depuis Supabase
   allDevis = await DB.getDevis();
+  const allFactures = await DB.getFactures();
+
+  // Recalcul en temps réel du montant réel facturé pour chaque devis
+  allDevis.forEach(d => {
+    const facts = allFactures.filter(f => (f.devis_id && f.devis_id === d.id) || (f.devis_numero && f.devis_numero === d.numero));
+    const activeFacts = facts.filter(f => f.statut !== 'Annulé');
+    d.deja_facture = activeFacts.reduce((sum, f) => sum + (f.montant_ht || f.montant || 0), 0);
+  });
 
   // Charger les suggestions clients
   await chargerSuggestions();
@@ -249,7 +257,7 @@ async function renderDashboard() {
 
   const ceMois    = allDevis.filter(d => { const dt = new Date(d.date); return dt.getMonth()===mois && dt.getFullYear()===annee; });
   const attente   = allDevis.filter(d => d.statut==='Créé' || d.statut==='Envoyé');
-  const acceptes  = allDevis.filter(d => d.statut==='Accepté' || d.statut==='Payé');
+  const acceptes  = allDevis.filter(d => ['Accepté', 'Payé en partie', 'Payé'].includes(d.statut));
   const refuses   = allDevis.filter(d => d.statut==='Rejeté' || d.statut==='Annulé');
   
   const caAccepte = acceptes.reduce((s,d)=>s+(d.montant_ht||0), 0);
@@ -263,7 +271,7 @@ async function renderDashboard() {
   document.getElementById('stat-accepte').textContent  = acceptes.length;
   document.getElementById('stat-accepte-sub').textContent = fmt(caAccepte) + ' HT';
   document.getElementById('stat-ca').textContent       = fmt(caAccepte);
-  document.getElementById('stat-ca-sub').textContent   = `${acceptes.length} devis accepté${acceptes.length > 1 ? 's' : ''}`;
+  document.getElementById('stat-ca-sub').textContent   = `${acceptes.length} devis validé${acceptes.length > 1 ? 's' : ''}`;
   document.getElementById('stat-reste').textContent    = fmt(reste);
   document.getElementById('stat-facture').textContent  = fmt(dejaFact);
   document.getElementById('stat-refuse').textContent   = refuses.length;
