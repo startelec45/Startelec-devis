@@ -102,6 +102,14 @@
         <button class="btn btn-sm btn-ghost" onclick="openSuggestionsModal()" style="color:#f59e0b; border:1px solid rgba(245,158,11,0.3); padding:6px 12px; font-size:12px; cursor:pointer;">Voir les suggestions</button>
       </div>
 
+      <!-- ══ BANNIÈRE FACTURE SUR DEVIS NON VALIDÉ ══ -->
+      <div id="unvalidated-invoice-banner" style="display:none; background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; align-items: center; gap: 12px;">
+        <i class="ti ti-alert-triangle" style="color:#ef4444; font-size: 22px; flex-shrink:0;"></i>
+        <div style="font-size: 13px; color: #991b1b; line-height: 1.5;" id="unvalidated-count-text">
+          <strong>Information :</strong> Une facture a été créée sur un devis non encore validé.
+        </div>
+      </div>
+
       <!-- ══ BARRE FILTRES PÉRIODE & CONFIDENTIALITÉ ══ -->
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
         <div style="display:flex; align-items:center; gap:8px;">
@@ -295,6 +303,19 @@ function recalculerStatsPeriode() {
   const attente   = filteredDevis.filter(d => d.statut==='Créé' || d.statut==='Envoyé');
   const acceptes  = filteredDevis.filter(d => ['Accepté', 'Payé en partie', 'Payé'].includes(d.statut));
   
+  // Détecter si des factures existent sur des devis encore au statut Créé ou Envoyé
+  const unvalidatedWithInvoice = filteredDevis.filter(d => (d.statut === 'Créé' || d.statut === 'Envoyé') && (d.total_facture > 0));
+  const unvalidatedBanner = document.getElementById('unvalidated-invoice-banner');
+  if (unvalidatedBanner) {
+    if (unvalidatedWithInvoice.length > 0) {
+      unvalidatedBanner.style.display = 'flex';
+      const devisNums = unvalidatedWithInvoice.map(d => `<strong>${d.numero}</strong> (${fmt(d.total_facture)} facturé)`).join(', ');
+      document.getElementById('unvalidated-count-text').innerHTML = `<strong>Attention :</strong> Une facture a été créée sur un devis non encore validé (${devisNums}). Passez le devis à l'état <strong>« Accepté »</strong> pour qu'il soit comptabilisé dans votre CA et suivi financier.`;
+    } else {
+      unvalidatedBanner.style.display = 'none';
+    }
+  }
+
   const caAccepte      = acceptes.reduce((s,d)=>s+(d.montant_ht||0), 0);
   const resteAFacturer = acceptes.reduce((s,d)=>s+d.reste_a_facturer, 0);
   const factEnAttente  = acceptes.reduce((s,d)=>s+d.facture_en_attente, 0);
@@ -421,6 +442,7 @@ function renderTable(devis) {
           <div class="reste">Reste à facturer : <strong>${fmt(d.reste_a_facturer||0)}</strong></div>
           ${d.facture_en_attente > 0 ? `<div style="color:var(--orange, #f59e0b);font-size:11px;margin:2px 0">En attente : <strong>${fmt(d.facture_en_attente)}</strong></div>` : ''}
           <div class="deja">Encaissé / Payé : <strong>${fmt(d.deja_paye||0)}</strong></div>
+          ${(d.statut === 'Créé' || d.statut === 'Envoyé') && d.total_facture > 0 ? `<div style="color:#ef4444;font-size:10px;font-weight:600;margin-top:3px"><i class="ti ti-alert-triangle"></i> Facturé sur devis non validé</div>` : ''}
         </div>
       </td>
       <td onclick="event.stopPropagation()" data-label="Actions">
