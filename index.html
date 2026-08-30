@@ -122,7 +122,7 @@
           <div class="stat-card-sub" id="stat-accepte-sub"></div>
         </div>
         <div class="stat-card">
-          <div class="stat-card-label">CA total HT</div>
+          <div class="stat-card-label">CA Devis Acceptés HT</div>
           <div class="stat-card-value rouge" id="stat-ca">—</div>
           <div class="stat-card-sub" id="stat-ca-sub"></div>
         </div>
@@ -134,7 +134,7 @@
         <div class="stat-card">
           <div class="stat-card-label">Déjà facturé</div>
           <div class="stat-card-value vert" id="stat-facture">—</div>
-          <div class="stat-card-sub">Acomptes + soldes encaissés</div>
+          <div class="stat-card-sub">Sur devis acceptés</div>
         </div>
         <div class="stat-card">
           <div class="stat-card-label">Refusés / Annulés</div>
@@ -249,21 +249,21 @@ async function renderDashboard() {
 
   const ceMois    = allDevis.filter(d => { const dt = new Date(d.date); return dt.getMonth()===mois && dt.getFullYear()===annee; });
   const attente   = allDevis.filter(d => d.statut==='Créé' || d.statut==='Envoyé');
-  const acceptes  = allDevis.filter(d => d.statut==='Accepté');
+  const acceptes  = allDevis.filter(d => d.statut==='Accepté' || d.statut==='Payé');
   const refuses   = allDevis.filter(d => d.statut==='Rejeté' || d.statut==='Annulé');
   
-  const totalCA   = allDevis.reduce((s,d)=>s+(d.montant_ht||0), 0);
-  const dejaFact  = allDevis.reduce((s,d)=>s+(d.deja_facture||0), 0);
-  const reste     = acceptes.reduce((s,d)=>s+((d.montant_ht||0)-(d.deja_facture||0)), 0);
+  const caAccepte = acceptes.reduce((s,d)=>s+(d.montant_ht||0), 0);
+  const dejaFact  = acceptes.reduce((s,d)=>s+(d.deja_facture||0), 0);
+  const reste     = acceptes.reduce((s,d)=>s+Math.max(0, (d.montant_ht||0)-(d.deja_facture||0)), 0);
 
   document.getElementById('stat-mois').textContent     = ceMois.length;
   document.getElementById('stat-mois-sub').textContent = fmt(ceMois.reduce((s,d)=>s+(d.montant_ht||0),0)) + ' HT';
   document.getElementById('stat-attente').textContent  = attente.length;
   document.getElementById('stat-attente-sub').textContent = fmt(attente.reduce((s,d)=>s+(d.montant_ht||0),0)) + ' HT';
   document.getElementById('stat-accepte').textContent  = acceptes.length;
-  document.getElementById('stat-accepte-sub').textContent = fmt(acceptes.reduce((s,d)=>s+(d.montant_ht||0),0)) + ' HT';
-  document.getElementById('stat-ca').textContent       = fmt(totalCA);
-  document.getElementById('stat-ca-sub').textContent   = allDevis.length + ' devis au total';
+  document.getElementById('stat-accepte-sub').textContent = fmt(caAccepte) + ' HT';
+  document.getElementById('stat-ca').textContent       = fmt(caAccepte);
+  document.getElementById('stat-ca-sub').textContent   = `${acceptes.length} devis accepté${acceptes.length > 1 ? 's' : ''}`;
   document.getElementById('stat-reste').textContent    = fmt(reste);
   document.getElementById('stat-facture').textContent  = fmt(dejaFact);
   document.getElementById('stat-refuse').textContent   = refuses.length;
