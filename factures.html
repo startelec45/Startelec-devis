@@ -1011,6 +1011,20 @@ async function relancerClient(id) {
   closeAllDropdowns();
 }
 
+async function changerStatut(id, statut, selectEl) {
+  try {
+    await DB.updateFacture(id, { statut });
+    if (selectEl) {
+      selectEl.className = `badge badge-select ${getBadgeClass(statut)}`;
+    }
+    toast(`Statut facture mis à jour : ${statut}`, 'success');
+    await renderFactures();
+  } catch (err) {
+    console.error('Erreur changement statut facture:', err);
+    toast('Erreur lors de la mise à jour du statut', 'error');
+  }
+}
+
 function getBadgeClass(s) {
   const m = {'Créé':'badge-cree','Envoyé':'badge-envoye','Accepté':'badge-accepte',
              'Rejeté':'badge-rejete','Payé':'badge-paye','Payé en partie':'badge-partiel','Annulé':'badge-annule'};
