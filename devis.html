@@ -85,16 +85,13 @@
           <button class="btn btn-ghost btn-sm" onclick="toggleDropdown(this)"><i class="ti ti-plus"></i> Créer / Plus <i
               class="ti ti-chevron-down"></i></button>
           <div class="dropdown-menu">
-            <div class="dropdown-item" onclick="creerSimilaire()"><i class="ti ti-copy"></i> Créer un document similaire
-            </div>
-            <div class="dropdown-item" onclick="nouveauDevis()"><i class="ti ti-file-plus"></i> Créer un nouveau doc.
-            </div>
+            <div class="dropdown-item" onclick="creerSimilaire()"><i class="ti ti-copy"></i> Créer un document similaire</div>
+            <div class="dropdown-item" onclick="nouveauDevis()"><i class="ti ti-file-plus"></i> Créer un nouveau doc.</div>
             <div class="dropdown-separator"></div>
-            <div class="dropdown-item" onclick="creerAcompte()"><i class="ti ti-receipt-2"></i> Créer une facture
-              d'acompte</div>
+            <div class="dropdown-item" onclick="ouvrirModalAcompte()"><i class="ti ti-receipt-2"></i> Créer une facture d'acompte</div>
+            <div class="dropdown-item" onclick="ouvrirModalSituation()"><i class="ti ti-chart-pie"></i> Créer une facture de situation</div>
             <div class="dropdown-separator"></div>
-            <div class="dropdown-item danger" onclick="annulerDevis()"><i class="ti ti-ban"></i> Annuler (sans
-              supprimer)</div>
+            <div class="dropdown-item danger" onclick="annulerDevis()"><i class="ti ti-ban"></i> Annuler (sans supprimer)</div>
           </div>
         </div>
 
@@ -209,7 +206,10 @@
                   <option value="Sous-traitance">Sous-traitance</option>
                 </select>
               </div>
-              <div class="form-group"></div>
+              <div class="form-group">
+                <label>N° Bon de commande client</label>
+                <input type="text" class="form-control" id="f-num-commande" placeholder="Ex: BC-2026-042" />
+              </div>
             </div>
           </div>
         </div>
@@ -643,6 +643,7 @@
       document.getElementById('f-lieu').value = d.lieu || 'Orléans';
       document.getElementById('f-date-add').value = d.date_validite || '';
       document.getElementById('f-objet').value = d.objet || '';
+      document.getElementById('f-num-commande').value = d.num_commande || '';
       document.getElementById('f-mode-reglement').value = d.mode_reglement || 'Virement bancaire';
       document.getElementById('f-acompte').value = (d.acompte_pct !== undefined && d.acompte_pct !== null) ? d.acompte_pct : 30;
       document.getElementById('acompte-pct').textContent = (d.acompte_pct !== undefined && d.acompte_pct !== null) ? d.acompte_pct : 30;
@@ -1044,6 +1045,7 @@
         mode_reglement: document.getElementById('f-mode-reglement').value,
         acompte_pct,
         objet: document.getElementById('f-objet').value,
+        num_commande: document.getElementById('f-num-commande')?.value?.trim() || null,
         infos_spec: document.getElementById('f-infos-spec').value,
         notes_privees: notes,
         texte_fin: document.getElementById('f-texte-fin').value,
@@ -1158,21 +1160,132 @@
       }
     }
 
-    async function creerAcompte() {
-      if (!devisId) { sauvegarder(); return; }
+    // ── MODALE FACTURE D'ACOMPTE ──
+    async function ouvrirModalAcompte() {
+      closeAllDropdowns();
+      if (!devisId) { await sauvegarder(); }
+      const d = await DB.getDevisById(devisId);
+      if (!d) return;
+
+      const totHT = d.montant_ht || d.montant || 0;
+      document.getElementById('modal-acompte-tot-devis').textContent = fmt(totHT);
+      
+      let defPct = (d.acompte_pct !== undefined && d.acompte_pct !== null && d.acompte_pct > 0) ? d.acompte_pct : 30;
+      document.getElementById('modal-acompte-pct').value = defPct;
+      document.getElementById('modal-acompte-num-commande').value = d.num_commande || document.getElementById('f-num-commande')?.value || '';
+      recalculerModalAcompte();
+      document.getElementById('modal-creer-acompte').style.display = 'flex';
+    }
+
+    function fermerModalAcompte() {
+      document.getElementById('modal-creer-acompte').style.display = 'none';
+    }
+
+    async function recalculerModalAcompte() {
+      const d = await DB.getDevisById(devisId);
+      const totHT = d ? (d.montant_ht || d.montant || 0) : 0;
+      const pct = parseFloat(document.getElementById('modal-acompte-pct').value) || 0;
+      const acompteHT = Math.round(totHT * (pct / 100) * 100) / 100;
+      document.getElementById('modal-acompte-tot-calc').textContent = fmt(acompteHT);
+    }
+
+    async function confirmerCreerAcompte() {
+      const pct = parseFloat(document.getElementById('modal-acompte-pct').value);
+      if (isNaN(pct) || pct <= 0 || pct > 100) {
+        toast('Veuillez saisir un pourcentage valide (1 à 100%)', 'error');
+        return;
+      }
+      const numCmd = document.getElementById('modal-acompte-num-commande').value.trim();
+      
       try {
-        const f = await creerFactureDepuisDevis(devisId, 'acompte');
+        const f = await creerFactureDepuisDevis(devisId, 'acompte', {
+          acompte_pct: pct,
+          num_commande: numCmd || null
+        });
+        fermerModalAcompte();
         if (f) {
-          toast(`Facture d'acompte ${f.numero} créée`, 'success');
+          toast(`Facture d'acompte ${f.numero} (${pct}%) créée`, 'success');
           setTimeout(() => { window.location.href = 'factures.html'; }, 1000);
         } else {
-          toast("Impossible de créer la facture d'acompte (devis introuvable).", 'error');
+          toast("Impossible de créer la facture d'acompte.", 'error');
         }
       } catch (err) {
         console.error('Erreur création acompte:', err);
         toast(`Erreur : ${err.message || err}`, 'error');
       }
+    }
+
+    // ── MODALE FACTURE DE SITUATION ──
+    async function ouvrirModalSituation() {
       closeAllDropdowns();
+      if (!devisId) { await sauvegarder(); }
+      const d = await DB.getDevisById(devisId);
+      if (!d) return;
+      
+      const totHT = d.montant_ht || d.montant || 0;
+      document.getElementById('modal-sit-tot-devis').textContent = fmt(totHT);
+      
+      const facturesLiees = await DB.getFacturesByDevis(devisId);
+      const situations = facturesLiees.filter(f => f.type === "Facture de situation" || f.titre?.toLowerCase().includes("situation"));
+      const acomptes = facturesLiees.filter(f => f.type === "Facture d'acompte" || f.titre?.toLowerCase().includes("acompte"));
+      
+      const sitNum = situations.length + 1;
+      document.getElementById('modal-sit-titre-prev').textContent = `Situation N°${sitNum}`;
+      
+      const dejaFactureHT = [...acomptes, ...situations].reduce((s, f) => s + (f.montant_ht || f.montant || 0), 0);
+      document.getElementById('modal-sit-deja-facture').textContent = fmt(dejaFactureHT);
+      window._currentSitDevisHT = totHT;
+      window._currentSitDejaFacture = dejaFactureHT;
+      window._currentSitNum = sitNum;
+
+      let suggestPct = Math.min(100, Math.round((dejaFactureHT / (totHT || 1)) * 100) + 30);
+      if (suggestPct > 100) suggestPct = 100;
+      if (suggestPct < 20) suggestPct = 30;
+
+      document.getElementById('modal-sit-avancement-pct').value = suggestPct;
+      document.getElementById('modal-sit-num-commande').value = d.num_commande || document.getElementById('f-num-commande')?.value || '';
+      recalculerModalSituation();
+      document.getElementById('modal-creer-situation').style.display = 'flex';
+    }
+
+    function fermerModalSituation() {
+      document.getElementById('modal-creer-situation').style.display = 'none';
+    }
+
+    function recalculerModalSituation() {
+      const totHT = window._currentSitDevisHT || 0;
+      const pct = parseFloat(document.getElementById('modal-sit-avancement-pct').value) || 0;
+      const dejaFacture = window._currentSitDejaFacture || 0;
+      const cumulHT = Math.round(totHT * (pct / 100) * 100) / 100;
+      const netHT = Math.max(0, Math.round((cumulHT - dejaFacture) * 100) / 100);
+      document.getElementById('modal-sit-net-facture').textContent = fmt(netHT);
+    }
+
+    async function confirmerCreerSituation() {
+      const pct = parseFloat(document.getElementById('modal-sit-avancement-pct').value);
+      if (isNaN(pct) || pct <= 0 || pct > 100) {
+        toast('Veuillez saisir un pourcentage d\'avancement valide (1 à 100%)', 'error');
+        return;
+      }
+      const numCmd = document.getElementById('modal-sit-num-commande').value.trim();
+      
+      try {
+        const f = await creerFactureDepuisDevis(devisId, 'situation', {
+          avancement_pct: pct,
+          situation_num: window._currentSitNum || 1,
+          num_commande: numCmd || null
+        });
+        fermerModalSituation();
+        if (f) {
+          toast(`Facture de Situation N°${window._currentSitNum || 1} (${pct}%) créée`, 'success');
+          setTimeout(() => { window.location.href = 'factures.html'; }, 1000);
+        } else {
+          toast("Impossible de créer la facture de situation.", 'error');
+        }
+      } catch (err) {
+        console.error('Erreur création situation:', err);
+        toast(`Erreur : ${err.message || err}`, 'error');
+      }
     }
 
     function creerSimilaire() {
@@ -1467,6 +1580,82 @@
       });
     }
   </script>
+
+  <!-- ══ MODALE CRÉER ACOMPTE ══ -->
+  <div class="modal-overlay" id="modal-creer-acompte" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center">
+    <div style="background:var(--blanc);border-radius:var(--radius-lg);width:90%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
+        <span style="font-size:15px;font-weight:600"><i class="ti ti-receipt-2"></i> Créer une facture d'acompte</span>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModalAcompte()"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="padding:20px">
+        <div style="background:var(--bg-app);padding:12px 14px;border-radius:var(--radius-md);margin-bottom:16px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="color:var(--texte-sec)">Total Devis HT :</span>
+            <strong id="modal-acompte-tot-devis">0,00 €</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;color:var(--rouge);font-weight:600">
+            <span>Montant Acompte HT :</span>
+            <span id="modal-acompte-tot-calc">0,00 €</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label>Pourcentage de l'acompte (%) <span class="required">*</span></label>
+          <input type="number" class="form-control" id="modal-acompte-pct" min="1" max="100" value="30" oninput="recalculerModalAcompte()" />
+        </div>
+        <div class="form-group">
+          <label>N° Bon de commande client <span style="color:var(--texte-sec);font-weight:400">(optionnel)</span></label>
+          <input type="text" class="form-control" id="modal-acompte-num-commande" placeholder="Ex: BC-2026-042" />
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border);background:var(--bg-app)">
+        <button class="btn btn-ghost" onclick="fermerModalAcompte()">Annuler</button>
+        <button class="btn btn-primary" onclick="confirmerCreerAcompte()"><i class="ti ti-check"></i> Créer la facture</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODALE CRÉER SITUATION ══ -->
+  <div class="modal-overlay" id="modal-creer-situation" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center">
+    <div style="background:var(--blanc);border-radius:var(--radius-lg);width:90%;max-width:520px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
+        <span style="font-size:15px;font-weight:600"><i class="ti ti-chart-pie"></i> Créer une facture de situation</span>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModalSituation()"><i class="ti ti-x"></i></button>
+      </div>
+      <div style="padding:20px">
+        <div style="background:var(--bg-app);padding:12px 14px;border-radius:var(--radius-md);margin-bottom:16px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="color:var(--texte-sec)">Situation générée :</span>
+            <strong id="modal-sit-titre-prev">Situation N°1</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="color:var(--texte-sec)">Marché / Devis total HT :</span>
+            <strong id="modal-sit-tot-devis">0,00 €</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="color:var(--texte-sec)">Déjà facturé (acomptes &amp; situations) :</span>
+            <strong id="modal-sit-deja-facture">0,00 €</strong>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;color:var(--bleu);font-weight:700">
+            <span>Net à facturer HT :</span>
+            <span id="modal-sit-net-facture">0,00 €</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label>Avancement global cumulé des travaux (%) <span class="required">*</span></label>
+          <input type="number" class="form-control" id="modal-sit-avancement-pct" min="1" max="100" value="30" oninput="recalculerModalSituation()" />
+        </div>
+        <div class="form-group">
+          <label>N° Bon de commande client <span style="color:var(--texte-sec);font-weight:400">(optionnel)</span></label>
+          <input type="text" class="form-control" id="modal-sit-num-commande" placeholder="Ex: BC-2026-042" />
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border);background:var(--bg-app)">
+        <button class="btn btn-ghost" onclick="fermerModalSituation()">Annuler</button>
+        <button class="btn btn-primary" onclick="confirmerCreerSituation()"><i class="ti ti-check"></i> Créer la situation</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 

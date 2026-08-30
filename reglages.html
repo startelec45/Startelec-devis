@@ -254,6 +254,16 @@
 
             <div class="settings-row">
               <div>
+                <div class="settings-label">Format numérotation situation</div>
+              </div>
+              <div class="settings-control" style="display:flex;gap:8px;align-items:center">
+                <input type="text" class="form-control" id="s-prefix-situation" placeholder="FS" style="max-width:60px" />
+                <span style="color:var(--texte-sec);font-size:13px">2026/001</span>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
                 <div class="settings-label">Activer la gestion de la TVA</div>
                 <div class="settings-sub">Affiche la colonne TVA sur les lignes et calcule les taxes</div>
               </div>
@@ -506,6 +516,7 @@
       document.getElementById('s-prefix-devis').value = d.prefix_devis || 'D';
       document.getElementById('s-prefix-facture').value = d.prefix_facture || 'F';
       document.getElementById('s-prefix-acompte').value = d.prefix_acompte || 'FA';
+      document.getElementById('s-prefix-situation').value = d.prefix_situation || 'FS';
       document.getElementById('s-tva-active').checked = d.tva_active || false;
       document.getElementById('s-tva-taux-defaut').value = (d.tva_taux_defaut !== undefined) ? d.tva_taux_defaut : 0;
 
@@ -552,6 +563,7 @@
           prefix_devis: document.getElementById('s-prefix-devis').value.trim() || 'D',
           prefix_facture: document.getElementById('s-prefix-facture').value.trim() || 'F',
           prefix_acompte: document.getElementById('s-prefix-acompte').value.trim() || 'FA',
+          prefix_situation: document.getElementById('s-prefix-situation').value.trim() || 'FS',
           tva_active: document.getElementById('s-tva-active').checked,
           tva_taux_defaut: parseFloat(document.getElementById('s-tva-taux-defaut').value) || 0,
         }

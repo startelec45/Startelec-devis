@@ -289,8 +289,14 @@ function renderPDF() {
 
   // Titre du document
   let titreDoc = 'FACTURE';
-  if (f.type === "Facture d'acompte") titreDoc = "FACTURE D'ACOMPTE";
-  else if (f.type === 'Avoir')        titreDoc = 'AVOIR';
+  if (f.type === "Facture d'acompte" || f.titre?.toLowerCase().includes('acompte')) {
+    titreDoc = "FACTURE D'ACOMPTE";
+  } else if (f.type === "Facture de situation" || f.titre?.toLowerCase().includes('situation')) {
+    const match = f.titre?.match(/Situation\s+N°?\s*\d+/i);
+    titreDoc = match ? `FACTURE DE ${match[0].toUpperCase()}` : "FACTURE DE SITUATION";
+  } else if (f.type === 'Avoir') {
+    titreDoc = 'AVOIR';
+  }
 
   // Adresse client
   const clientAdresse = [
@@ -346,7 +352,7 @@ function renderPDF() {
     <div class="pdf-rouge-line"></div>
 
     <!-- BANDE INFOS -->
-    <div class="pdf-info-band">
+    <div class="pdf-info-band" style="grid-template-columns: repeat(${f.num_commande ? 5 : 4}, 1fr)">
       <div class="pdf-info-cell">
         <span style="color:#666">Date :</span>
         <strong>${fmtDate(f.date || f.created_at)}</strong>
@@ -363,6 +369,11 @@ function renderPDF() {
         <span style="color:#666">Devis lié :</span>
         <strong>${f.devis_numero || '—'}</strong>
       </div>
+      ${f.num_commande ? `
+      <div class="pdf-info-cell">
+        <span style="color:#666">N° Bon commande :</span>
+        <strong>${escHtml(f.num_commande)}</strong>
+      </div>` : ''}
     </div>
 
     <!-- ÉMETTEUR / CLIENT -->
