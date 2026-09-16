@@ -380,6 +380,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
+function filtrer(el) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  filterStatut = el.dataset.filter || '';
+  renderFactures();
+}
+
 // ══ RENDER ══
 async function renderFactures() {
   const q        = document.getElementById('search-fact').value.toLowerCase();

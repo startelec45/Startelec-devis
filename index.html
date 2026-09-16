@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,426 +10,487 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    body.hide-amounts .stat-card-value { filter: blur(7px); user-select: none; transition: filter 0.3s ease; }
-    body.hide-amounts .stat-card-sub { filter: blur(5px); user-select: none; transition: filter 0.3s ease; }
-    body.hide-amounts #footer-ht, body.hide-amounts #footer-ttc, body.hide-amounts #footer-reste { filter: blur(6px); user-select: none; transition: filter 0.3s ease; }
-    body.hide-amounts .data-table td.td-montant, body.hide-amounts .data-table td[data-label="Facturé"] { filter: blur(6px); user-select: none; transition: filter 0.3s ease; }
-    
-    .stat-card-value, .stat-card-sub, #footer-ht, #footer-ttc, #footer-reste, .data-table td { transition: filter 0.3s ease; }
+    body.hide-amounts .stat-card-value {
+      filter: blur(7px);
+      user-select: none;
+      transition: filter 0.3s ease;
+    }
+
+    body.hide-amounts .stat-card-sub {
+      filter: blur(5px);
+      user-select: none;
+      transition: filter 0.3s ease;
+    }
+
+    body.hide-amounts #footer-ht,
+    body.hide-amounts #footer-ttc,
+    body.hide-amounts #footer-reste {
+      filter: blur(6px);
+      user-select: none;
+      transition: filter 0.3s ease;
+    }
+
+    body.hide-amounts .data-table td.td-montant,
+    body.hide-amounts .data-table td[data-label="Facturé"] {
+      filter: blur(6px);
+      user-select: none;
+      transition: filter 0.3s ease;
+    }
+
+    .stat-card-value,
+    .stat-card-sub,
+    #footer-ht,
+    #footer-ttc,
+    #footer-reste,
+    .data-table td {
+      transition: filter 0.3s ease;
+    }
   </style>
 </head>
+
 <body>
 
-<div class="app-layout">
+  <div class="app-layout">
 
-  <aside class="sidebar">
-    <a href="index.html" class="sidebar-logo">
-      <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
-      <div>
-        <span>StarElec</span>
-        <span class="logo-sub">Devis & Factures</span>
-      </div>
-    </a>
-
-    <div class="nav-section">Principal</div>
-    <a href="index.html" class="nav-item active">
-      <i class="ti ti-layout-dashboard"></i> Dashboard
-    </a>
-    <a href="devis.html" class="nav-item">
-      <i class="ti ti-plus"></i> Nouveau devis
-    </a>
-    <a href="clients.html" class="nav-item">
-      <i class="ti ti-users"></i> Clients
-    </a>
-    <a href="chantiers.html" class="nav-item">
-      <i class="ti ti-hammer"></i> Chantiers
-    </a>
-
-    <div class="nav-section">Gestion</div>
-    <a href="liste.html" class="nav-item">
-      <i class="ti ti-file-text"></i> Tous les devis
-      <span class="nav-badge" id="badge-total">0</span>
-    </a>
-    <a href="factures.html" class="nav-item">
-      <i class="ti ti-receipt"></i> Factures
-    </a>
-    <a href="catalogue.html" class="nav-item">
-      <i class="ti ti-list-check"></i> Catalogue
-    </a>
-
-    <div class="nav-section">Compte</div>
-    <a href="reglages.html" class="nav-item">
-      <i class="ti ti-settings"></i> Réglages
-    </a>
-
-    <div class="sidebar-bottom">
-      <a href="reglages.html" class="sidebar-user">
-        <div class="avatar">FF</div>
+    <aside class="sidebar">
+      <a href="index.html" class="sidebar-logo">
+        <img src="assets/logo.png" alt="StarElec" onerror="this.style.display='none'" />
         <div>
-          <div class="sidebar-user-name">Florian Fernandes</div>
-          <div class="sidebar-user-role">StarElec — Orléans</div>
+          <span>StarElec</span>
+          <span class="logo-sub">Devis & Factures</span>
         </div>
       </a>
-    </div>
-  </aside>
 
-  <div class="main-content">
+      <div class="nav-section">Principal</div>
+      <a href="index.html" class="nav-item active">
+        <i class="ti ti-layout-dashboard"></i> Dashboard
+      </a>
+      <a href="devis.html" class="nav-item">
+        <i class="ti ti-plus"></i> Nouveau devis
+      </a>
+      <a href="clients.html" class="nav-item">
+        <i class="ti ti-users"></i> Clients
+      </a>
+      <a href="chantiers.html" class="nav-item">
+        <i class="ti ti-hammer"></i> Chantiers
+      </a>
 
-    <div class="topbar">
-      <div class="topbar-left">
-        <h1 class="topbar-title" style="margin:0;">Dashboard</h1>
-      </div>
-      <div class="topbar-right">
-        <div class="search-input-wrap">
-          <i class="ti ti-search"></i>
-          <input type="text" class="search-input" placeholder="Rechercher un devis, client..." id="global-search" />
-        </div>
-        <a href="devis.html" class="btn btn-primary">
-          <i class="ti ti-plus"></i> Nouveau devis
+      <div class="nav-section">Gestion</div>
+      <a href="liste.html" class="nav-item">
+        <i class="ti ti-file-text"></i> Tous les devis
+        <span class="nav-badge" id="badge-total">0</span>
+      </a>
+      <a href="factures.html" class="nav-item">
+        <i class="ti ti-receipt"></i> Factures
+      </a>
+      <a href="catalogue.html" class="nav-item">
+        <i class="ti ti-list-check"></i> Catalogue
+      </a>
+
+      <div class="nav-section">Compte</div>
+      <a href="reglages.html" class="nav-item">
+        <i class="ti ti-settings"></i> Réglages
+      </a>
+
+      <div class="sidebar-bottom">
+        <a href="reglages.html" class="sidebar-user">
+          <div class="avatar">FF</div>
+          <div>
+            <div class="sidebar-user-name">Florian Fernandes</div>
+            <div class="sidebar-user-role">StarElec — Orléans</div>
+          </div>
         </a>
       </div>
+    </aside>
+
+    <div class="main-content">
+
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title" style="margin:0;">Dashboard</h1>
+        </div>
+        <div class="topbar-right">
+          <div class="search-input-wrap">
+            <i class="ti ti-search"></i>
+            <input type="text" class="search-input" placeholder="Rechercher un devis, client..." id="global-search" />
+          </div>
+          <a href="devis.html" class="btn btn-primary">
+            <i class="ti ti-plus"></i> Nouveau devis
+          </a>
+        </div>
+      </div>
+
+      <div class="page-content">
+
+        <!-- Bannière des suggestions clients (si non lues) -->
+        <div id="suggestions-alert-banner"
+          style="display:none; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <i class="ti ti-bulb" style="color: #f59e0b; font-size: 24px;"></i>
+            <span style="font-size: 14px; color: var(--texte-sec); font-weight: 500;">
+              Vous avez <strong id="unread-suggestions-count" style="color:#f59e0b">0</strong> nouvelle(s) suggestion(s)
+              d'amélioration de la part de vos clients.
+            </span>
+          </div>
+          <button class="btn btn-sm btn-ghost" onclick="openSuggestionsModal()"
+            style="color:#f59e0b; border:1px solid rgba(245,158,11,0.3); padding:6px 12px; font-size:12px; cursor:pointer;">Voir
+            les suggestions</button>
+        </div>
+
+        <!-- ══ BANNIÈRE FACTURE SUR DEVIS NON VALIDÉ ══ -->
+        <div id="unvalidated-invoice-banner"
+          style="display:none; background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; align-items: center; gap: 12px;">
+          <i class="ti ti-alert-triangle" style="color:#ef4444; font-size: 22px; flex-shrink:0;"></i>
+          <div style="font-size: 13px; color: #991b1b; line-height: 1.5;" id="unvalidated-count-text">
+            <strong>Information :</strong> Une facture a été créée sur un devis non encore validé.
+          </div>
+        </div>
+
+        <!-- ══ BARRE FILTRES PÉRIODE & CONFIDENTIALITÉ ══ -->
+        <div
+          style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span
+              style="font-size:13px; font-weight:600; color:var(--texte-sec); display:flex; align-items:center; gap:4px;">
+              <i class="ti ti-calendar"></i> Période :
+            </span>
+            <div class="table-filters" id="period-filters" style="margin:0;">
+              <span class="filter-pill active" data-period="all" onclick="changerPeriode('all', this)">Global</span>
+              <span class="filter-pill" data-period="month" onclick="changerPeriode('month', this)">Ce mois</span>
+              <span class="filter-pill" data-period="quarter" onclick="changerPeriode('quarter', this)">Ce
+                trimestre</span>
+              <span class="filter-pill" data-period="year" onclick="changerPeriode('year', this)"
+                id="pill-period-year">Cette année</span>
+            </div>
+          </div>
+
+          <button class="btn btn-ghost btn-sm" onclick="toggleAmounts()" id="btn-toggle-amounts"
+            style="display:flex; align-items:center; gap:6px; font-size:12px; padding:6px 12px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--blanc); cursor:pointer;">
+            <i class="ti ti-eye"></i> <span id="label-toggle-amounts">Masquer les montants</span>
+          </button>
+        </div>
+
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card accent">
+            <div class="stat-card-label" id="card-label-devis">Devis créés</div>
+            <div class="stat-card-value" id="stat-mois">—</div>
+            <div class="stat-card-sub" id="stat-mois-sub"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">En attente / Envoyés</div>
+            <div class="stat-card-value orange" id="stat-attente">—</div>
+            <div class="stat-card-sub" id="stat-attente-sub"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Acceptés</div>
+            <div class="stat-card-value vert" id="stat-accepte">—</div>
+            <div class="stat-card-sub" id="stat-accepte-sub"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">CA Devis Acceptés HT</div>
+            <div class="stat-card-value rouge" id="stat-ca">—</div>
+            <div class="stat-card-sub" id="stat-ca-sub"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Reste à facturer</div>
+            <div class="stat-card-value" id="stat-reste">—</div>
+            <div class="stat-card-sub">Devis validés non facturés</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Facturé en attente</div>
+            <div class="stat-card-value orange" id="stat-facture-attente">—</div>
+            <div class="stat-card-sub">Factures non réglées</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Déjà payé / Encaissé</div>
+            <div class="stat-card-value vert" id="stat-facture-paye">—</div>
+            <div class="stat-card-sub">Règlements encaissés</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Total devis</div>
+            <div class="stat-card-value" id="stat-total">—</div>
+            <div class="stat-card-sub">Tous les documents</div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <span class="table-title">Revenus / Tous</span>
+            <div class="table-filters" id="filters">
+              <span class="filter-pill active" data-filter="">Tous</span>
+              <span class="filter-pill" data-filter="Créé">Créé</span>
+              <span class="filter-pill" data-filter="Envoyé">Envoyé</span>
+              <span class="filter-pill" data-filter="Accepté">Accepté</span>
+              <span class="filter-pill" data-filter="Rejeté">Rejeté</span>
+              <span class="filter-pill" data-filter="Payé">Payé</span>
+            </div>
+          </div>
+
+          <table class="data-table" id="devis-table">
+            <thead>
+              <tr>
+                <th style="width:30px"><input type="checkbox" id="check-all" /></th>
+                <th style="width:110px; cursor:pointer" onclick="sortBy('numero')">N° <i class="ti ti-arrows-sort"
+                    style="font-size:11px"></i></th>
+                <th style="width:110px; cursor:pointer" onclick="sortBy('montant_ht')">TOTAL HT <i
+                    class="ti ti-arrows-sort" style="font-size:11px"></i></th>
+                <th style="width:110px; cursor:pointer" onclick="sortBy('montant_ttc')">TOTAL TTC <i
+                    class="ti ti-arrows-sort" style="font-size:11px"></i></th>
+                <th style="width:140px; cursor:pointer" onclick="sortBy('client')">CLIENT <i class="ti ti-arrows-sort"
+                    style="font-size:11px"></i></th>
+                <th style="width:110px; cursor:pointer" onclick="sortBy('date')">DATE CRÉATION <i
+                    class="ti ti-arrows-sort" style="font-size:11px"></i></th>
+                <th style="width:110px">DATE PAIEMENT</th>
+                <th>PRODUIT</th>
+                <th style="width:120px">ÉTAT</th>
+                <th style="width:180px">FACTURÉ</th>
+                <th style="width:40px"></th>
+              </tr>
+            </thead>
+            <tbody id="tbody-devis">
+              <tr>
+                <td colspan="11" class="empty-state"><i class="ti ti-file-off"></i>
+                  <h3>Aucun devis</h3>
+                  <p>Créez votre premier devis pour commencer</p><a href="devis.html" class="btn btn-primary"><i
+                      class="ti ti-plus"></i> Nouveau devis</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="table-footer">
+            <span style="font-size:12px; color:var(--texte-sec)">Nombre : <strong id="count-shown">0</strong></span>
+            <div class="table-footer-totals">
+              <div class="t-item"><span>Total HT : </span><strong id="footer-ht">0,00 €</strong></div>
+              <div class="t-item"><span>Total TTC : </span><strong id="footer-ttc">0,00 €</strong></div>
+              <div class="t-item"><span>Total à facturer : </span><strong class="rouge" id="footer-reste">0,00
+                  €</strong></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
+  </div>
+  <div class="toast-container" id="toasts"></div>
 
-    <div class="page-content">
+  <div id="overlay" style="display:none;position:fixed;inset:0;z-index:199;" onclick="closeAllDropdowns()"></div>
 
-      <!-- Bannière des suggestions clients (si non lues) -->
-      <div id="suggestions-alert-banner" style="display:none; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 12px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <i class="ti ti-bulb" style="color: #f59e0b; font-size: 24px;"></i>
-          <span style="font-size: 14px; color: var(--texte-sec); font-weight: 500;">
-            Vous avez <strong id="unread-suggestions-count" style="color:#f59e0b">0</strong> nouvelle(s) suggestion(s) d'amélioration de la part de vos clients.
-          </span>
-        </div>
-        <button class="btn btn-sm btn-ghost" onclick="openSuggestionsModal()" style="color:#f59e0b; border:1px solid rgba(245,158,11,0.3); padding:6px 12px; font-size:12px; cursor:pointer;">Voir les suggestions</button>
-      </div>
+  <script src="app.js"></script>
+  <script>
+    // ── INIT DASHBOARD ──
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDashboard();
+      setupFilters();
+      setupSearch();
 
-      <!-- ══ BANNIÈRE FACTURE SUR DEVIS NON VALIDÉ ══ -->
-      <div id="unvalidated-invoice-banner" style="display:none; background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; padding: 12px 18px; margin-bottom: 16px; align-items: center; gap: 12px;">
-        <i class="ti ti-alert-triangle" style="color:#ef4444; font-size: 22px; flex-shrink:0;"></i>
-        <div style="font-size: 13px; color: #991b1b; line-height: 1.5;" id="unvalidated-count-text">
-          <strong>Information :</strong> Une facture a été créée sur un devis non encore validé.
-        </div>
-      </div>
+      // Restaurer l'état du mode confidentiel si enregistré
+      if (localStorage.getItem('se_hide_amounts') === 'true') {
+        document.body.classList.add('hide-amounts');
+        const label = document.getElementById('label-toggle-amounts');
+        const btn = document.getElementById('btn-toggle-amounts');
+        if (btn) btn.innerHTML = '<i class="ti ti-eye-off"></i> <span id="label-toggle-amounts">Afficher les montants</span>';
+      }
+    });
 
-      <!-- ══ BARRE FILTRES PÉRIODE & CONFIDENTIALITÉ ══ -->
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span style="font-size:13px; font-weight:600; color:var(--texte-sec); display:flex; align-items:center; gap:4px;">
-            <i class="ti ti-calendar"></i> Période :
-          </span>
-          <div class="table-filters" id="period-filters" style="margin:0;">
-            <span class="filter-pill active" data-period="all" onclick="changerPeriode('all', this)">Global</span>
-            <span class="filter-pill" data-period="month" onclick="changerPeriode('month', this)">Ce mois</span>
-            <span class="filter-pill" data-period="quarter" onclick="changerPeriode('quarter', this)">Ce trimestre</span>
-            <span class="filter-pill" data-period="year" onclick="changerPeriode('year', this)" id="pill-period-year">Cette année</span>
-          </div>
-        </div>
+    function toggleAmounts() {
+      const isHidden = document.body.classList.toggle('hide-amounts');
+      const btn = document.getElementById('btn-toggle-amounts');
 
-        <button class="btn btn-ghost btn-sm" onclick="toggleAmounts()" id="btn-toggle-amounts" style="display:flex; align-items:center; gap:6px; font-size:12px; padding:6px 12px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--blanc); cursor:pointer;">
-          <i class="ti ti-eye"></i> <span id="label-toggle-amounts">Masquer les montants</span>
-        </button>
-      </div>
-
-      <div class="stats-grid" id="stats-grid">
-        <div class="stat-card accent">
-          <div class="stat-card-label" id="card-label-devis">Devis créés</div>
-          <div class="stat-card-value" id="stat-mois">—</div>
-          <div class="stat-card-sub" id="stat-mois-sub"></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-label">En attente / Envoyés</div>
-          <div class="stat-card-value orange" id="stat-attente">—</div>
-          <div class="stat-card-sub" id="stat-attente-sub"></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-label">Acceptés</div>
-          <div class="stat-card-value vert" id="stat-accepte">—</div>
-          <div class="stat-card-sub" id="stat-accepte-sub"></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-label">CA Devis Acceptés HT</div>
-          <div class="stat-card-value rouge" id="stat-ca">—</div>
-          <div class="stat-card-sub" id="stat-ca-sub"></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-label">Reste à facturer</div>
-          <div class="stat-card-value" id="stat-reste">—</div>
-          <div class="stat-card-sub">Devis validés non facturés</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-label">Facturé en attente</div>
-          <div class="stat-card-value orange" id="stat-facture-attente">—</div>
-          <div class="stat-card-sub">Factures non réglées</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-label">Déjà payé / Encaissé</div>
-          <div class="stat-card-value vert" id="stat-facture-paye">—</div>
-          <div class="stat-card-sub">Règlements encaissés</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-label">Total devis</div>
-          <div class="stat-card-value" id="stat-total">—</div>
-          <div class="stat-card-sub">Tous les documents</div>
-        </div>
-      </div>
-
-      <div class="table-container">
-        <div class="table-header">
-          <span class="table-title">Revenus / Tous</span>
-          <div class="table-filters" id="filters">
-            <span class="filter-pill active" data-filter="">Tous</span>
-            <span class="filter-pill" data-filter="Créé">Créé</span>
-            <span class="filter-pill" data-filter="Envoyé">Envoyé</span>
-            <span class="filter-pill" data-filter="Accepté">Accepté</span>
-            <span class="filter-pill" data-filter="Rejeté">Rejeté</span>
-            <span class="filter-pill" data-filter="Payé">Payé</span>
-          </div>
-        </div>
-
-        <table class="data-table" id="devis-table">
-          <thead>
-            <tr>
-              <th style="width:30px"><input type="checkbox" id="check-all" /></th>
-              <th style="width:110px; cursor:pointer" onclick="sortBy('numero')">N° <i class="ti ti-arrows-sort" style="font-size:11px"></i></th>
-              <th style="width:110px; cursor:pointer" onclick="sortBy('montant_ht')">TOTAL HT <i class="ti ti-arrows-sort" style="font-size:11px"></i></th>
-              <th style="width:110px; cursor:pointer" onclick="sortBy('montant_ttc')">TOTAL TTC <i class="ti ti-arrows-sort" style="font-size:11px"></i></th>
-              <th style="width:140px; cursor:pointer" onclick="sortBy('client')">CLIENT <i class="ti ti-arrows-sort" style="font-size:11px"></i></th>
-              <th style="width:110px; cursor:pointer" onclick="sortBy('date')">DATE CRÉATION <i class="ti ti-arrows-sort" style="font-size:11px"></i></th>
-              <th style="width:110px">DATE PAIEMENT</th>
-              <th>PRODUIT</th>
-              <th style="width:120px">ÉTAT</th>
-              <th style="width:180px">FACTURÉ</th>
-              <th style="width:40px"></th>
-            </tr>
-          </thead>
-          <tbody id="tbody-devis">
-            <tr><td colspan="11" class="empty-state"><i class="ti ti-file-off"></i><h3>Aucun devis</h3><p>Créez votre premier devis pour commencer</p><a href="devis.html" class="btn btn-primary"><i class="ti ti-plus"></i> Nouveau devis</a></td></tr>
-          </tbody>
-        </table>
-
-        <div class="table-footer">
-          <span style="font-size:12px; color:var(--texte-sec)">Nombre : <strong id="count-shown">0</strong></span>
-          <div class="table-footer-totals">
-            <div class="t-item"><span>Total HT : </span><strong id="footer-ht">0,00 €</strong></div>
-            <div class="t-item"><span>Total TTC : </span><strong id="footer-ttc">0,00 €</strong></div>
-            <div class="t-item"><span>Total à facturer : </span><strong class="rouge" id="footer-reste">0,00 €</strong></div>
-          </div>
-        </div>
-      </div>
-
-    </div></div></div><div class="toast-container" id="toasts"></div>
-
-<div id="overlay" style="display:none;position:fixed;inset:0;z-index:199;" onclick="closeAllDropdowns()"></div>
-
-<script src="app.js"></script>
-<script>
-// ── INIT DASHBOARD ──
-document.addEventListener('DOMContentLoaded', () => {
-  renderDashboard();
-  setupFilters();
-  setupSearch();
-  
-  // Restaurer l'état du mode confidentiel si enregistré
-  if (localStorage.getItem('se_hide_amounts') === 'true') {
-    document.body.classList.add('hide-amounts');
-    const label = document.getElementById('label-toggle-amounts');
-    const btn = document.getElementById('btn-toggle-amounts');
-    if (btn) btn.innerHTML = '<i class="ti ti-eye-off"></i> <span id="label-toggle-amounts">Afficher les montants</span>';
-  }
-});
-
-function toggleAmounts() {
-  const isHidden = document.body.classList.toggle('hide-amounts');
-  const btn = document.getElementById('btn-toggle-amounts');
-  
-  if (btn) {
-    btn.innerHTML = isHidden 
-      ? '<i class="ti ti-eye-off"></i> <span id="label-toggle-amounts">Afficher les montants</span>' 
-      : '<i class="ti ti-eye"></i> <span id="label-toggle-amounts">Masquer les montants</span>';
-  }
-  localStorage.setItem('se_hide_amounts', isHidden ? 'true' : 'false');
-}
-
-let currentFilter = '';
-let currentPeriod = 'all';
-let currentSort   = { key: 'date', dir: -1 };
-let allDevis      = []; // Stockage local en mémoire du résultat de Supabase
-
-function changerPeriode(period, el) {
-  document.querySelectorAll('#period-filters .filter-pill').forEach(p => p.classList.remove('active'));
-  if (el) el.classList.add('active');
-  currentPeriod = period;
-  recalculerStatsPeriode();
-  renderTable(allDevis);
-}
-
-function filterByPeriod(list) {
-  if (currentPeriod === 'all') return list;
-  const now = new Date();
-  const mois = now.getMonth();
-  const annee = now.getFullYear();
-  const currentQuarter = Math.floor(mois / 3);
-
-  return list.filter(d => {
-    if (!d.date) return false;
-    const dt = new Date(d.date);
-    const dMois = dt.getMonth();
-    const dAnnee = dt.getFullYear();
-    const dQuarter = Math.floor(dMois / 3);
-
-    if (currentPeriod === 'month') {
-      return dMois === mois && dAnnee === annee;
-    } else if (currentPeriod === 'quarter') {
-      return dQuarter === currentQuarter && dAnnee === annee;
-    } else if (currentPeriod === 'year') {
-      return dAnnee === annee;
-    }
-    return true;
-  });
-}
-
-function recalculerStatsPeriode() {
-  const filteredDevis = filterByPeriod(allDevis);
-  
-  const now   = new Date();
-  const annee = now.getFullYear();
-  const yearPill = document.getElementById('pill-period-year');
-  if (yearPill) yearPill.textContent = `Cette année (${annee})`;
-
-  const cardLabelDevis = document.getElementById('card-label-devis');
-  if (cardLabelDevis) {
-    cardLabelDevis.textContent = currentPeriod === 'month' ? 'Devis ce mois' : currentPeriod === 'quarter' ? 'Devis ce trimestre' : currentPeriod === 'year' ? 'Devis cette année' : 'Tous les devis';
-  }
-
-  const attente   = filteredDevis.filter(d => d.statut==='Créé' || d.statut==='Envoyé');
-  const acceptes  = filteredDevis.filter(d => ['Accepté', 'Payé en partie', 'Payé'].includes(d.statut));
-  
-  // Détecter si des factures existent sur des devis encore au statut Créé ou Envoyé
-  const unvalidatedWithInvoice = filteredDevis.filter(d => (d.statut === 'Créé' || d.statut === 'Envoyé') && (d.total_facture > 0));
-  const unvalidatedBanner = document.getElementById('unvalidated-invoice-banner');
-  if (unvalidatedBanner) {
-    if (unvalidatedWithInvoice.length > 0) {
-      unvalidatedBanner.style.display = 'flex';
-      const devisNums = unvalidatedWithInvoice.map(d => `<strong>${d.numero}</strong> (${fmt(d.total_facture)} facturé)`).join(', ');
-      document.getElementById('unvalidated-count-text').innerHTML = `<strong>Attention :</strong> Une facture a été créée sur un devis non encore validé (${devisNums}). Passez le devis à l'état <strong>« Accepté »</strong> pour qu'il soit comptabilisé dans votre CA et suivi financier.`;
-    } else {
-      unvalidatedBanner.style.display = 'none';
-    }
-  }
-
-  const caAccepte      = acceptes.reduce((s,d)=>s+(d.montant_ht||0), 0);
-  const resteAFacturer = acceptes.reduce((s,d)=>s+d.reste_a_facturer, 0);
-  const factEnAttente  = acceptes.reduce((s,d)=>s+d.facture_en_attente, 0);
-  const dejaPaye       = acceptes.reduce((s,d)=>s+d.deja_paye, 0);
-
-  document.getElementById('stat-mois').textContent     = filteredDevis.length;
-  document.getElementById('stat-mois-sub').textContent = fmt(filteredDevis.reduce((s,d)=>s+(d.montant_ht||0),0)) + ' HT';
-  
-  document.getElementById('stat-attente').textContent  = attente.length;
-  document.getElementById('stat-attente-sub').textContent = fmt(attente.reduce((s,d)=>s+(d.montant_ht||0),0)) + ' HT';
-  
-  document.getElementById('stat-accepte').textContent  = acceptes.length;
-  document.getElementById('stat-accepte-sub').textContent = fmt(caAccepte) + ' HT';
-  
-  document.getElementById('stat-ca').textContent       = fmt(caAccepte);
-  document.getElementById('stat-ca-sub').textContent   = `${acceptes.length} devis validé${acceptes.length > 1 ? 's' : ''}`;
-  
-  document.getElementById('stat-reste').textContent           = fmt(resteAFacturer);
-  document.getElementById('stat-facture-attente').textContent = fmt(factEnAttente);
-  document.getElementById('stat-facture-paye').textContent    = fmt(dejaPaye);
-  document.getElementById('stat-total').textContent           = allDevis.length;
-}
-
-async function renderDashboard() {
-  // Affiche un état de chargement pendant l'appel réseau
-  document.getElementById('tbody-devis').innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--texte-sec)"><i class="ti ti-loader-2" style="animation:spin 1s linear infinite; display:inline-block;"></i> Chargement des données...</td></tr>';
-
-  // Récupération asynchrone des devis et factures depuis Supabase
-  allDevis = await DB.getDevis();
-  const allFactures = await DB.getFactures();
-
-  // Recalcul en temps réel pour chaque devis depuis les factures réelles
-  allDevis.forEach(d => {
-    const facts = allFactures.filter(f => (f.devis_id && f.devis_id === d.id) || (f.devis_numero && f.devis_numero === d.numero));
-    const activeFacts = facts.filter(f => f.statut !== 'Annulé');
-    
-    // Total émis (toutes factures non annulées)
-    d.total_facture = activeFacts.reduce((sum, f) => sum + (f.montant_ht || f.montant || 0), 0);
-    
-    // Factures payées / encaissées
-    const paidFacts = activeFacts.filter(f => f.statut === 'Payé');
-    d.deja_paye = paidFacts.reduce((sum, f) => sum + (f.montant_ht || f.montant || 0), 0);
-    if (d.statut === 'Payé' && d.deja_paye === 0) {
-      d.deja_paye = d.montant_ht || 0;
+      if (btn) {
+        btn.innerHTML = isHidden
+          ? '<i class="ti ti-eye-off"></i> <span id="label-toggle-amounts">Afficher les montants</span>'
+          : '<i class="ti ti-eye"></i> <span id="label-toggle-amounts">Masquer les montants</span>';
+      }
+      localStorage.setItem('se_hide_amounts', isHidden ? 'true' : 'false');
     }
 
-    // Factures émises en attente de paiement (statut Créé ou Envoyé)
-    const pendingFacts = activeFacts.filter(f => f.statut === 'Créé' || f.statut === 'Envoyé');
-    d.facture_en_attente = pendingFacts.reduce((sum, f) => sum + (f.montant_ht || f.montant || 0), 0);
+    let currentFilter = '';
+    let currentPeriod = 'all';
+    let currentSort = { key: 'date', dir: -1 };
+    let allDevis = []; // Stockage local en mémoire du résultat de Supabase
 
-    // Reste du devis à facturer
-    d.reste_a_facturer = Math.max(0, (d.montant_ht || 0) - d.total_facture);
-    d.deja_facture = d.total_facture;
-  });
+    function changerPeriode(period, el) {
+      document.querySelectorAll('#period-filters .filter-pill').forEach(p => p.classList.remove('active'));
+      if (el) el.classList.add('active');
+      currentPeriod = period;
+      recalculerStatsPeriode();
+      renderTable(allDevis);
+    }
 
-  // Charger les suggestions clients
-  await chargerSuggestions();
+    function filterByPeriod(list) {
+      if (currentPeriod === 'all') return list;
+      const now = new Date();
+      const mois = now.getMonth();
+      const annee = now.getFullYear();
+      const currentQuarter = Math.floor(mois / 3);
 
-  // Badge sidebar
-  document.getElementById('badge-total').textContent = allDevis.length;
+      return list.filter(d => {
+        if (!d.date) return false;
+        const dt = new Date(d.date);
+        const dMois = dt.getMonth();
+        const dAnnee = dt.getFullYear();
+        const dQuarter = Math.floor(dMois / 3);
 
-  recalculerStatsPeriode();
-  renderTable(allDevis);
-}
+        if (currentPeriod === 'month') {
+          return dMois === mois && dAnnee === annee;
+        } else if (currentPeriod === 'quarter') {
+          return dQuarter === currentQuarter && dAnnee === annee;
+        } else if (currentPeriod === 'year') {
+          return dAnnee === annee;
+        }
+        return true;
+      });
+    }
 
-function renderTable(devis) {
-  // Filtrage par période puis par statut
-  let list = filterByPeriod(devis || allDevis);
-  if (currentFilter) list = list.filter(d => d.statut === currentFilter);
+    function recalculerStatsPeriode() {
+      const filteredDevis = filterByPeriod(allDevis);
 
-  // Tri
-  list.sort((a,b) => {
-    let va = a[currentSort.key] ?? '';
-    let vb = b[currentSort.key] ?? '';
-    if (typeof va === 'number') return (va - vb) * currentSort.dir;
-    return String(va).localeCompare(String(vb)) * currentSort.dir;
-  });
+      const now = new Date();
+      const annee = now.getFullYear();
+      const yearPill = document.getElementById('pill-period-year');
+      if (yearPill) yearPill.textContent = `Cette année (${annee})`;
 
-  // Search
-  const q = document.getElementById('global-search').value.toLowerCase();
-  if (q) list = list.filter(d =>
-    (d.numero||'').toLowerCase().includes(q) ||
-    (d.client||'').toLowerCase().includes(q) ||
-    (d.objet||'').toLowerCase().includes(q)
-  );
+      const cardLabelDevis = document.getElementById('card-label-devis');
+      if (cardLabelDevis) {
+        cardLabelDevis.textContent = currentPeriod === 'month' ? 'Devis ce mois' : currentPeriod === 'quarter' ? 'Devis ce trimestre' : currentPeriod === 'year' ? 'Devis cette année' : 'Tous les devis';
+      }
 
-  document.getElementById('count-shown').textContent = list.length;
-  document.getElementById('footer-ht').textContent   = fmt(list.reduce((s,d)=>s+(d.montant_ht||0),0));
-  document.getElementById('footer-ttc').textContent  = fmt(list.reduce((s,d)=>s+(d.montant_ttc||d.montant_ht||0),0));
-  document.getElementById('footer-reste').textContent= fmt(list.filter(d=>['Accepté', 'Payé en partie'].includes(d.statut)).reduce((s,d)=>s+(d.reste_a_facturer||0),0));
+      const attente = filteredDevis.filter(d => d.statut === 'Créé' || d.statut === 'Envoyé');
+      const acceptes = filteredDevis.filter(d => ['Accepté', 'Payé en partie', 'Payé'].includes(d.statut));
 
-  const tbody = document.getElementById('tbody-devis');
-  if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+      // Détecter si des factures existent sur des devis encore au statut Créé ou Envoyé
+      const unvalidatedWithInvoice = filteredDevis.filter(d => (d.statut === 'Créé' || d.statut === 'Envoyé') && (d.total_facture > 0));
+      const unvalidatedBanner = document.getElementById('unvalidated-invoice-banner');
+      if (unvalidatedBanner) {
+        if (unvalidatedWithInvoice.length > 0) {
+          unvalidatedBanner.style.display = 'flex';
+          const devisNums = unvalidatedWithInvoice.map(d => `<strong>${d.numero}</strong> (${fmt(d.total_facture)} facturé)`).join(', ');
+          document.getElementById('unvalidated-count-text').innerHTML = `<strong>Attention :</strong> Une facture a été créée sur un devis non encore validé (${devisNums}). Passez le devis à l'état <strong>« Accepté »</strong> pour qu'il soit comptabilisé dans votre CA et suivi financier.`;
+        } else {
+          unvalidatedBanner.style.display = 'none';
+        }
+      }
+
+      const caAccepte = acceptes.reduce((s, d) => s + (d.montant_ht || 0), 0);
+      const resteAFacturer = acceptes.reduce((s, d) => s + d.reste_a_facturer, 0);
+      const factEnAttente = acceptes.reduce((s, d) => s + d.facture_en_attente, 0);
+      const dejaPaye = acceptes.reduce((s, d) => s + d.deja_paye, 0);
+
+      document.getElementById('stat-mois').textContent = filteredDevis.length;
+      document.getElementById('stat-mois-sub').textContent = fmt(filteredDevis.reduce((s, d) => s + (d.montant_ht || 0), 0)) + ' HT';
+
+      document.getElementById('stat-attente').textContent = attente.length;
+      document.getElementById('stat-attente-sub').textContent = fmt(attente.reduce((s, d) => s + (d.montant_ht || 0), 0)) + ' HT';
+
+      document.getElementById('stat-accepte').textContent = acceptes.length;
+      document.getElementById('stat-accepte-sub').textContent = fmt(caAccepte) + ' HT';
+
+      document.getElementById('stat-ca').textContent = fmt(caAccepte);
+      document.getElementById('stat-ca-sub').textContent = `${acceptes.length} devis validé${acceptes.length > 1 ? 's' : ''}`;
+
+      document.getElementById('stat-reste').textContent = fmt(resteAFacturer);
+      document.getElementById('stat-facture-attente').textContent = fmt(factEnAttente);
+      document.getElementById('stat-facture-paye').textContent = fmt(dejaPaye);
+      document.getElementById('stat-total').textContent = allDevis.length;
+    }
+
+    async function renderDashboard() {
+      // Affiche un état de chargement pendant l'appel réseau
+      document.getElementById('tbody-devis').innerHTML = '<tr><td colspan="11" style="text-align:center;padding:20px;color:var(--texte-sec)"><i class="ti ti-loader-2" style="animation:spin 1s linear infinite; display:inline-block;"></i> Chargement des données...</td></tr>';
+
+      // Récupération asynchrone des devis et factures depuis Supabase
+      allDevis = await DB.getDevis();
+      const allFactures = await DB.getFactures();
+
+      // Recalcul en temps réel pour chaque devis depuis les factures réelles
+      allDevis.forEach(d => {
+        const facts = allFactures.filter(f => (f.devis_id && f.devis_id === d.id) || (f.devis_numero && f.devis_numero === d.numero));
+        const activeFacts = facts.filter(f => f.statut !== 'Annulé');
+
+        // Total émis (toutes factures non annulées)
+        d.total_facture = activeFacts.reduce((sum, f) => sum + (f.montant_ht || f.montant || 0), 0);
+
+        // Factures payées / encaissées
+        const paidFacts = activeFacts.filter(f => f.statut === 'Payé');
+        d.deja_paye = paidFacts.reduce((sum, f) => sum + (f.montant_ht || f.montant || 0), 0);
+        if (d.statut === 'Payé' && d.deja_paye === 0) {
+          d.deja_paye = d.montant_ht || 0;
+        }
+
+        // Factures émises en attente de paiement (statut Créé ou Envoyé)
+        const pendingFacts = activeFacts.filter(f => f.statut === 'Créé' || f.statut === 'Envoyé');
+        d.facture_en_attente = pendingFacts.reduce((sum, f) => sum + (f.montant_ht || f.montant || 0), 0);
+
+        // Reste du devis à facturer
+        d.reste_a_facturer = Math.max(0, (d.montant_ht || 0) - d.total_facture);
+        d.deja_facture = d.total_facture;
+      });
+
+      // Charger les suggestions clients
+      await chargerSuggestions();
+
+      // Badge sidebar
+      document.getElementById('badge-total').textContent = allDevis.length;
+
+      recalculerStatsPeriode();
+      renderTable(allDevis);
+    }
+
+    function renderTable(devis) {
+      // Filtrage par période puis par statut
+      let list = filterByPeriod(devis || allDevis);
+      if (currentFilter) {
+        if (currentFilter === 'Payé') {
+          list = list.filter(d => d.statut === 'Payé' || (d.deja_paye > 0 && d.deja_paye >= (d.montant_ht || 0)));
+        } else {
+          list = list.filter(d => d.statut === currentFilter);
+        }
+      }
+
+      // Tri
+      list.sort((a, b) => {
+        let va = a[currentSort.key] ?? '';
+        let vb = b[currentSort.key] ?? '';
+        if (typeof va === 'number') return (va - vb) * currentSort.dir;
+        return String(va).localeCompare(String(vb)) * currentSort.dir;
+      });
+
+      // Search
+      const q = document.getElementById('global-search').value.toLowerCase();
+      if (q) list = list.filter(d =>
+        (d.numero || '').toLowerCase().includes(q) ||
+        (d.client || '').toLowerCase().includes(q) ||
+        (d.objet || '').toLowerCase().includes(q)
+      );
+
+      document.getElementById('count-shown').textContent = list.length;
+      document.getElementById('footer-ht').textContent = fmt(list.reduce((s, d) => s + (d.montant_ht || 0), 0));
+      document.getElementById('footer-ttc').textContent = fmt(list.reduce((s, d) => s + (d.montant_ttc || d.montant_ht || 0), 0));
+      document.getElementById('footer-reste').textContent = fmt(list.filter(d => ['Accepté', 'Payé en partie'].includes(d.statut)).reduce((s, d) => s + (d.reste_a_facturer || 0), 0));
+
+      const tbody = document.getElementById('tbody-devis');
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
       <i class="ti ti-file-off"></i>
       <h3>Aucun devis trouvé</h3>
       <p>Modifiez vos filtres ou créez un nouveau devis</p>
       <a href="devis.html" class="btn btn-primary"><i class="ti ti-plus"></i> Nouveau devis</a>
     </div></td></tr>`;
-    return;
-  }
+        return;
+      }
 
-  tbody.innerHTML = list.map(d => {
-    const badgeClass = getBadgeClass(d.statut);
-    const lignes = Array.isArray(d.lignes) ? d.lignes : [];
-    const produitApercu = lignes.map(l=>l.designation).join(', ').substring(0,40) + (lignes.length > 1 ? '...' : '');
+      tbody.innerHTML = list.map(d => {
+        const badgeClass = getBadgeClass(d.statut);
+        const lignes = Array.isArray(d.lignes) ? d.lignes : [];
+        const produitApercu = lignes.map(l => l.designation).join(', ').substring(0, 40) + (lignes.length > 1 ? '...' : '');
 
-    return `<tr onclick="voirDevis('${d.id}')" style="cursor:pointer">
+        return `<tr onclick="voirDevis('${d.id}')" style="cursor:pointer">
       <td onclick="event.stopPropagation()" data-label=""><input type="checkbox" class="row-check" data-id="${d.id}" /></td>
-      <td data-label="N°"><span class="td-num">${d.numero||'—'}</span> <small class="td-sec" style="display:block;font-size:10px">${d.type||'Devis'}</small></td>
-      <td class="td-montant" data-label="Montant HT">${fmt(d.montant_ht||0)}</td>
-      <td class="td-montant" data-label="Montant TTC">${fmt(d.montant_ttc||d.montant_ht||0)}</td>
-      <td class="td-client" data-label="Client">${d.client||'—'}</td>
+      <td data-label="N°"><span class="td-num">${d.numero || '—'}</span> <small class="td-sec" style="display:block;font-size:10px">${d.type || 'Devis'}</small></td>
+      <td class="td-montant" data-label="Montant HT">${fmt(d.montant_ht || 0)}</td>
+      <td class="td-montant" data-label="Montant TTC">${fmt(d.montant_ttc || d.montant_ht || 0)}</td>
+      <td class="td-client" data-label="Client">${d.client || '—'}</td>
       <td class="td-sec" data-label="Date Création">${fmtDate(d.date)}</td>
       <td class="td-sec" data-label="Date Paiement" onclick="event.stopPropagation()">
         <input type="date" value="${d.date_paiement ? d.date_paiement.split('T')[0] : ''}"
@@ -438,17 +500,17 @@ function renderTable(devis) {
           onmouseover="this.style.borderColor='var(--border)'"
           onmouseout="this.style.borderColor='transparent'" />
       </td>
-      <td class="td-produit" data-label="Produits" title="${lignes.map(l=>l.designation).join(', ')}">${produitApercu||'—'}</td>
+      <td class="td-produit" data-label="Produits" title="${lignes.map(l => l.designation).join(', ')}">${produitApercu || '—'}</td>
       <td onclick="event.stopPropagation()" data-label="État">
         <select class="badge badge-select ${badgeClass}" onchange="changerStatut('${d.id}', this.value, this)">
-          ${['Créé','Envoyé','Accepté','Rejeté','Payé','Payé en partie','Annulé'].map(s=>`<option value="${s}"${s===d.statut?' selected':''}>${s}</option>`).join('')}
+          ${['Créé', 'Envoyé', 'Accepté', 'Rejeté', 'Payé', 'Payé en partie', 'Annulé'].map(s => `<option value="${s}"${s === d.statut ? ' selected' : ''}>${s}</option>`).join('')}
         </select>
       </td>
       <td data-label="Facturé">
         <div class="facturation-info">
-          <div class="reste">Reste à facturer : <strong>${fmt(d.reste_a_facturer||0)}</strong></div>
+          <div class="reste">Reste à facturer : <strong>${fmt(d.reste_a_facturer || 0)}</strong></div>
           ${d.facture_en_attente > 0 ? `<div style="color:var(--orange, #f59e0b);font-size:11px;margin:2px 0">En attente : <strong>${fmt(d.facture_en_attente)}</strong></div>` : ''}
-          <div class="deja">Encaissé / Payé : <strong>${fmt(d.deja_paye||0)}</strong></div>
+          <div class="deja">Encaissé / Payé : <strong>${fmt(d.deja_paye || 0)}</strong></div>
           ${(d.statut === 'Créé' || d.statut === 'Envoyé') && d.total_facture > 0 ? `<div style="color:#ef4444;font-size:10px;font-weight:600;margin-top:3px"><i class="ti ti-alert-triangle"></i> Facturé sur devis non validé</div>` : ''}
         </div>
       </td>
@@ -470,164 +532,164 @@ function renderTable(devis) {
         </div>
       </td>
     </tr>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-function setupFilters() {
-  document.querySelectorAll('.filter-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
-      pill.classList.add('active');
-      currentFilter = pill.dataset.filter;
+    function setupFilters() {
+      document.querySelectorAll('#filters .filter-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          document.querySelectorAll('#filters .filter-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          currentFilter = pill.dataset.filter || '';
+          renderTable(allDevis);
+        });
+      });
+    }
+
+    function setupSearch() {
+      document.getElementById('global-search').addEventListener('input', () => renderTable(allDevis));
+    }
+
+    function sortBy(key) {
+      if (currentSort.key === key) currentSort.dir *= -1;
+      else { currentSort.key = key; currentSort.dir = -1; }
       renderTable(allDevis);
+    }
+
+    async function changerStatut(id, statut, selectEl) {
+      const d = allDevis.find(x => x.id === id);
+      const updatePayload = { statut };
+
+      // Si on passe à Payé et qu'aucune date de paiement n'est enregistrée, mettre la date du jour
+      if (statut === 'Payé' && (!d || !d.date_paiement)) {
+        const today = new Date().toISOString().split('T')[0];
+        updatePayload.date_paiement = today;
+        if (d) d.date_paiement = today;
+      }
+
+      await DB.updateDevis(id, updatePayload);
+      selectEl.className = `badge badge-select ${getBadgeClass(statut)}`;
+      if (d) d.statut = statut;
+
+      toast(`Statut mis à jour : ${statut}`, 'success');
+      recalculerStatsPeriode();
+      renderTable(allDevis);
+    }
+
+    async function changerDatePaiement(id, newDate) {
+      try {
+        const d = allDevis.find(x => x.id === id);
+        const updatePayload = { date_paiement: newDate || null };
+
+        // Si l'utilisateur saisit une date de paiement sur un devis non payé, proposer ou basculer en Payé
+        if (newDate && d && (d.statut === 'Créé' || d.statut === 'Envoyé' || d.statut === 'Accepté')) {
+          updatePayload.statut = 'Payé';
+          if (d) d.statut = 'Payé';
+        }
+
+        await DB.updateDevis(id, updatePayload);
+        if (d) d.date_paiement = newDate || null;
+        toast('Date de paiement enregistrée', 'success');
+        recalculerStatsPeriode();
+        renderTable(allDevis);
+      } catch (err) {
+        console.error('Erreur mise à jour date paiement:', err);
+        toast('Erreur mise à jour date de paiement', 'error');
+      }
+    }
+
+    async function supprimerDevis(id) {
+      const d = allDevis.find(x => x.id === id);
+      if (!confirm(`Supprimer le devis ${d?.numero || ''} ?\nCette action est irréversible.`)) return;
+
+      // Appel async vers Supabase
+      await DB.deleteDevis(id);
+      await renderDashboard();
+      toast('Devis supprimé', 'info');
+      closeAllDropdowns();
+    }
+
+    async function creerSimilaire(id) {
+      toast('Clonage du document...', 'info');
+      const nouveauDevis = await clonerDevis(id);
+      if (nouveauDevis) {
+        window.location.href = `devis.html?id=${nouveauDevis.id}`;
+      } else {
+        toast('Erreur lors du clonage', 'error');
+      }
+    }
+
+    function telechargerPDF(id) {
+      genererPDF(id);
+      closeAllDropdowns();
+    }
+
+    function envoyerMail(id) {
+      envoyerDevisParMail(id);
+      closeAllDropdowns();
+    }
+
+    function voirDevis(id) {
+      window.location.href = `voir.html?id=${id}`;
+    }
+
+    // Checkbox all
+    document.getElementById('check-all').addEventListener('change', function () {
+      document.querySelectorAll('.row-check').forEach(c => c.checked = this.checked);
     });
-  });
-}
 
-function setupSearch() {
-  document.getElementById('global-search').addEventListener('input', () => renderTable(allDevis));
-}
-
-function sortBy(key) {
-  if (currentSort.key === key) currentSort.dir *= -1;
-  else { currentSort.key = key; currentSort.dir = -1; }
-  renderTable(allDevis);
-}
-
-async function changerStatut(id, statut, selectEl) {
-  const d = allDevis.find(x => x.id === id);
-  const updatePayload = { statut };
-
-  // Si on passe à Payé et qu'aucune date de paiement n'est enregistrée, mettre la date du jour
-  if (statut === 'Payé' && (!d || !d.date_paiement)) {
-    const today = new Date().toISOString().split('T')[0];
-    updatePayload.date_paiement = today;
-    if (d) d.date_paiement = today;
-  }
-
-  await DB.updateDevis(id, updatePayload);
-  selectEl.className = `badge badge-select ${getBadgeClass(statut)}`;
-  if (d) d.statut = statut;
-  
-  toast(`Statut mis à jour : ${statut}`, 'success');
-  recalculerStatsPeriode();
-  renderTable(allDevis);
-}
-
-async function changerDatePaiement(id, newDate) {
-  try {
-    const d = allDevis.find(x => x.id === id);
-    const updatePayload = { date_paiement: newDate || null };
-    
-    // Si l'utilisateur saisit une date de paiement sur un devis non payé, proposer ou basculer en Payé
-    if (newDate && d && (d.statut === 'Créé' || d.statut === 'Envoyé' || d.statut === 'Accepté')) {
-      updatePayload.statut = 'Payé';
-      if (d) d.statut = 'Payé';
+    function getBadgeClass(statut) {
+      const map = {
+        'Créé': 'badge-cree', 'Envoyé': 'badge-envoye', 'Accepté': 'badge-accepte',
+        'Rejeté': 'badge-rejete', 'Payé': 'badge-paye', 'Payé en partie': 'badge-partiel', 'Annulé': 'badge-annule'
+      };
+      return map[statut] || 'badge-cree';
     }
 
-    await DB.updateDevis(id, updatePayload);
-    if (d) d.date_paiement = newDate || null;
-    toast('Date de paiement enregistrée', 'success');
-    recalculerStatsPeriode();
-    renderTable(allDevis);
-  } catch (err) {
-    console.error('Erreur mise à jour date paiement:', err);
-    toast('Erreur mise à jour date de paiement', 'error');
-  }
-}
+    // Style dynamique pour l'icône de chargement
+    const styleEl = document.createElement('style');
+    styleEl.textContent = '@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }';
+    document.head.appendChild(styleEl);
 
-async function supprimerDevis(id) {
-  const d = allDevis.find(x=>x.id===id);
-  if (!confirm(`Supprimer le devis ${d?.numero || ''} ?\nCette action est irréversible.`)) return;
-  
-  // Appel async vers Supabase
-  await DB.deleteDevis(id);
-  await renderDashboard();
-  toast('Devis supprimé', 'info');
-  closeAllDropdowns();
-}
+    // ── GESTION DES SUGGESTIONS CLIENTS ──
+    let allSuggestions = [];
 
-async function creerSimilaire(id) {
-  toast('Clonage du document...', 'info');
-  const nouveauDevis = await clonerDevis(id);
-  if (nouveauDevis) {
-    window.location.href = `devis.html?id=${nouveauDevis.id}`;
-  } else {
-    toast('Erreur lors du clonage', 'error');
-  }
-}
+    async function chargerSuggestions() {
+      try {
+        allSuggestions = await DB.getSuggestions();
+        const unread = allSuggestions.filter(s => !s.lu);
+        const banner = document.getElementById('suggestions-alert-banner');
 
-function telechargerPDF(id) {
-  genererPDF(id);
-  closeAllDropdowns();
-}
-
-function envoyerMail(id) {
-  envoyerDevisParMail(id);
-  closeAllDropdowns();
-}
-
-function voirDevis(id) {
-  window.location.href = `voir.html?id=${id}`;
-}
-
-// Checkbox all
-document.getElementById('check-all').addEventListener('change', function() {
-  document.querySelectorAll('.row-check').forEach(c => c.checked = this.checked);
-});
-
-function getBadgeClass(statut) {
-  const map = {
-    'Créé':'badge-cree','Envoyé':'badge-envoye','Accepté':'badge-accepte',
-    'Rejeté':'badge-rejete','Payé':'badge-paye','Payé en partie':'badge-partiel','Annulé':'badge-annule'
-  };
-  return map[statut] || 'badge-cree';
-}
-
-// Style dynamique pour l'icône de chargement
-const styleEl = document.createElement('style');
-styleEl.textContent = '@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }';
-document.head.appendChild(styleEl);
-
-// ── GESTION DES SUGGESTIONS CLIENTS ──
-let allSuggestions = [];
-
-async function chargerSuggestions() {
-  try {
-    allSuggestions = await DB.getSuggestions();
-    const unread = allSuggestions.filter(s => !s.lu);
-    const banner = document.getElementById('suggestions-alert-banner');
-    
-    if (unread.length > 0) {
-      document.getElementById('unread-suggestions-count').textContent = unread.length;
-      banner.style.display = 'flex';
-    } else {
-      banner.style.display = 'none';
+        if (unread.length > 0) {
+          document.getElementById('unread-suggestions-count').textContent = unread.length;
+          banner.style.display = 'flex';
+        } else {
+          banner.style.display = 'none';
+        }
+      } catch (e) {
+        console.error('Erreur chargerSuggestions:', e);
+      }
     }
-  } catch (e) {
-    console.error('Erreur chargerSuggestions:', e);
-  }
-}
 
-function openSuggestionsModal() {
-  const modal = document.getElementById('admin-suggestions-modal');
-  modal.style.display = 'flex';
-  renderSuggestionsList();
-}
+    function openSuggestionsModal() {
+      const modal = document.getElementById('admin-suggestions-modal');
+      modal.style.display = 'flex';
+      renderSuggestionsList();
+    }
 
-function closeSuggestionsModal() {
-  document.getElementById('admin-suggestions-modal').style.display = 'none';
-  chargerSuggestions();
-}
+    function closeSuggestionsModal() {
+      document.getElementById('admin-suggestions-modal').style.display = 'none';
+      chargerSuggestions();
+    }
 
-function renderSuggestionsList() {
-  const container = document.getElementById('suggestions-list-container');
-  if (!allSuggestions.length) {
-    container.innerHTML = '<div style="text-align:center; color:#64748b; padding:20px; font-style:italic">Aucune suggestion pour le moment.</div>';
-    return;
-  }
-  
-  container.innerHTML = allSuggestions.map(s => `
+    function renderSuggestionsList() {
+      const container = document.getElementById('suggestions-list-container');
+      if (!allSuggestions.length) {
+        container.innerHTML = '<div style="text-align:center; color:#64748b; padding:20px; font-style:italic">Aucune suggestion pour le moment.</div>';
+        return;
+      }
+
+      container.innerHTML = allSuggestions.map(s => `
     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px; position:relative; text-align:left; ${!s.lu ? 'border-left: 4px solid #f59e0b;' : ''}">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
         <strong style="font-size:14px; color:#1e293b;">${escHtml(s.client_nom)}</strong>
@@ -641,44 +703,52 @@ function renderSuggestionsList() {
       ` : '<span style="font-size:11px; color:#10b981; font-weight:600;"><i class="ti ti-checks"></i> Lu</span>'}
     </div>
   `).join('');
-}
+    }
 
-async function markAsRead(id) {
-  try {
-    await DB.markSuggestionRead(id);
-    const s = allSuggestions.find(x => x.id === id);
-    if (s) s.lu = true;
-    renderSuggestionsList();
-  } catch(e) {
-    console.error(e);
-  }
-}
+    async function markAsRead(id) {
+      try {
+        await DB.markSuggestionRead(id);
+        const s = allSuggestions.find(x => x.id === id);
+        if (s) s.lu = true;
+        renderSuggestionsList();
+      } catch (e) {
+        console.error(e);
+      }
+    }
 
-function escHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-</script>
+    function escHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
 
   <!-- Modal Admin Suggestions -->
-  <div id="admin-suggestions-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:2000; align-items:center; justify-content:center; padding:20px;">
-    <div style="background:#fff; color:#1e293b; border-radius:16px; max-width:600px; width:100%; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.15); position:relative; max-height:80vh; display:flex; flex-direction:column;">
-      <button onclick="closeSuggestionsModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#64748b; cursor:pointer; font-size:20px;"><i class="ti ti-x"></i></button>
-      <h3 style="margin-top:0; margin-bottom:16px; font-size:18px; font-weight:600; display:flex; align-items:center; gap:8px;">
+  <div id="admin-suggestions-modal"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+    <div
+      style="background:#fff; color:#1e293b; border-radius:16px; max-width:600px; width:100%; padding:24px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.15); position:relative; max-height:80vh; display:flex; flex-direction:column;">
+      <button onclick="closeSuggestionsModal()"
+        style="position:absolute; top:16px; right:16px; background:none; border:none; color:#64748b; cursor:pointer; font-size:20px;"><i
+          class="ti ti-x"></i></button>
+      <h3
+        style="margin-top:0; margin-bottom:16px; font-size:18px; font-weight:600; display:flex; align-items:center; gap:8px;">
         <i class="ti ti-bulb" style="color:#f59e0b"></i> Suggestions d'améliorations clients
       </h3>
-      <div id="suggestions-list-container" style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding-right:4px;">
+      <div id="suggestions-list-container"
+        style="overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px; margin-bottom:16px; padding-right:4px;">
         <!-- Rendu dynamique -->
       </div>
       <div style="text-align:right;">
-        <button class="btn btn-secondary btn-sm" onclick="closeSuggestionsModal()" style="cursor:pointer; padding:6px 12px; font-size:12px;">Fermer</button>
+        <button class="btn btn-secondary btn-sm" onclick="closeSuggestionsModal()"
+          style="cursor:pointer; padding:6px 12px; font-size:12px;">Fermer</button>
       </div>
     </div>
   </div>
 </body>
+
 </html>

@@ -513,7 +513,7 @@
         </div>
         <div style="display:flex;gap:8px">
           <a href="index.html" class="btn btn-ghost">Retour</a>
-          <button class="btn btn-secondary" onclick="aperçuPDF()">
+          <button class="btn btn-secondary" onclick="apercuPDF()">
             <i class="ti ti-eye"></i> Aperçu PDF
           </button>
           <button class="btn btn-primary" onclick="sauvegarder()">
@@ -1342,7 +1342,7 @@
       setTimeout(() => window.location.href = 'index.html', 800);
     }
 
-    function aperçuPDF() {
+    function apercuPDF() {
       if (!devisId) { sauvegarder(); return; }
       window.open(`voir.html?id=${devisId}`, '_blank');
     }
