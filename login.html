@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     body {
-      background: var(--fond);
+      background: var(--bg-page);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -57,22 +57,22 @@
       font-family: inherit;
     }
     .input-group input:focus {
-      border-color: var(--primaire);
+      border-color: var(--rouge);
     }
     .btn-login {
       width: 100%;
       padding: 12px;
-      background: var(--primaire);
+      background: var(--rouge);
       color: white;
       border: none;
       border-radius: var(--radius);
       font-weight: 600;
       cursor: pointer;
       font-size: 16px;
-      transition: opacity 0.2s;
+      transition: background 0.2s;
     }
     .btn-login:hover {
-      opacity: 0.9;
+      background: var(--rouge-hover);
     }
     .error-msg {
       color: #e74c3c;
