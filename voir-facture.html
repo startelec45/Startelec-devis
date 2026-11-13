@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (!isAuth) {
     const btnBar = document.createElement('div');
-    btnBar.innerHTML = '<div style="padding:20px;text-align:center;background:#fff;border-bottom:1px solid var(--border);margin-bottom:20px"><button class="btn btn-primary" onclick="telechargerPDF()"><i class="ti ti-download"></i> Télécharger la facture</button></div>';
+    btnBar.innerHTML = '<div style="padding:20px;text-align:center;background:#fff;border-bottom:1px solid var(--border);margin-bottom:20px"><button class="btn btn-primary" onclick="telechargerPDFClient()"><i class="ti ti-download"></i> Télécharger la facture</button></div>';
     document.querySelector('.page-content').prepend(btnBar);
   } else {
     document.getElementById('topbar-num').textContent = facture.numero || '—';
@@ -289,18 +289,12 @@ function renderPDF() {
 
   // Titre du document
   let titreDoc = 'FACTURE';
-  if (f.type === "Facture d'acompte" || f.titre?.toLowerCase().includes('acompte')) {
-    titreDoc = "FACTURE D'ACOMPTE";
-  } else if (f.type === "Facture de situation" || f.titre?.toLowerCase().includes('situation')) {
-    const match = f.titre?.match(/Situation\s+N°?\s*\d+/i);
-    titreDoc = match ? `FACTURE DE ${match[0].toUpperCase()}` : "FACTURE DE SITUATION";
-  } else if (f.type === 'Avoir') {
-    titreDoc = 'AVOIR';
-  }
+  if (f.type === "Facture d'acompte") titreDoc = "FACTURE D'ACOMPTE";
+  else if (f.type === 'Avoir')        titreDoc = 'AVOIR';
 
   // Adresse client
   const clientAdresse = [
-    escHtml(f.client_adresse).replace(/\r?\n/g, '<br/>'),
+    escHtml(f.client_adresse),
     (f.client_cp || f.client_ville) ? escHtml(`${f.client_cp || ''} ${f.client_ville || ''}`.trim()) : '',
   ].filter(Boolean).join('<br/>');
 
@@ -352,7 +346,7 @@ function renderPDF() {
     <div class="pdf-rouge-line"></div>
 
     <!-- BANDE INFOS -->
-    <div class="pdf-info-band" style="grid-template-columns: repeat(${f.num_commande ? 5 : 4}, 1fr)">
+    <div class="pdf-info-band">
       <div class="pdf-info-cell">
         <span style="color:#666">Date :</span>
         <strong>${fmtDate(f.date || f.created_at)}</strong>
@@ -369,11 +363,6 @@ function renderPDF() {
         <span style="color:#666">Devis lié :</span>
         <strong>${f.devis_numero || '—'}</strong>
       </div>
-      ${f.num_commande ? `
-      <div class="pdf-info-cell">
-        <span style="color:#666">N° Bon commande :</span>
-        <strong>${escHtml(f.num_commande)}</strong>
-      </div>` : ''}
     </div>
 
     <!-- ÉMETTEUR / CLIENT -->
