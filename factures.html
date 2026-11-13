@@ -433,19 +433,19 @@ async function renderFactures() {
 
     return `<tr onclick="voirFacture('${f.id}')" style="cursor:pointer">
       <td onclick="event.stopPropagation()" data-label=""><input type="checkbox" /></td>
-      <td data-label="N° Facture"><span class="td-num">${f.numero||'—'}</span></td>
+      <td data-label="N° Facture"><span class="td-num">${escHtml(f.numero||'—')}</span></td>
       <td data-label="Type">
         <span class="badge ${typeLabel==='Avoir'?'badge-annule':typeLabel.includes('acompte')?'badge-acompte':'badge-cree'}"
           style="font-size:10px">${typeLabel}</span>
       </td>
       <td data-label="Devis Lié">
         ${f.devis_numero
-          ? `<a href="voir.html?id=${f.devis_id}" onclick="event.stopPropagation()"
-              style="color:var(--rouge);font-weight:500;text-decoration:none">${f.devis_numero}</a>`
+          ? `<a href="voir.html?id=${encodeURIComponent(f.devis_id)}" onclick="event.stopPropagation()"
+              style="color:var(--rouge);font-weight:500;text-decoration:none">${escHtml(f.devis_numero)}</a>`
           : '<span style="color:var(--texte-sec)">—</span>'}
       </td>
-      <td class="td-client" data-label="Client">${f.client||'—'}</td>
-      <td class="td-produit" title="${f.objet||''}" data-label="Objet">${(f.objet||f.titre||'').substring(0,45)}${(f.objet||'').length>45?'...':''}</td>
+      <td class="td-client" data-label="Client">${escHtml(f.client||'—')}</td>
+      <td class="td-produit" title="${escHtml(f.objet||'')}" data-label="Objet">${escHtml((f.objet||f.titre||'').substring(0,45))}${(f.objet||'').length>45?'...':''}</td>
       <td class="td-sec" data-label="Date">${fmtDate(f.date||f.created_at)}</td>
       <td class="td-sec" data-label="Échéance">${f.date_echeance ? fmtDate(f.date_echeance) : '—'}${retardBadge}</td>
       <td class="td-montant" data-label="Montant HT">${fmt(montant)}</td>
