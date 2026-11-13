@@ -85,13 +85,16 @@
           <button class="btn btn-ghost btn-sm" onclick="toggleDropdown(this)"><i class="ti ti-plus"></i> Créer / Plus <i
               class="ti ti-chevron-down"></i></button>
           <div class="dropdown-menu">
-            <div class="dropdown-item" onclick="creerSimilaire()"><i class="ti ti-copy"></i> Créer un document similaire</div>
-            <div class="dropdown-item" onclick="nouveauDevis()"><i class="ti ti-file-plus"></i> Créer un nouveau doc.</div>
+            <div class="dropdown-item" onclick="creerSimilaire()"><i class="ti ti-copy"></i> Créer un document similaire
+            </div>
+            <div class="dropdown-item" onclick="nouveauDevis()"><i class="ti ti-file-plus"></i> Créer un nouveau doc.
+            </div>
             <div class="dropdown-separator"></div>
-            <div class="dropdown-item" onclick="ouvrirModalAcompte()"><i class="ti ti-receipt-2"></i> Créer une facture d'acompte</div>
-            <div class="dropdown-item" onclick="ouvrirModalSituation()"><i class="ti ti-chart-pie"></i> Créer une facture de situation</div>
+            <div class="dropdown-item" onclick="creerAcompte()"><i class="ti ti-receipt-2"></i> Créer une facture
+              d'acompte</div>
             <div class="dropdown-separator"></div>
-            <div class="dropdown-item danger" onclick="annulerDevis()"><i class="ti ti-ban"></i> Annuler (sans supprimer)</div>
+            <div class="dropdown-item danger" onclick="annulerDevis()"><i class="ti ti-ban"></i> Annuler (sans
+              supprimer)</div>
           </div>
         </div>
 
@@ -206,10 +209,7 @@
                   <option value="Sous-traitance">Sous-traitance</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label>N° Bon de commande client</label>
-                <input type="text" class="form-control" id="f-num-commande" placeholder="Ex: BC-2026-042" />
-              </div>
+              <div class="form-group"></div>
             </div>
           </div>
         </div>
@@ -240,13 +240,25 @@
                     onchange="toggleTypeClient()" /> Particulier</label>
               </div>
 
-              <!-- Recherche client existant -->
+              <!-- Recherche / Menu client existant -->
               <div class="form-group" style="margin-bottom:12px">
-                <label>Rechercher un client existant</label>
-                <div class="autocomplete-wrap">
-                  <input type="text" class="form-control" id="search-client" placeholder="Nom, société..." />
-                  <div class="autocomplete-list" id="client-suggestions"></div>
+                <label>Choisir un client ou un syndic</label>
+                <div class="autocomplete-wrap" id="client-menu-wrap">
+                  <input type="text" class="form-control" id="search-client"
+                    placeholder="Cliquer pour voir la liste (syndics, résidences, clients)..." autocomplete="off" />
+                  <div class="autocomplete-list" id="client-suggestions" style="max-height:320px;"></div>
                 </div>
+              </div>
+
+              <!-- Classement interne par syndic (non affiché sur le devis) -->
+              <div class="form-group" style="margin-bottom:12px;background:#f8fafc;border:1px dashed var(--border);border-radius:var(--radius);padding:8px 10px;">
+                <label style="font-size:12px;color:var(--texte-sec);display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+                  <i class="ti ti-folders" style="color:var(--rouge)"></i>
+                  Syndic / Agence <span style="font-weight:400">(classement interne — n'apparaît pas sur le devis)</span>
+                </label>
+                <input type="text" class="form-control" id="f-client-syndic" list="syndics-datalist"
+                  placeholder="Aucun (client direct) — ex : SERGIC" style="background:#fff;" />
+                <datalist id="syndics-datalist"></datalist>
               </div>
 
               <div id="acheteur-part">
@@ -513,7 +525,7 @@
         </div>
         <div style="display:flex;gap:8px">
           <a href="index.html" class="btn btn-ghost">Retour</a>
-          <button class="btn btn-secondary" onclick="apercuPDF()">
+          <button class="btn btn-secondary" onclick="aperçuPDF()">
             <i class="ti ti-eye"></i> Aperçu PDF
           </button>
           <button class="btn btn-primary" onclick="sauvegarder()">
@@ -641,18 +653,8 @@
       document.getElementById('f-numero').value = d.numero || '';
       document.getElementById('f-date').value = d.date || '';
       document.getElementById('f-lieu').value = d.lieu || 'Orléans';
-      if (d.date_paiement) {
-        document.getElementById('f-date-add-type').value = 'paiement';
-        document.getElementById('f-date-add').value = d.date_paiement.split('T')[0];
-      } else if (d.date_envoi) {
-        document.getElementById('f-date-add-type').value = 'envoi';
-        document.getElementById('f-date-add').value = d.date_envoi.split('T')[0];
-      } else {
-        document.getElementById('f-date-add-type').value = 'validite';
-        document.getElementById('f-date-add').value = d.date_validite ? d.date_validite.split('T')[0] : '';
-      }
+      document.getElementById('f-date-add').value = d.date_validite || '';
       document.getElementById('f-objet').value = d.objet || '';
-      document.getElementById('f-num-commande').value = d.num_commande || '';
       document.getElementById('f-mode-reglement').value = d.mode_reglement || 'Virement bancaire';
       document.getElementById('f-acompte').value = (d.acompte_pct !== undefined && d.acompte_pct !== null) ? d.acompte_pct : 30;
       document.getElementById('acompte-pct').textContent = (d.acompte_pct !== undefined && d.acompte_pct !== null) ? d.acompte_pct : 30;
@@ -940,49 +942,209 @@
     }
 
     // ══════════════════════════════════════════════
-    // RECHERCHE CLIENT
+    // RECHERCHE & MENU CLIENT / SYNDIC (2 NIVEAUX)
     // ══════════════════════════════════════════════
+    let clientsCache = [];
+    let selectedSyndicMenu = null;
+
+    function getUniqueSyndics(clients) {
+      const map = new Map();
+      clients.forEach(c => {
+        const s = (c.syndic || '').trim();
+        if (s && !map.has(s.toLowerCase())) map.set(s.toLowerCase(), s);
+      });
+      return Array.from(map.values()).sort((a, b) => a.localeCompare(b, 'fr'));
+    }
+
+    function refreshSyndicsDatalist(clients) {
+      const dl = document.getElementById('syndics-datalist');
+      if (!dl) return;
+      dl.innerHTML = getUniqueSyndics(clients)
+        .map(s => `<option value="${escHtml(s)}"></option>`)
+        .join('');
+    }
+
+    function renderClientMenu(q = '') {
+      const input = document.getElementById('search-client');
+      const list = document.getElementById('client-suggestions');
+      const syndics = getUniqueSyndics(clientsCache);
+
+      // Niveau 2 : sous-menu d'un syndic (ex: SERGIC)
+      if (selectedSyndicMenu) {
+        const residences = clientsCache.filter(c =>
+          (c.syndic || '').trim().toLowerCase() === selectedSyndicMenu.toLowerCase() &&
+          (!q || (c.nom || '').toLowerCase().includes(q) || (c.societe || '').toLowerCase().includes(q) ||
+            (c.adresse || '').toLowerCase().includes(q) || (c.ville || '').toLowerCase().includes(q))
+        );
+
+        let html = `
+          <div class="autocomplete-item" data-action="back" style="background:#f8fafc;border-bottom:1px solid var(--border);font-weight:600;color:var(--texte);">
+            <span><i class="ti ti-arrow-left" style="margin-right:6px"></i> ${escHtml(selectedSyndicMenu)}</span>
+            <span style="font-size:11px;color:var(--texte-sec);font-weight:400">Retour</span>
+          </div>`;
+
+        if (residences.length) {
+          html += residences.map(c => {
+            const label = c.societe || c.nom || '—';
+            const lieu = [c.adresse, c.cp, c.ville].filter(Boolean).join(', ');
+            return `
+              <div class="autocomplete-item" data-id="${escHtml(c.id)}">
+                <div style="min-width:0;">
+                  <div style="font-weight:500;">${escHtml(label)}</div>
+                  ${lieu ? `<div style="font-size:11px;color:var(--texte-sec);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;">${escHtml(lieu)}</div>` : ''}
+                </div>
+                <span class="ac-prix" style="color:var(--texte-sec);margin-left:8px;">${escHtml(c.ville || '')}</span>
+              </div>`;
+          }).join('');
+        } else {
+          html += `<div style="padding:10px 12px;font-size:12px;color:var(--texte-sec);font-style:italic">Aucune résidence enregistrée</div>`;
+        }
+
+        html += `
+          <div class="autocomplete-item" data-action="new-residence" style="border-top:1px solid var(--border);color:var(--rouge);font-weight:600;background:#fffafa;">
+            <span><i class="ti ti-plus" style="margin-right:6px"></i> Nouvelle résidence pour ${escHtml(selectedSyndicMenu)}</span>
+          </div>`;
+
+        list.innerHTML = html;
+      } else {
+        // Niveau 1 : Syndics (dossiers) + Clients directs
+        const matchingSyndics = syndics.filter(s => !q || s.toLowerCase().includes(q));
+        const matchingClients = (q
+          ? clientsCache.filter(c =>
+              (c.nom || '').toLowerCase().includes(q) ||
+              (c.societe || '').toLowerCase().includes(q) ||
+              (c.adresse || '').toLowerCase().includes(q) ||
+              (c.ville || '').toLowerCase().includes(q) ||
+              (c.syndic || '').toLowerCase().includes(q))
+          : clientsCache.filter(c => !(c.syndic || '').trim())
+        ).slice(0, 30);
+
+        let html = matchingSyndics.map(s => {
+          const count = clientsCache.filter(c => (c.syndic || '').trim().toLowerCase() === s.toLowerCase()).length;
+          return `
+            <div class="autocomplete-item" data-syndic="${escHtml(s)}" style="background:#f8fafc;border-bottom:1px solid #f0f0f0;">
+              <span style="font-weight:600;display:flex;align-items:center;gap:6px;">
+                <i class="ti ti-folders" style="color:var(--rouge)"></i> ${escHtml(s)}
+              </span>
+              <span style="font-size:11px;color:var(--texte-sec);display:flex;align-items:center;gap:4px;">
+                ${count} résidence${count > 1 ? 's' : ''} <i class="ti ti-chevron-right"></i>
+              </span>
+            </div>`;
+        }).join('');
+
+        html += matchingClients.map(c => {
+          const label = c.societe || c.nom || '—';
+          const badgeSyndic = (c.syndic || '').trim()
+            ? `<span style="font-size:10px;background:var(--rouge-light);color:var(--rouge);padding:1px 6px;border-radius:10px;margin-left:6px;">${escHtml(c.syndic)}</span>`
+            : '';
+          return `
+            <div class="autocomplete-item" data-id="${escHtml(c.id)}">
+              <span>${escHtml(label)}${badgeSyndic}</span>
+              <span class="ac-prix" style="color:var(--texte-sec)">${escHtml(c.ville || '')}</span>
+            </div>`;
+        }).join('');
+
+        if (!html) {
+          html = `<div style="padding:10px 12px;font-size:12px;color:var(--texte-sec);font-style:italic">Aucun client trouvé</div>`;
+        }
+
+        list.innerHTML = html;
+      }
+
+      list.querySelectorAll('.autocomplete-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (item.dataset.action === 'back') {
+            selectedSyndicMenu = null;
+            input.value = '';
+            renderClientMenu('');
+            input.focus();
+            return;
+          }
+          if (item.dataset.action === 'new-residence') {
+            const syndic = selectedSyndicMenu;
+            selectedSyndicMenu = null;
+            list.classList.remove('open');
+            input.value = '';
+            preparerNouvelleResidence(syndic);
+            return;
+          }
+          if (item.dataset.syndic) {
+            selectedSyndicMenu = item.dataset.syndic;
+            input.value = '';
+            renderClientMenu('');
+            input.focus();
+            return;
+          }
+          const c = clientsCache.find(x => String(x.id) === String(item.dataset.id));
+          if (c) remplirClient(c);
+          selectedSyndicMenu = null;
+          list.classList.remove('open');
+          input.value = '';
+        });
+      });
+
+      list.classList.add('open');
+    }
+
     function setupClientSearch() {
+      const wrap = document.getElementById('client-menu-wrap');
       const input = document.getElementById('search-client');
       const list = document.getElementById('client-suggestions');
 
+      const openAndRefresh = async () => {
+        if (!clientsCache.length) {
+          clientsCache = await DB.getClients();
+          refreshSyndicsDatalist(clientsCache);
+        }
+        renderClientMenu(input.value.toLowerCase().trim());
+      };
+
+      input.addEventListener('focus', openAndRefresh);
+      input.addEventListener('click', openAndRefresh);
       input.addEventListener('input', async () => {
-        const q = input.value.toLowerCase().trim();
-        if (!q) { list.classList.remove('open'); return; }
-
-        const allClients = await DB.getClients();
-        const clients = allClients.filter(c =>
-          c.nom.toLowerCase().includes(q) ||
-          (c.societe || '').toLowerCase().includes(q)
-        ).slice(0, 6);
-
-        if (!clients.length) { list.classList.remove('open'); return; }
-
-        list.innerHTML = clients.map(c => `
-      <div class="autocomplete-item" data-id="${c.id}">
-        <span>${c.nom}</span>
-        <span class="ac-prix" style="color:var(--texte-sec)">${c.ville || ''}</span>
-      </div>`).join('');
-
-        list.querySelectorAll('.autocomplete-item').forEach(item => {
-          item.addEventListener('click', async () => {
-            const c = await DB.getClientById(item.dataset.id);
-            if (c) remplirClient(c);
-            list.classList.remove('open');
-            input.value = '';
-          });
-        });
-
-        list.classList.add('open');
+        if (!clientsCache.length) {
+          clientsCache = await DB.getClients();
+          refreshSyndicsDatalist(clientsCache);
+        }
+        renderClientMenu(input.value.toLowerCase().trim());
       });
+
+      document.addEventListener('click', (e) => {
+        if (wrap && !wrap.contains(e.target)) {
+          list.classList.remove('open');
+          selectedSyndicMenu = null;
+        }
+      });
+
+      // Précharger les syndics pour le datalist
+      DB.getClients().then(clients => {
+        clientsCache = clients;
+        refreshSyndicsDatalist(clients);
+      }).catch(() => {});
+    }
+
+    function preparerNouvelleResidence(syndic) {
+      document.getElementById('r-pro').checked = true;
+      toggleTypeClient();
+      ['f-societe', 'f-contact', 'f-siret-client', 'f-civilite', 'f-prenom', 'f-nom',
+       'f-adresse', 'f-cp', 'f-ville', 'f-email-client', 'f-tel-client'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      document.getElementById('f-pays').value = 'France';
+      document.getElementById('f-client-syndic').value = syndic || '';
+      document.getElementById('f-societe').focus();
+      toast(`Nouvelle résidence sous ${syndic} — saisissez ses coordonnées`, 'info');
     }
 
     function remplirClient(c) {
       if (c.type === 'Professionnel') {
         document.getElementById('r-pro').checked = true;
         toggleTypeClient();
-        document.getElementById('f-societe').value = c.societe || c.nom;
+        document.getElementById('f-societe').value = c.societe || c.nom || '';
         document.getElementById('f-contact').value = c.contact || '';
+        document.getElementById('f-siret-client').value = c.siret || '';
       } else {
         document.getElementById('r-part').checked = true;
         toggleTypeClient();
@@ -995,6 +1157,8 @@
       document.getElementById('f-ville').value = c.ville || '';
       document.getElementById('f-email-client').value = c.email || '';
       document.getElementById('f-tel-client').value = c.tel || '';
+      if (c.pays) document.getElementById('f-pays').value = c.pays;
+      document.getElementById('f-client-syndic').value = c.syndic || '';
     }
 
     // ══════════════════════════════════════════════
@@ -1045,25 +1209,15 @@
         notes = (notes ? notes + '\n' : '') + '[[REGIME:SOUS_TRAITANCE]]';
       }
 
-      const addDateType = document.getElementById('f-date-add-type').value;
-      const addDateVal = document.getElementById('f-date-add').value || null;
-
-      let date_validite = addDateType === 'validite' ? addDateVal : null;
-      let date_paiement = addDateType === 'paiement' ? addDateVal : null;
-      let date_envoi = addDateType === 'envoi' ? addDateVal : null;
-
       return {
         type: document.getElementById('f-type').value,
         numero: document.getElementById('f-numero').value,
         date: document.getElementById('f-date').value,
         lieu: document.getElementById('f-lieu').value,
-        date_validite,
-        date_paiement,
-        date_envoi,
+        date_validite: document.getElementById('f-date-add').value,
         mode_reglement: document.getElementById('f-mode-reglement').value,
         acompte_pct,
         objet: document.getElementById('f-objet').value,
-        num_commande: document.getElementById('f-num-commande')?.value?.trim() || null,
         infos_spec: document.getElementById('f-infos-spec').value,
         notes_privees: notes,
         texte_fin: document.getElementById('f-texte-fin').value,
@@ -1105,23 +1259,34 @@
           await DB.updateDevis(devisId, data);
           toast('Devis mis à jour !', 'success');
         } else {
-          // Sauvegarder le client si nouveau
+          // Sauvegarder le client / résidence si nouveau (ou mettre à jour son syndic)
           const allClients = await DB.getClients();
+          const syndicVal = document.getElementById('f-client-syndic').value.trim();
           const clientExistant = allClients.find(c => c.nom === data.client);
           if (!clientExistant && data.client) {
-            await DB.addClient({
+            const clientPayload = {
               nom: data.client,
               type: data.client_type,
               civilite: data.client_civilite,
               prenom: data.client_prenom,
               nom_famille: data.client_nom_famille,
               societe: data.client_societe,
+              contact: document.getElementById('f-contact').value.trim(),
+              siret: document.getElementById('f-siret-client').value.trim(),
               adresse: data.client_adresse,
               cp: data.client_cp,
               ville: data.client_ville,
               email: data.client_email,
               tel: data.client_tel,
-            });
+            };
+            if (syndicVal) clientPayload.syndic = syndicVal;
+            await DB.addClient(clientPayload);
+            clientsCache = await DB.getClients();
+            refreshSyndicsDatalist(clientsCache);
+          } else if (clientExistant && syndicVal && (clientExistant.syndic || '') !== syndicVal) {
+            await DB.updateClient(clientExistant.id, { syndic: syndicVal });
+            clientsCache = await DB.getClients();
+            refreshSyndicsDatalist(clientsCache);
           }
 
           const nouveau = await DB.addDevis({ ...data, statut: 'Créé' });
@@ -1178,132 +1343,21 @@
       }
     }
 
-    // ── MODALE FACTURE D'ACOMPTE ──
-    async function ouvrirModalAcompte() {
-      closeAllDropdowns();
-      if (!devisId) { await sauvegarder(); }
-      const d = await DB.getDevisById(devisId);
-      if (!d) return;
-
-      const totHT = d.montant_ht || d.montant || 0;
-      document.getElementById('modal-acompte-tot-devis').textContent = fmt(totHT);
-      
-      let defPct = (d.acompte_pct !== undefined && d.acompte_pct !== null && d.acompte_pct > 0) ? d.acompte_pct : 30;
-      document.getElementById('modal-acompte-pct').value = defPct;
-      document.getElementById('modal-acompte-num-commande').value = d.num_commande || document.getElementById('f-num-commande')?.value || '';
-      recalculerModalAcompte();
-      document.getElementById('modal-creer-acompte').style.display = 'flex';
-    }
-
-    function fermerModalAcompte() {
-      document.getElementById('modal-creer-acompte').style.display = 'none';
-    }
-
-    async function recalculerModalAcompte() {
-      const d = await DB.getDevisById(devisId);
-      const totHT = d ? (d.montant_ht || d.montant || 0) : 0;
-      const pct = parseFloat(document.getElementById('modal-acompte-pct').value) || 0;
-      const acompteHT = Math.round(totHT * (pct / 100) * 100) / 100;
-      document.getElementById('modal-acompte-tot-calc').textContent = fmt(acompteHT);
-    }
-
-    async function confirmerCreerAcompte() {
-      const pct = parseFloat(document.getElementById('modal-acompte-pct').value);
-      if (isNaN(pct) || pct <= 0 || pct > 100) {
-        toast('Veuillez saisir un pourcentage valide (1 à 100%)', 'error');
-        return;
-      }
-      const numCmd = document.getElementById('modal-acompte-num-commande').value.trim();
-      
+    async function creerAcompte() {
+      if (!devisId) { sauvegarder(); return; }
       try {
-        const f = await creerFactureDepuisDevis(devisId, 'acompte', {
-          acompte_pct: pct,
-          num_commande: numCmd || null
-        });
-        fermerModalAcompte();
+        const f = await creerFactureDepuisDevis(devisId, 'acompte');
         if (f) {
-          toast(`Facture d'acompte ${f.numero} (${pct}%) créée`, 'success');
+          toast(`Facture d'acompte ${f.numero} créée`, 'success');
           setTimeout(() => { window.location.href = 'factures.html'; }, 1000);
         } else {
-          toast("Impossible de créer la facture d'acompte.", 'error');
+          toast("Impossible de créer la facture d'acompte (devis introuvable).", 'error');
         }
       } catch (err) {
         console.error('Erreur création acompte:', err);
         toast(`Erreur : ${err.message || err}`, 'error');
       }
-    }
-
-    // ── MODALE FACTURE DE SITUATION ──
-    async function ouvrirModalSituation() {
       closeAllDropdowns();
-      if (!devisId) { await sauvegarder(); }
-      const d = await DB.getDevisById(devisId);
-      if (!d) return;
-      
-      const totHT = d.montant_ht || d.montant || 0;
-      document.getElementById('modal-sit-tot-devis').textContent = fmt(totHT);
-      
-      const facturesLiees = await DB.getFacturesByDevis(devisId);
-      const situations = facturesLiees.filter(f => f.type === "Facture de situation" || f.titre?.toLowerCase().includes("situation"));
-      const acomptes = facturesLiees.filter(f => f.type === "Facture d'acompte" || f.titre?.toLowerCase().includes("acompte"));
-      
-      const sitNum = situations.length + 1;
-      document.getElementById('modal-sit-titre-prev').textContent = `Situation N°${sitNum}`;
-      
-      const dejaFactureHT = [...acomptes, ...situations].reduce((s, f) => s + (f.montant_ht || f.montant || 0), 0);
-      document.getElementById('modal-sit-deja-facture').textContent = fmt(dejaFactureHT);
-      window._currentSitDevisHT = totHT;
-      window._currentSitDejaFacture = dejaFactureHT;
-      window._currentSitNum = sitNum;
-
-      let suggestPct = Math.min(100, Math.round((dejaFactureHT / (totHT || 1)) * 100) + 30);
-      if (suggestPct > 100) suggestPct = 100;
-      if (suggestPct < 20) suggestPct = 30;
-
-      document.getElementById('modal-sit-avancement-pct').value = suggestPct;
-      document.getElementById('modal-sit-num-commande').value = d.num_commande || document.getElementById('f-num-commande')?.value || '';
-      recalculerModalSituation();
-      document.getElementById('modal-creer-situation').style.display = 'flex';
-    }
-
-    function fermerModalSituation() {
-      document.getElementById('modal-creer-situation').style.display = 'none';
-    }
-
-    function recalculerModalSituation() {
-      const totHT = window._currentSitDevisHT || 0;
-      const pct = parseFloat(document.getElementById('modal-sit-avancement-pct').value) || 0;
-      const dejaFacture = window._currentSitDejaFacture || 0;
-      const cumulHT = Math.round(totHT * (pct / 100) * 100) / 100;
-      const netHT = Math.max(0, Math.round((cumulHT - dejaFacture) * 100) / 100);
-      document.getElementById('modal-sit-net-facture').textContent = fmt(netHT);
-    }
-
-    async function confirmerCreerSituation() {
-      const pct = parseFloat(document.getElementById('modal-sit-avancement-pct').value);
-      if (isNaN(pct) || pct <= 0 || pct > 100) {
-        toast('Veuillez saisir un pourcentage d\'avancement valide (1 à 100%)', 'error');
-        return;
-      }
-      const numCmd = document.getElementById('modal-sit-num-commande').value.trim();
-      
-      try {
-        const f = await creerFactureDepuisDevis(devisId, 'situation', {
-          avancement_pct: pct,
-          situation_num: window._currentSitNum || 1,
-          num_commande: numCmd || null
-        });
-        fermerModalSituation();
-        if (f) {
-          toast(`Facture de Situation N°${window._currentSitNum || 1} (${pct}%) créée`, 'success');
-          setTimeout(() => { window.location.href = 'factures.html'; }, 1000);
-        } else {
-          toast("Impossible de créer la facture de situation.", 'error');
-        }
-      } catch (err) {
-        console.error('Erreur création situation:', err);
-        toast(`Erreur : ${err.message || err}`, 'error');
-      }
     }
 
     function creerSimilaire() {
@@ -1342,7 +1396,7 @@
       setTimeout(() => window.location.href = 'index.html', 800);
     }
 
-    function apercuPDF() {
+    function aperçuPDF() {
       if (!devisId) { sauvegarder(); return; }
       window.open(`voir.html?id=${devisId}`, '_blank');
     }
@@ -1598,82 +1652,6 @@
       });
     }
   </script>
-
-  <!-- ══ MODALE CRÉER ACOMPTE ══ -->
-  <div class="modal-overlay" id="modal-creer-acompte" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center">
-    <div style="background:var(--blanc);border-radius:var(--radius-lg);width:90%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
-        <span style="font-size:15px;font-weight:600"><i class="ti ti-receipt-2"></i> Créer une facture d'acompte</span>
-        <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModalAcompte()"><i class="ti ti-x"></i></button>
-      </div>
-      <div style="padding:20px">
-        <div style="background:var(--bg-app);padding:12px 14px;border-radius:var(--radius-md);margin-bottom:16px;font-size:13px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="color:var(--texte-sec)">Total Devis HT :</span>
-            <strong id="modal-acompte-tot-devis">0,00 €</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;color:var(--rouge);font-weight:600">
-            <span>Montant Acompte HT :</span>
-            <span id="modal-acompte-tot-calc">0,00 €</span>
-          </div>
-        </div>
-        <div class="form-group" style="margin-bottom:14px">
-          <label>Pourcentage de l'acompte (%) <span class="required">*</span></label>
-          <input type="number" class="form-control" id="modal-acompte-pct" min="1" max="100" value="30" oninput="recalculerModalAcompte()" />
-        </div>
-        <div class="form-group">
-          <label>N° Bon de commande client <span style="color:var(--texte-sec);font-weight:400">(optionnel)</span></label>
-          <input type="text" class="form-control" id="modal-acompte-num-commande" placeholder="Ex: BC-2026-042" />
-        </div>
-      </div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border);background:var(--bg-app)">
-        <button class="btn btn-ghost" onclick="fermerModalAcompte()">Annuler</button>
-        <button class="btn btn-primary" onclick="confirmerCreerAcompte()"><i class="ti ti-check"></i> Créer la facture</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ MODALE CRÉER SITUATION ══ -->
-  <div class="modal-overlay" id="modal-creer-situation" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center">
-    <div style="background:var(--blanc);border-radius:var(--radius-lg);width:90%;max-width:520px;box-shadow:0 8px 40px rgba(0,0,0,0.2);overflow:hidden">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)">
-        <span style="font-size:15px;font-weight:600"><i class="ti ti-chart-pie"></i> Créer une facture de situation</span>
-        <button class="btn btn-ghost btn-icon btn-sm" onclick="fermerModalSituation()"><i class="ti ti-x"></i></button>
-      </div>
-      <div style="padding:20px">
-        <div style="background:var(--bg-app);padding:12px 14px;border-radius:var(--radius-md);margin-bottom:16px;font-size:13px">
-          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="color:var(--texte-sec)">Situation générée :</span>
-            <strong id="modal-sit-titre-prev">Situation N°1</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="color:var(--texte-sec)">Marché / Devis total HT :</span>
-            <strong id="modal-sit-tot-devis">0,00 €</strong>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="color:var(--texte-sec)">Déjà facturé (acomptes &amp; situations) :</span>
-            <strong id="modal-sit-deja-facture">0,00 €</strong>
-          </div>
-          <div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;color:var(--bleu);font-weight:700">
-            <span>Net à facturer HT :</span>
-            <span id="modal-sit-net-facture">0,00 €</span>
-          </div>
-        </div>
-        <div class="form-group" style="margin-bottom:14px">
-          <label>Avancement global cumulé des travaux (%) <span class="required">*</span></label>
-          <input type="number" class="form-control" id="modal-sit-avancement-pct" min="1" max="100" value="30" oninput="recalculerModalSituation()" />
-        </div>
-        <div class="form-group">
-          <label>N° Bon de commande client <span style="color:var(--texte-sec);font-weight:400">(optionnel)</span></label>
-          <input type="text" class="form-control" id="modal-sit-num-commande" placeholder="Ex: BC-2026-042" />
-        </div>
-      </div>
-      <div style="display:flex;justify-content:flex-end;gap:8px;padding:14px 20px;border-top:1px solid var(--border);background:var(--bg-app)">
-        <button class="btn btn-ghost" onclick="fermerModalSituation()">Annuler</button>
-        <button class="btn btn-primary" onclick="confirmerCreerSituation()"><i class="ti ti-check"></i> Créer la situation</button>
-      </div>
-    </div>
-  </div>
 
 </body>
 

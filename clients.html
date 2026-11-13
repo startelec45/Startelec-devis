@@ -111,6 +111,9 @@
           <span class="filter-pill active" data-type="" onclick="filtrerType(this)">Tous</span>
           <span class="filter-pill" data-type="Particulier" onclick="filtrerType(this)">Particuliers</span>
           <span class="filter-pill" data-type="Professionnel" onclick="filtrerType(this)">Professionnels</span>
+          <select id="filter-syndic" class="form-control" style="display:none;width:auto;padding:4px 10px;font-size:12px;height:30px;" onchange="renderClients()">
+            <option value="">Tous les syndics</option>
+          </select>
         </div>
       </div>
 
@@ -158,6 +161,15 @@
       <div class="radio-group" style="margin-bottom:16px">
         <label><input type="radio" name="m-type" value="Particulier" id="m-part" checked onchange="toggleModalType()" /> Particulier</label>
         <label><input type="radio" name="m-type" value="Professionnel" id="m-pro" onchange="toggleModalType()" /> Professionnel</label>
+      </div>
+
+      <div class="form-group" style="margin-bottom:16px;background:#f8fafc;border:1px dashed var(--border);border-radius:var(--radius);padding:10px 12px;">
+        <label style="font-size:12px;color:var(--texte-sec);display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <i class="ti ti-folders" style="color:var(--rouge)"></i>
+          Syndic / Agence <span style="font-weight:400">(classement interne — n'apparaît pas sur les devis)</span>
+        </label>
+        <input type="text" class="form-control" id="m-syndic" list="m-syndics-datalist" placeholder="Aucun (client direct) — ex : SERGIC" style="background:#fff;" />
+        <datalist id="m-syndics-datalist"></datalist>
       </div>
 
       <div id="m-zone-part">
@@ -241,22 +253,48 @@
 <script src="app.js"></script>
 <script>
 let typeFilter = '';
+let editingClientHasSyndicCol = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await renderClients();
 });
 
+function refreshClientsSyndicControls(allClients) {
+  const map = new Map();
+  allClients.forEach(c => {
+    const s = (c.syndic || '').trim();
+    if (s && !map.has(s.toLowerCase())) map.set(s.toLowerCase(), s);
+  });
+  const syndics = Array.from(map.values()).sort((a, b) => a.localeCompare(b, 'fr'));
+
+  const dl = document.getElementById('m-syndics-datalist');
+  if (dl) dl.innerHTML = syndics.map(s => `<option value="${escHtml(s)}"></option>`).join('');
+
+  const sel = document.getElementById('filter-syndic');
+  if (sel) {
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Tous les syndics</option>' +
+      syndics.map(s => `<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('');
+    sel.value = syndics.includes(current) ? current : '';
+    sel.style.display = syndics.length ? '' : 'none';
+  }
+}
+
 async function renderClients() {
-  const q    = document.getElementById('search-client').value.toLowerCase();
+  const q          = document.getElementById('search-client').value.toLowerCase();
+  const syndicFilter = (document.getElementById('filter-syndic')?.value || '').toLowerCase();
   const [allClients, devis] = await Promise.all([DB.getClients(), DB.getDevis()]);
+  refreshClientsSyndicControls(allClients);
   let list = [...allClients];
 
   if (typeFilter) list = list.filter(c => c.type === typeFilter);
+  if (syndicFilter) list = list.filter(c => (c.syndic || '').trim().toLowerCase() === syndicFilter);
   if (q) list = list.filter(c =>
     (c.nom||'').toLowerCase().includes(q) ||
     (c.societe||'').toLowerCase().includes(q) ||
     (c.ville||'').toLowerCase().includes(q) ||
-    (c.email||'').toLowerCase().includes(q)
+    (c.email||'').toLowerCase().includes(q) ||
+    (c.syndic||'').toLowerCase().includes(q)
   );
 
   // Stats
@@ -294,13 +332,17 @@ async function renderClients() {
     }
     const lienEspace = c.token ? `${baseUrl}/espace-client.html?token=${c.token}` : '';
 
+    const syndicBadge = (c.syndic || '').trim()
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;background:var(--rouge-light);color:var(--rouge);padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;"><i class="ti ti-folders" style="font-size:11px"></i> ${escHtml(c.syndic)}</span>`
+      : '';
+
     return `
     <div class="client-card">
       <div class="client-card-header">
-        <div class="client-avatar">${init}</div>
+        <div class="client-avatar">${escHtml(init)}</div>
         <div>
-          <div class="client-name">${affichage||'—'}</div>
-          <div class="client-type">${c.type||'Particulier'}</div>
+          <div class="client-name">${escHtml(affichage||'—')}${syndicBadge}</div>
+          <div class="client-type">${escHtml(c.type||'Particulier')}</div>
         </div>
         <div style="margin-left:auto;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">
           <button class="btn btn-ghost btn-icon btn-sm" onclick="editerClient('${c.id}')" title="Modifier">
@@ -315,9 +357,9 @@ async function renderClients() {
         </div>
       </div>
       <div class="client-meta">
-        ${c.adresse ? `<i class="ti ti-map-pin" style="font-size:11px"></i> ${c.adresse}${c.cp||c.ville ? ', '+[c.cp,c.ville].filter(Boolean).join(' ') : ''}<br/>` : ''}
-        ${c.email   ? `<i class="ti ti-mail" style="font-size:11px"></i> ${c.email}<br/>` : ''}
-        ${c.tel     ? `<i class="ti ti-phone" style="font-size:11px"></i> ${c.tel}` : ''}
+        ${c.adresse ? `<i class="ti ti-map-pin" style="font-size:11px"></i> ${escHtml(c.adresse)}${c.cp||c.ville ? ', '+escHtml([c.cp,c.ville].filter(Boolean).join(' ')) : ''}<br/>` : ''}
+        ${c.email   ? `<i class="ti ti-mail" style="font-size:11px"></i> ${escHtml(c.email)}<br/>` : ''}
+        ${c.tel     ? `<i class="ti ti-phone" style="font-size:11px"></i> ${escHtml(c.tel)}` : ''}
       </div>
       <div class="client-stats" style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
         <div class="client-stat-item">
@@ -369,8 +411,10 @@ async function ouvrirModal(clientId = null) {
   if (clientId) {
     const c = await DB.getClientById(clientId);
     if (!c) return;
+    editingClientHasSyndicCol = Object.prototype.hasOwnProperty.call(c, 'syndic');
     document.getElementById('modal-title').textContent = 'Modifier le client';
     document.getElementById('m-client-id').value       = c.id;
+    document.getElementById('m-syndic').value          = c.syndic || '';
     if (c.type === 'Professionnel') {
       document.getElementById('m-pro').checked = true;
       toggleModalType();
@@ -402,10 +446,11 @@ function fermerModal() {
 }
 
 function resetModal() {
+  editingClientHasSyndicCol = false;
   document.getElementById('m-client-id').value = '';
   document.getElementById('m-part').checked    = true;
   toggleModalType();
-  ['m-civilite','m-prenom','m-nom','m-societe','m-contact','m-siret',
+  ['m-syndic','m-civilite','m-prenom','m-nom','m-societe','m-contact','m-siret',
    'm-adresse','m-cp','m-ville','m-email','m-tel', 'm-logo-url'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
@@ -431,6 +476,7 @@ async function sauvegarderClient() {
 
   const nomAffiche = isPro ? societe : `${civ} ${prenom} ${nom}`.trim();
 
+  const syndicVal = document.getElementById('m-syndic').value.trim();
   const data = {
     type:        isPro ? 'Professionnel' : 'Particulier',
     nom:         nomAffiche,
@@ -447,6 +493,9 @@ async function sauvegarderClient() {
     tel:         document.getElementById('m-tel').value.trim(),
     logo_url:    document.getElementById('m-logo-url').value.trim(),
   };
+  if (syndicVal || editingClientHasSyndicCol) {
+    data.syndic = syndicVal;
+  }
 
   try {
     if (id) {

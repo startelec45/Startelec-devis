@@ -934,6 +934,10 @@ function escXML(str) {
   return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+function escHtml(str) {
+  return escXML(str);
+}
+
 function copierLienApercu(devis_id) {
   const url = `${window.location.origin}/voir.html?id=${devis_id}`;
   navigator.clipboard.writeText(url).then(() => toast('Lien copié !', 'success')).catch(() => toast('Lien : ' + url, 'info', 6000));
