@@ -289,12 +289,18 @@ function renderPDF() {
 
   // Titre du document
   let titreDoc = 'FACTURE';
-  if (f.type === "Facture d'acompte") titreDoc = "FACTURE D'ACOMPTE";
-  else if (f.type === 'Avoir')        titreDoc = 'AVOIR';
+  if (f.type === "Facture d'acompte" || f.titre?.toLowerCase().includes('acompte')) {
+    titreDoc = "FACTURE D'ACOMPTE";
+  } else if (f.type === "Facture de situation" || f.titre?.toLowerCase().includes('situation')) {
+    const match = f.titre?.match(/Situation\s+N°?\s*\d+/i);
+    titreDoc = match ? `FACTURE DE ${match[0].toUpperCase()}` : "FACTURE DE SITUATION";
+  } else if (f.type === 'Avoir') {
+    titreDoc = 'AVOIR';
+  }
 
   // Adresse client
   const clientAdresse = [
-    escHtml(f.client_adresse),
+    escHtml(f.client_adresse).replace(/\r?\n/g, '<br/>'),
     (f.client_cp || f.client_ville) ? escHtml(`${f.client_cp || ''} ${f.client_ville || ''}`.trim()) : '',
   ].filter(Boolean).join('<br/>');
 
@@ -312,9 +318,18 @@ function renderPDF() {
   `;
 
   // Lignes
-  const lignesHTML = (f.lignes || []).map((l, i) => {
+  let lignesHTML = (f.lignes || []).map((l, i) => {
     if (l.type === 'soustotal') return `<tr><td colspan="${tvaActive ? 6 : 5}" style="font-weight:700;text-align:right;padding:6px 8px;background:#e8e8e8">Sous-total</td><td style="text-align:right;font-weight:700;padding:6px 8px;background:#e8e8e8">${fmt(l.total||0)}</td></tr>`;
     if (l.type === 'texte')    return `<tr><td colspan="${tvaActive ? 7 : 6}" style="padding:6px 8px;color:#444;font-style:italic">${escHtml(l.designation||'')}</td></tr>`;
+    if (l.type === 'reduction') {
+      const pct = l.pct !== undefined ? l.pct : (f.reduc_globale || 0);
+      const montantReduc = Math.abs(l.total || 0);
+      return `<tr style="background:#fff5f5">
+        <td style="width:28px;text-align:center;color:#b91c1c">${i+1}</td>
+        <td colspan="${tvaActive ? 5 : 4}" style="font-weight:600;color:#b91c1c;padding:6px 8px">${escHtml(l.designation || 'Remise commerciale')}${pct > 0 ? ` (${pct}%)` : ''}</td>
+        <td style="text-align:right;width:90px;font-weight:700;color:#b91c1c;padding:6px 8px">-${fmt(montantReduc)}</td>
+      </tr>`;
+    }
     return `
       <tr>
         <td style="width:28px;text-align:center;color:#888">${i+1}</td>
@@ -329,6 +344,19 @@ function renderPDF() {
         <td style="text-align:right;width:90px;font-weight:600">${fmt(l.total || 0)}</td>
       </tr>`;
   }).join('');
+
+  if ((f.reduc_globale || 0) > 0 && !(f.lignes || []).some(l => l.type === 'reduction')) {
+    const totalAvant = (f.lignes || []).filter(l => l.type === 'produit' || !l.type).reduce((s, l) => s + (l.total || 0), 0);
+    const montantReduc = Math.round(totalAvant * (f.reduc_globale || 0) / 100 * 100) / 100;
+    if (montantReduc > 0) {
+      const nextNum = (f.lignes || []).length + 1;
+      lignesHTML += `<tr style="background:#fff5f5">
+        <td style="width:28px;text-align:center;color:#b91c1c">${nextNum}</td>
+        <td colspan="${tvaActive ? 5 : 4}" style="font-weight:600;color:#b91c1c;padding:6px 8px">Remise commerciale (${f.reduc_globale}%)</td>
+        <td style="text-align:right;width:90px;font-weight:700;color:#b91c1c;padding:6px 8px">-${fmt(montantReduc)}</td>
+      </tr>`;
+    }
+  }
 
   document.getElementById('pdf-page').innerHTML = `
 
@@ -346,7 +374,7 @@ function renderPDF() {
     <div class="pdf-rouge-line"></div>
 
     <!-- BANDE INFOS -->
-    <div class="pdf-info-band">
+    <div class="pdf-info-band" style="grid-template-columns: repeat(${f.num_commande ? 5 : 4}, 1fr)">
       <div class="pdf-info-cell">
         <span style="color:#666">Date :</span>
         <strong>${fmtDate(f.date || f.created_at)}</strong>
@@ -363,6 +391,11 @@ function renderPDF() {
         <span style="color:#666">Devis lié :</span>
         <strong>${f.devis_numero || '—'}</strong>
       </div>
+      ${f.num_commande ? `
+      <div class="pdf-info-cell">
+        <span style="color:#666">N° Bon commande :</span>
+        <strong>${escHtml(f.num_commande)}</strong>
+      </div>` : ''}
     </div>
 
     <!-- ÉMETTEUR / CLIENT -->

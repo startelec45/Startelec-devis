@@ -117,6 +117,7 @@
             <option value="">Tous les types</option>
             <option value="Facture">Facture</option>
             <option value="Facture d'acompte">Acompte</option>
+            <option value="Facture de situation">Situation</option>
             <option value="Avoir">Avoir</option>
           </select>
         </div>
@@ -174,9 +175,10 @@
       <div class="form-row cols-4" style="margin-bottom:16px">
         <div class="form-group">
           <label>Type</label>
-          <select class="form-control" id="mf-type" onchange="updateNumero()">
+          <select class="form-control" id="mf-type" onchange="updateNumero(); if(document.getElementById('mf-devis-lie').value) remplirDepuisDevis();">
             <option value="Facture">Facture</option>
             <option value="Facture d'acompte">Facture d'acompte</option>
+            <option value="Facture de situation">Facture de situation</option>
             <option value="Avoir">Avoir</option>
           </select>
         </div>
@@ -231,10 +233,17 @@
         <div class="form-section">
           <div class="form-section-header"><i class="ti ti-file-description"></i> Détails</div>
           <div class="form-section-body">
-            <div class="form-group" style="margin-bottom:10px">
-              <label>Objet</label>
-              <input type="text" class="form-control" id="mf-objet"
-                placeholder="Travaux d'installation électrique..." />
+            <div class="form-row cols-2" style="margin-bottom:10px">
+              <div class="form-group">
+                <label>Objet</label>
+                <input type="text" class="form-control" id="mf-objet"
+                  placeholder="Travaux d'installation électrique..." />
+              </div>
+              <div class="form-group">
+                <label>N° Bon commande client</label>
+                <input type="text" class="form-control" id="mf-num-commande"
+                  placeholder="Ex: BC-2026-042" />
+              </div>
             </div>
             <div class="form-row cols-2">
               <div class="form-group">
@@ -247,8 +256,8 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>Acompte (%)</label>
-                <input type="number" class="form-control" id="mf-acompte" value="0" min="0" max="100" />
+                <label id="mf-acompte-label">Acompte / Avancement (%)</label>
+                <input type="number" class="form-control" id="mf-acompte" value="30" min="0" max="100" />
               </div>
             </div>
             <div class="form-group" style="margin-top:10px">
@@ -360,7 +369,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (editId) {
     editerFacture(editId);
   }
+
+  // Écouteur pour recalcul dynamique si devis lié et type acompte/situation
+  document.getElementById('mf-acompte')?.addEventListener('input', () => {
+    const dLie = document.getElementById('mf-devis-lie').value;
+    const type = document.getElementById('mf-type').value;
+    if (dLie && (type === "Facture d'acompte" || type === "Facture de situation")) {
+      remplirDepuisDevis();
+    }
+  });
 });
+
+function filtrer(el) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  filterStatut = el.dataset.filter || '';
+  renderFactures();
+}
 
 // ══ RENDER ══
 async function renderFactures() {
@@ -415,7 +440,7 @@ async function renderFactures() {
   tbody.innerHTML = list.map(f => {
     const montant    = f.montant_ht || f.montant || 0;
     const badgeClass = getBadgeClass(f.statut);
-    const typeLabel  = f.type || (f.titre?.includes('acompte') ? "Acompte" : "Facture");
+    const typeLabel  = f.type || (f.titre?.includes('acompte') ? "Facture d'acompte" : f.titre?.includes('situation') ? "Facture de situation" : "Facture");
 
     let retardBadge = '';
     if (f.date_echeance && (f.statut === 'Créé' || f.statut === 'Envoyé' || f.statut === 'Payé en partie')) {
@@ -431,18 +456,28 @@ async function renderFactures() {
       }
     }
 
+    let typeBadgeStyle = '';
+    let typeBadgeClass = 'badge-cree';
+    if (typeLabel === 'Avoir') {
+      typeBadgeClass = 'badge-annule';
+    } else if (typeLabel.toLowerCase().includes('acompte')) {
+      typeBadgeClass = 'badge-acompte';
+    } else if (typeLabel.toLowerCase().includes('situation')) {
+      typeBadgeStyle = 'background:#e0f2fe;color:#0284c7;border:1px solid #bae6fd;';
+    }
+
     return `<tr onclick="voirFacture('${f.id}')" style="cursor:pointer">
       <td onclick="event.stopPropagation()" data-label=""><input type="checkbox" /></td>
       <td data-label="N° Facture"><span class="td-num">${escHtml(f.numero||'—')}</span></td>
       <td data-label="Type">
-        <span class="badge ${typeLabel==='Avoir'?'badge-annule':typeLabel.includes('acompte')?'badge-acompte':'badge-cree'}"
-          style="font-size:10px">${typeLabel}</span>
+        <span class="badge ${typeBadgeClass}" style="font-size:10px; ${typeBadgeStyle}">${typeLabel}</span>
       </td>
       <td data-label="Devis Lié">
         ${f.devis_numero
           ? `<a href="voir.html?id=${encodeURIComponent(f.devis_id)}" onclick="event.stopPropagation()"
               style="color:var(--rouge);font-weight:500;text-decoration:none">${escHtml(f.devis_numero)}</a>`
           : '<span style="color:var(--texte-sec)">—</span>'}
+        ${f.num_commande ? `<div style="font-size:9px;color:var(--texte-sec);margin-top:2px"><i class="ti ti-receipt"></i> BC: ${escHtml(f.num_commande)}</div>` : ''}
       </td>
       <td class="td-client" data-label="Client">${escHtml(f.client||'—')}</td>
       <td class="td-produit" title="${escHtml(f.objet||'')}" data-label="Objet">${escHtml((f.objet||f.titre||'').substring(0,45))}${(f.objet||'').length>45?'...':''}</td>
@@ -451,7 +486,7 @@ async function renderFactures() {
       <td class="td-montant" data-label="Montant HT">${fmt(montant)}</td>
       <td onclick="event.stopPropagation()" data-label="État">
         <select class="badge badge-select ${badgeClass}"
-          onchange="changerStatutFact('${f.id}', this.value, this)">
+          onchange="changerStatut('${f.id}', this.value, this)">
           ${['Créé','Envoyé','Payé','Payé en partie','Annulé'].map(s =>
             `<option value="${s}"${s===f.statut?' selected':''}>${s}</option>`
           ).join('')}
@@ -477,46 +512,27 @@ async function renderFactures() {
   }).join('');
 }
 
-function filtrer(el) {
-  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  filterStatut = el.dataset.filter;
-  renderFactures();
-}
-
-async function changerStatutFact(id, statut, sel) {
-  try {
-    await DB.updateFacture(id, { statut });
-    sel.className = `badge badge-select ${getBadgeClass(statut)}`;
-    await renderFactures();
-    toast(`Statut : ${statut}`, 'success');
-  } catch (err) {
-    console.error('Erreur statut facture:', err);
-    toast('Erreur lors de la mise à jour', 'error');
-  }
-}
-
-// ══ MODAL NOUVELLE FACTURE ══
+// ── Ouvrir modal nouvelle facture ──
 async function nouvelleFacture(type = 'Facture') {
-  editFactId  = null;
-  lignesFact  = [];
+  editFactId = null;
   resetModal();
+  document.getElementById('modal-fact-title').textContent = 'Nouvelle facture';
+  document.getElementById('mf-type').value = type;
 
-  document.getElementById('modal-fact-title').textContent = `Nouvelle ${type}`;
-  document.getElementById('mf-type').value  = type;
-  document.getElementById('mf-date').value  = new Date().toISOString().split('T')[0];
-  document.getElementById('mf-echeance').value = addDays(new Date(), 30);
-  await updateNumero();
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('mf-date').value     = today;
+  document.getElementById('mf-echeance').value = addDays(today, 30);
+  const t = type === "Facture d'acompte" ? 'acompte' : type === "Facture de situation" ? 'situation' : type === 'Avoir' ? 'avoir' : 'facture';
+  document.getElementById('mf-numero').value   = await DB.getNextNumero(t === 'avoir' ? 'facture' : t);
 
-  // Remplir la liste des devis
+  // Charger la liste des devis pour le sélecteur
   const devisSelect = document.getElementById('mf-devis-lie');
   const devisList = await DB.getDevis();
   devisSelect.innerHTML = '<option value="">— Aucun (facture directe) —</option>' +
-    devisList.filter(d => d.statut === 'Accepté' || d.statut === 'Créé').map(d =>
-      `<option value="${d.id}">${d.numero} — ${d.client} — ${fmt(d.montant_ht)}</option>`
-    ).join('');
+    devisList.map(d => `<option value="${d.id}">${d.numero} — ${d.client}</option>`).join('');
 
   ajouterLigneFact();
+  recalculerFact();
   document.getElementById('modal-facture').style.display = 'flex';
   closeAllDropdowns();
 }
@@ -538,6 +554,7 @@ async function editerFacture(id) {
   document.getElementById('mf-email').value   = f.client_email || '';
   document.getElementById('mf-tel').value     = f.client_tel || '';
   document.getElementById('mf-objet').value   = f.objet || f.titre || '';
+  document.getElementById('mf-num-commande').value = f.num_commande || '';
   document.getElementById('mf-mode').value    = f.mode_reglement || 'Virement bancaire';
   
   let notes = f.notes || '';
@@ -573,16 +590,16 @@ function fermerModal() {
 function resetModal() {
   lignesFact = [];
   document.getElementById('mf-lignes-body').innerHTML = '';
-  ['mf-client','mf-adresse','mf-email','mf-tel','mf-objet','mf-notes'].forEach(id => {
+  ['mf-client','mf-adresse','mf-email','mf-tel','mf-objet','mf-num-commande','mf-notes'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  document.getElementById('mf-acompte').value = 0;
+  document.getElementById('mf-acompte').value = 30;
 }
 
 async function updateNumero() {
   const type = document.getElementById('mf-type').value;
-  const t    = type === "Facture d'acompte" ? 'acompte' : type === 'Avoir' ? 'avoir' : 'facture';
+  const t    = type === "Facture d'acompte" ? 'acompte' : type === "Facture de situation" ? 'situation' : type === 'Avoir' ? 'avoir' : 'facture';
   if (!editFactId) {
     document.getElementById('mf-numero').value = await DB.getNextNumero(t === 'avoir' ? 'facture' : t);
   }
@@ -595,10 +612,15 @@ async function remplirDepuisDevis() {
   if (!d) return;
 
   document.getElementById('mf-client').value  = d.client || '';
-  document.getElementById('mf-adresse').value = d.client_adresse || '';
+  document.getElementById('mf-adresse').value = [
+    d.client_adresse,
+    [d.client_cp, d.client_ville].filter(Boolean).join(' '),
+    d.client_pays && d.client_pays !== 'France' ? d.client_pays : ''
+  ].filter(Boolean).join('\n');
   document.getElementById('mf-email').value   = d.client_email || '';
   document.getElementById('mf-tel').value     = d.client_tel || '';
   document.getElementById('mf-objet').value   = d.objet || '';
+  document.getElementById('mf-num-commande').value = d.num_commande || '';
   document.getElementById('mf-mode').value    = d.mode_reglement || 'Virement bancaire';
   document.getElementById('mf-notes').value   = d.infos_spec || '';
 
@@ -609,16 +631,21 @@ async function remplirDepuisDevis() {
   document.getElementById('mf-regime-fiscal').value = regime;
 
   const type = document.getElementById('mf-type').value;
+  
+  // Determine VAT rate from devis lines or config
+  let tvaRate = tvaActive ? tvaTauxDefaut : 0;
+  const firstProductWithTva = (d.lignes || []).find(l => (l.type === 'produit' || !l.type) && l.tva !== undefined);
+  if (firstProductWithTva && tvaActive) {
+    tvaRate = parseFloat(firstProductWithTva.tva) || 0;
+  }
+
   if (type === "Facture d'acompte") {
-    const acompte_pct = (d.acompte_pct !== undefined && d.acompte_pct !== null) ? d.acompte_pct : 30;
-    const montant     = Math.round(d.montant_ht * acompte_pct / 100 * 100) / 100;
-    
-    // Determine VAT rate from devis lines or config
-    let tvaRate = tvaActive ? tvaTauxDefaut : 0;
-    const firstProductWithTva = (d.lignes || []).find(l => (l.type === 'produit' || !l.type) && l.tva !== undefined);
-    if (firstProductWithTva && tvaActive) {
-      tvaRate = parseFloat(firstProductWithTva.tva) || 0;
+    let acompte_pct = parseFloat(document.getElementById('mf-acompte').value);
+    if (isNaN(acompte_pct) || acompte_pct <= 0) {
+      acompte_pct = (d.acompte_pct !== undefined && d.acompte_pct !== null && d.acompte_pct > 0) ? d.acompte_pct : 30;
+      document.getElementById('mf-acompte').value = acompte_pct;
     }
+    const montant = Math.round(d.montant_ht * acompte_pct / 100 * 100) / 100;
 
     lignesFact = [{
       id: genId(), designation: `Acompte ${acompte_pct}% — ${d.objet||d.numero}`,
@@ -626,6 +653,71 @@ async function remplirDepuisDevis() {
       qte: 1, pu: montant, unite: 'forfait', total: montant,
       tva: tvaRate
     }];
+
+  } else if (type === "Facture de situation") {
+    let avancement_pct = parseFloat(document.getElementById('mf-acompte').value);
+    if (isNaN(avancement_pct) || avancement_pct <= 0) {
+      avancement_pct = 30;
+      document.getElementById('mf-acompte').value = avancement_pct;
+    }
+
+    const facturesExistantes = await DB.getFacturesByDevis(devisId);
+    const situationsExistantes = facturesExistantes.filter(f => f.type === "Facture de situation" || f.titre?.toLowerCase().includes("situation"));
+    const acomptesExistants = facturesExistantes.filter(f => f.type === "Facture d'acompte" || f.titre?.toLowerCase().includes("acompte"));
+
+    const sitNum = situationsExistantes.length + 1;
+    const totalDevisHT = d.montant_ht || 0;
+    const cumulAvancementHT = Math.round(totalDevisHT * (avancement_pct / 100) * 100) / 100;
+
+    lignesFact = [{
+      id: genId(),
+      designation: `Situation de travaux N°${sitNum} (${avancement_pct}% cumulé) — ${d.objet||d.numero}`,
+      description: `Avancement des travaux à ${avancement_pct}% sur devis ${d.numero}`,
+      qte: 1,
+      pu: cumulAvancementHT,
+      unite: 'forfait',
+      total: cumulAvancementHT,
+      tva: tvaRate
+    }];
+
+    // Déduction des acomptes
+    acomptesExistants.forEach(acompte => {
+      const acompteHT = acompte.montant_ht || acompte.montant || 0;
+      let aTva = tvaRate;
+      if (acompte.lignes && acompte.lignes.length > 0 && acompte.lignes[0].tva !== undefined) {
+        aTva = parseFloat(acompte.lignes[0].tva) || 0;
+      }
+      lignesFact.push({
+        id: genId(),
+        designation: `Déduction acompte — Facture N° ${acompte.numero}`,
+        description: `Acompte déjà appelé sur devis ${d.numero}`,
+        qte: 1,
+        pu: -acompteHT,
+        total: -acompteHT,
+        unite: 'forfait',
+        tva: aTva
+      });
+    });
+
+    // Déduction des situations antérieures
+    situationsExistantes.forEach((sit, idx) => {
+      const sitHT = sit.montant_ht || sit.montant || 0;
+      let sTva = tvaRate;
+      if (sit.lignes && sit.lignes.length > 0 && sit.lignes[0].tva !== undefined) {
+        sTva = parseFloat(sit.lignes[0].tva) || 0;
+      }
+      lignesFact.push({
+        id: genId(),
+        designation: `Déduction situation précédente — Facture N° ${sit.numero}`,
+        description: `Situation antérieure déduite sur devis ${d.numero}`,
+        qte: 1,
+        pu: -sitHT,
+        total: -sitHT,
+        unite: 'forfait',
+        tva: sTva
+      });
+    });
+
   } else {
     // Import lines and apply line discounts & global discounts directly to line prices
     lignesFact = (d.lignes||[]).map(l => {
@@ -651,33 +743,33 @@ async function remplirDepuisDevis() {
       };
     });
 
-    // Search for paid deposit invoices and add negative lines
+    // Search for paid/existing deposit & situation invoices and add negative lines
     try {
       const factures = await DB.getFacturesByDevis(devisId);
-      const acomptesPayes = factures.filter(f => 
-        (f.type === "Facture d'acompte" || f.titre?.includes("acompte")) && 
-        f.statut === "Payé"
+      const facturesADeduire = factures.filter(f => 
+        (f.type === "Facture d'acompte" || f.type === "Facture de situation" || f.titre?.toLowerCase().includes("acompte") || f.titre?.toLowerCase().includes("situation"))
       );
 
-      acomptesPayes.forEach(acompte => {
-        const acompteHT = acompte.montant_ht || acompte.montant || 0;
+      facturesADeduire.forEach(fLiee => {
+        const montantHT = fLiee.montant_ht || fLiee.montant || 0;
         let acompteTvaRate = 0;
-        if (acompte.lignes && acompte.lignes.length > 0) {
-          acompteTvaRate = parseFloat(acompte.lignes[0].tva) || 0;
+        if (fLiee.lignes && fLiee.lignes.length > 0) {
+          acompteTvaRate = parseFloat(fLiee.lignes[0].tva) || 0;
         }
+        const isAcompte = fLiee.type === "Facture d'acompte" || fLiee.titre?.toLowerCase().includes("acompte");
         lignesFact.push({
           id: genId(),
-          designation: `Déduction acompte — Facture N° ${acompte.numero}`,
-          description: `Acompte déjà réglé sur devis ${d.numero}`,
+          designation: `Déduction ${isAcompte ? 'acompte' : 'situation'} — Facture N° ${fLiee.numero}`,
+          description: `Déjà facturé sur devis ${d.numero}`,
           qte: 1,
-          pu: -acompteHT,
-          total: -acompteHT,
+          pu: -montantHT,
+          total: -montantHT,
           unite: 'forfait',
           tva: acompteTvaRate
         });
       });
     } catch (err) {
-      console.error("Erreur lors de la recherche des acomptes dans remplirDepuisDevis:", err);
+      console.error("Erreur lors de la recherche des factures liées dans remplirDepuisDevis:", err);
     }
   }
 
@@ -845,6 +937,7 @@ async function sauvegarderFacture(genPDF = false) {
     client_email:   document.getElementById('mf-email').value,
     client_tel:     document.getElementById('mf-tel').value,
     objet:          document.getElementById('mf-objet').value,
+    num_commande:   document.getElementById('mf-num-commande')?.value?.trim() || null,
     mode_reglement: document.getElementById('mf-mode').value,
     notes:          notes,
     lignes:         lignesFact,
@@ -940,6 +1033,20 @@ async function relancerClient(id) {
   );
   window.location.href = `mailto:${email}?subject=${sujet}&body=${corps}`;
   closeAllDropdowns();
+}
+
+async function changerStatut(id, statut, selectEl) {
+  try {
+    await DB.updateFacture(id, { statut });
+    if (selectEl) {
+      selectEl.className = `badge badge-select ${getBadgeClass(statut)}`;
+    }
+    toast(`Statut facture mis à jour : ${statut}`, 'success');
+    await renderFactures();
+  } catch (err) {
+    console.error('Erreur changement statut facture:', err);
+    toast('Erreur lors de la mise à jour du statut', 'error');
+  }
 }
 
 function getBadgeClass(s) {
