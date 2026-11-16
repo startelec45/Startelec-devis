@@ -805,8 +805,8 @@ function renderLignesFact() {
             value="${escHtml(l.designation)}"
             oninput="updateLF('${l.id}','designation',this.value)" />
         </div>
-        <textarea class="ligne-desc" placeholder="Description..."
-          oninput="updateLF('${l.id}','description',this.value)">${escHtml(l.description||'')}</textarea>
+        <textarea class="ligne-desc" rows="1" placeholder="Description..."
+          oninput="updateLF('${l.id}','description',this.value); autoResizeTextarea(this)">${escHtml(l.description||'')}</textarea>
       </td>
       <td><input type="number" class="ligne-input" value="${l.qte}" min="0" step="0.5"
         oninput="updateLFCalc('${l.id}','qte',this.value)" /></td>
@@ -828,6 +828,8 @@ function renderLignesFact() {
       </td>
     </tr>
   `).join('');
+
+  tbody.querySelectorAll('.ligne-desc').forEach(autoResizeTextarea);
 
   // Autocomplete
   lignesFact.forEach(l => {

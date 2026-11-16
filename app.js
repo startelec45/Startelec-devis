@@ -1035,6 +1035,14 @@ function escHtml(str) {
   return escXML(str);
 }
 
+function autoResizeTextarea(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  if (el.scrollHeight > 0) {
+    el.style.height = el.scrollHeight + 'px';
+  }
+}
+
 function copierLienApercu(devis_id) {
   const url = `${window.location.origin}/voir.html?id=${devis_id}`;
   navigator.clipboard.writeText(url).then(() => toast('Lien copié !', 'success')).catch(() => toast('Lien : ' + url, 'info', 6000));

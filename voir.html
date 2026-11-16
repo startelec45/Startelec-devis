@@ -202,6 +202,9 @@
       font-size: 9px;
       color: #666;
       margin-top: 2px;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      line-height: 1.45;
     }
 
     /* Total */
@@ -685,7 +688,7 @@
       <td style="width:30px;text-align:center;color:#666">${i + 1}</td>
       <td>
         <strong>${escHtml(l.designation || '')}</strong>
-        ${l.description ? `<div class="td-desc">${escHtml(l.description)}</div>` : ''}
+        ${l.description ? `<div class="td-desc">${escHtml(l.description).replace(/\r?\n/g, '<br>')}</div>` : ''}
       </td>
       <td style="text-align:center;width:50px">${l.qte || ''}</td>
       <td style="text-align:right;width:80px">${fmt(l.pu || 0)}</td>

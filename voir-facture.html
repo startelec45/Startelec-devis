@@ -44,7 +44,7 @@
     .pdf-table tbody tr:nth-child(even) { background:#F2F2F2; }
     .pdf-table tbody td { padding:6px 8px; border-bottom:1px solid #D0D0D0; vertical-align:top; }
     .pdf-table tbody td:last-child, .pdf-table tbody td:nth-last-child(2) { text-align:right; }
-    .pdf-table .td-desc { font-size:9px; color:#666; margin-top:2px; }
+    .pdf-table .td-desc { font-size:9px; color:#666; margin-top:2px; white-space:pre-wrap; overflow-wrap:break-word; line-height:1.45; }
     .pdf-totaux-wrap { display:flex; justify-content:flex-end; padding:0 20px 14px; gap:16px; align-items:start; }
     .pdf-conditions { flex:1; font-size:9px; color:#444; line-height:1.6; }
     .pdf-conditions strong { color:#961414; font-size:9.5px; }
@@ -335,7 +335,7 @@ function renderPDF() {
         <td style="width:28px;text-align:center;color:#888">${i+1}</td>
         <td>
           <strong>${escHtml(l.designation || '')}</strong>
-          ${l.description ? `<div class="td-desc">${escHtml(l.description)}</div>` : ''}
+          ${l.description ? `<div class="td-desc">${escHtml(l.description).replace(/\r?\n/g, '<br>')}</div>` : ''}
         </td>
         <td style="text-align:center;width:50px">${l.qte ?? ''}</td>
         <td style="text-align:right;width:50px">${l.unite || 'u'}</td>
