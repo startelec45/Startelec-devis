@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StarElec — Nouveau devis</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=1.0.7" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -549,7 +549,7 @@
   <div class="toast-container" id="toasts"></div>
   <div id="overlay" style="display:none;position:fixed;inset:0;z-index:199;" onclick="closeAllDropdowns()"></div>
 
-  <script src="app.js?v=1.0.6"></script>
+  <script src="app.js?v=1.0.7"></script>
   <script>
     // ══════════════════════════════════════════════
     // ÉTAT
@@ -985,6 +985,8 @@
       const tbody = document.getElementById('lignes-body');
       if (!tbody) return;
       let draggedId = null;
+      let targetId = null;
+      let insertAfter = false;
 
       const clearIndicators = () => {
         tbody.querySelectorAll('tr.drag-over-top, tr.drag-over-bottom').forEach(r => {
@@ -996,72 +998,57 @@
         const handle = e.target.closest('.td-drag');
         if (!handle) return;
         const tr = handle.closest('tr');
-        if (tr) tr.draggable = true;
-      });
-
-      document.addEventListener('mouseup', () => {
-        tbody.querySelectorAll('tr[draggable="true"]').forEach(r => {
-          r.draggable = false;
-        });
-      });
-
-      tbody.addEventListener('dragstart', (e) => {
-        const tr = e.target.closest('tr');
         if (!tr || !tr.dataset.id) return;
-        draggedId = tr.dataset.id;
-        tr.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', draggedId);
-      });
-
-      tbody.addEventListener('dragover', (e) => {
-        if (!draggedId) return;
-        const tr = e.target.closest('tr');
-        if (!tr || !tr.dataset.id || tr.dataset.id === draggedId) return;
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        clearIndicators();
-        const rect = tr.getBoundingClientRect();
-        const isBottom = e.clientY > rect.top + rect.height / 2;
-        tr.classList.add(isBottom ? 'drag-over-bottom' : 'drag-over-top');
+        draggedId = tr.dataset.id;
+        targetId = null;
+        tr.classList.add('dragging');
+        document.body.style.cursor = 'grabbing';
       });
 
-      tbody.addEventListener('dragleave', (e) => {
-        const tr = e.target.closest('tr');
-        if (tr && !tr.contains(e.relatedTarget)) {
-          tr.classList.remove('drag-over-top', 'drag-over-bottom');
+      document.addEventListener('mousemove', (e) => {
+        if (!draggedId) return;
+        clearIndicators();
+        targetId = null;
+
+        const rows = Array.from(tbody.querySelectorAll('tr[data-id]'));
+        for (const r of rows) {
+          if (r.dataset.id === draggedId) continue;
+          const rect = r.getBoundingClientRect();
+          if (e.clientY >= rect.top && e.clientY <= rect.bottom) {
+            targetId = r.dataset.id;
+            insertAfter = e.clientY > rect.top + rect.height / 2;
+            r.classList.add(insertAfter ? 'drag-over-bottom' : 'drag-over-top');
+            break;
+          }
         }
       });
 
-      tbody.addEventListener('drop', (e) => {
+      document.addEventListener('mouseup', () => {
         if (!draggedId) return;
-        const targetTr = e.target.closest('tr');
-        if (!targetTr || !targetTr.dataset.id || targetTr.dataset.id === draggedId) return;
-        e.preventDefault();
+        document.body.style.cursor = '';
 
-        const isBottom = targetTr.classList.contains('drag-over-bottom');
-        const fromIdx = lignes.findIndex(l => l.id === draggedId);
-        let toIdx = lignes.findIndex(l => l.id === targetTr.dataset.id);
-        if (fromIdx === -1 || toIdx === -1) return;
-
-        const [moved] = lignes.splice(fromIdx, 1);
-        if (fromIdx < toIdx) toIdx--;
-        const insertIdx = isBottom ? toIdx + 1 : toIdx;
-        lignes.splice(insertIdx, 0, moved);
+        if (targetId && targetId !== draggedId) {
+          const fromIdx = lignes.findIndex(l => l.id === draggedId);
+          let toIdx = lignes.findIndex(l => l.id === targetId);
+          if (fromIdx !== -1 && toIdx !== -1) {
+            const [moved] = lignes.splice(fromIdx, 1);
+            if (fromIdx < toIdx) toIdx--;
+            const insertIdx = insertAfter ? toIdx + 1 : toIdx;
+            lignes.splice(insertIdx, 0, moved);
+            draggedId = null;
+            targetId = null;
+            clearIndicators();
+            renderLignes();
+            recalculer();
+            return;
+          }
+        }
 
         draggedId = null;
+        targetId = null;
         clearIndicators();
-        renderLignes();
-        recalculer();
-      });
-
-      tbody.addEventListener('dragend', () => {
-        draggedId = null;
-        clearIndicators();
-        tbody.querySelectorAll('tr').forEach(r => {
-          r.classList.remove('dragging');
-          r.draggable = false;
-        });
+        tbody.querySelectorAll('tr.dragging').forEach(r => r.classList.remove('dragging'));
       });
     }
 
