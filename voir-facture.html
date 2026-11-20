@@ -52,10 +52,32 @@
     .pdf-tot-row { display:flex; justify-content:space-between; padding:5px 10px; font-size:10px; border-bottom:1px solid #D0D0D0; }
     .pdf-tot-row:last-child { border-bottom:none; }
     .pdf-tot-row.final { background:#0F1820; color:#fff; font-weight:700; font-size:11px; border-top:2px solid #961414; }
+    .pdf-reglement-zone { position: relative; }
     .pdf-reglement { display:grid; grid-template-columns:1fr 1fr; margin:0 20px 14px; border:1px solid #D0D0D0; overflow:hidden; }
     .pdf-reglement-cell { padding:8px 10px; font-size:9.5px; line-height:1.7; }
     .pdf-reglement-cell:first-child { border-right:1px solid #D0D0D0; }
     .pdf-reglement-header { background:#F2F2F2; font-weight:700; font-size:9px; padding:5px 10px; border-bottom:2px solid #961414; text-transform:uppercase; }
+    .pdf-stamp-paye {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(-22deg);
+      z-index: 10;
+      pointer-events: none;
+      user-select: none;
+      display: inline-block;
+      padding: 6px 26px;
+      border-top: 9px solid rgba(94, 143, 68, 0.45);
+      border-bottom: 9px solid rgba(94, 143, 68, 0.45);
+      color: rgba(94, 143, 68, 0.45);
+      font-family: 'Arial Black', Helvetica, Arial, sans-serif;
+      font-size: 52px;
+      font-weight: 900;
+      letter-spacing: 8px;
+      line-height: 1.05;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
     .pdf-footer-line { height:2px; background:#961414; margin:0 20px; }
     .pdf-footer-text { padding:6px 20px 12px; font-size:7.5px; color:#666; text-align:center; }
 
@@ -454,33 +476,58 @@ function renderPDF() {
           <label>Total TVA</label>
           <span>${fmt(tva_total)}</span>
         </div>
+        ${f.statut === 'Payé' ? `
+        <div class="pdf-tot-row">
+          <label>Total TTC</label>
+          <span>${fmt(total_ttc)}</span>
+        </div>
+        <div class="pdf-tot-row" style="color:#2e7d32;font-weight:600">
+          <label>Montant payé</label>
+          <span>${fmt(total_ttc)}</span>
+        </div>
+        <div class="pdf-tot-row final">
+          <label>RESTE À PAYER</label>
+          <span>${fmt(0)}</span>
+        </div>` : `
         <div class="pdf-tot-row final">
           <label>TOTAL À PAYER (TTC)</label>
           <span>${fmt(total_ttc)}</span>
+        </div>`}` : `
+        ${f.statut === 'Payé' ? `
+        <div class="pdf-tot-row" style="color:#2e7d32;font-weight:600">
+          <label>Montant payé</label>
+          <span>${fmt(total_ht)}</span>
+        </div>
+        <div class="pdf-tot-row final">
+          <label>RESTE À PAYER</label>
+          <span>${fmt(0)}</span>
         </div>` : `
         <div class="pdf-tot-row final">
           <label>TOTAL À PAYER</label>
           <span>${fmt(total_ht)}</span>
-        </div>`}
+        </div>`}`}
       </div>
     </div>
 
     <!-- RÈGLEMENT / COORDONNÉES BANCAIRES -->
-    <div class="pdf-reglement">
-      <div>
-        <div class="pdf-reglement-header">Modalités de règlement</div>
-        <div class="pdf-reglement-cell">
-          Mode : ${f.mode_reglement || 'Virement bancaire'}<br/>
-          Échéance : ${f.date_echeance ? fmtDate(f.date_echeance) : '—'}<br/>
-          Merci d'indiquer le n° de facture en référence.
+    <div class="pdf-reglement-zone">
+      ${f.statut === 'Payé' ? `<div class="pdf-stamp-paye">PAYÉ</div>` : ''}
+      <div class="pdf-reglement">
+        <div>
+          <div class="pdf-reglement-header">Modalités de règlement</div>
+          <div class="pdf-reglement-cell">
+            Mode : ${f.mode_reglement || 'Virement bancaire'}<br/>
+            Échéance : ${f.date_echeance ? fmtDate(f.date_echeance) : '—'}<br/>
+            Merci d'indiquer le n° de facture en référence.
+          </div>
         </div>
-      </div>
-      <div>
-        <div class="pdf-reglement-header">Coordonnées bancaires</div>
-        <div class="pdf-reglement-cell">
-          ${e.banque ? `Banque : ${e.banque}<br/>` : ''}
-          ${e.bic   ? `BIC : ${e.bic}<br/>`   : ''}
-          ${e.iban  ? `IBAN : ${e.iban}`       : ''}
+        <div>
+          <div class="pdf-reglement-header">Coordonnées bancaires</div>
+          <div class="pdf-reglement-cell">
+            ${e.banque ? `Banque : ${e.banque}<br/>` : ''}
+            ${e.bic   ? `BIC : ${e.bic}<br/>`   : ''}
+            ${e.iban  ? `IBAN : ${e.iban}`       : ''}
+          </div>
         </div>
       </div>
     </div>
@@ -503,6 +550,7 @@ async function changerStatut(statut, sel) {
     await DB.updateFacture(factureId, { statut });
     sel.className = `badge badge-select ${getBadgeClass(statut)}`;
     facture.statut = statut;
+    renderPDF();
     toast(`Statut mis à jour : ${statut}`, 'success');
   } catch(e) {
     toast('Erreur mise à jour statut', 'error');
